@@ -126,8 +126,8 @@
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2014 at 6PM is 2014-06-01_1800.
-	Output filename will be ReportName_2014-06-01_1800.docx (or .pdf).
+	June 1, 2016 at 6PM is 2016-06-01_1800.
+	Output filename will be ReportName_2016-06-01_1800.docx (or .pdf).
 	This parameter is disabled by default.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
@@ -145,6 +145,20 @@
 .PARAMETER To
 	Specifies the username for the To email address.
 	If SmtpServer is used, this is a required parameter.
+.PARAMETER Dev
+	Clears errors at the beginning of the script.
+	Outputs all errors to a text file at the end of the script.
+	
+	This is used when the script developer requests more troubleshooting data.
+	Text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+.PARAMETER ScriptInfo
+	Outputs information about the script to a text file.
+	Text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of SI.
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1
 	
@@ -268,8 +282,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2014 at 6PM is 2014-06-01_1800.
-	Output filename will be vCenterServer_2014-06-01_1800.docx
+	June 1, 2016 at 6PM is 2016-06-01_1800.
+	Output filename will be vCenterServer_2016-06-01_1800.docx
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -AddDateTime -VIServerName testvc.lab.com
 	
@@ -284,8 +298,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2014 at 6PM is 2014-06-01_1800.
-	Output filename will be vCenterServerSiteName_2014-06-01_1800.pdf
+	June 1, 2016 at 6PM is 2016-06-01_1800.
+	Output filename will be vCenterServerSiteName_2016-06-01_1800.pdf
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -Folder \\FileServer\ShareName -VIServerName testvc.lab.com
 	
@@ -335,9 +349,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.62
-	AUTHOR: Jacob Rutski
-	LASTEDIT: August 19, 2016
+	VERSION: 1.63
+	AUTHOR: Jacob Rutski and Carl Webster Sr. Solutions Architect Choice Solutions
+	LASTEDIT: August 29, 2016
 #>
 
 #endregion
@@ -423,7 +437,14 @@ Param(
 	[string]$From="",
 
 	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
-	[string]$To=""
+	[string]$To="",
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Dev=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SI")]
+	[Switch]$ScriptInfo=$False
 	
 	)
 #endregion
@@ -506,6 +527,11 @@ Param(
 #Version 1.62 19-Aug-2016
 #	Fixed several misspelled words
 #
+#Version 1.63
+#	Add support for the -Dev and -ScriptInfo parameters
+#	Update the ShowScriptOptions function with all script parameters
+#	Add Break statements to most Switch statements
+#
 #endregion
 
 #region initial variable testing and setup
@@ -536,8 +562,14 @@ If($Null -eq $AddDateTime)
 {
 	$AddDateTime = $False
 }
-If($Full -eq $Null){$Full = $False}
-If($Chart -eq $Null){$Chart = $False}
+If($Full -eq $Null)
+{
+	$Full = $False
+}
+If($Chart -eq $Null)
+{
+	$Chart = $False
+}
 If($Null -eq $Folder)
 {
 	$Folder = ""
@@ -562,6 +594,14 @@ If($Null -eq $To)
 {
 	$To = ""
 }
+If($Null -eq $Dev)
+{
+	$Dev = $False
+}
+If($Null -eq $ScriptInfo)
+{
+	$ScriptInfo = $False
+}
 
 If(!(Test-Path Variable:PDF))
 {
@@ -583,9 +623,18 @@ If(!(Test-Path Variable:AddDateTime))
 {
 	$AddDateTime = $False
 }
-If(!(Test-Path Variable:Full)){$Full = $False}
-If(!(Test-Path Variable:Import)){$Import = $False}
-If(!(Test-Path Variable:Export)){$Export = $False}
+If(!(Test-Path Variable:Full))
+{
+	$Full = $False
+}
+If(!(Test-Path Variable:Import))
+{
+	$Import = $False
+}
+If(!(Test-Path Variable:Export))
+{
+	$Export = $False
+}
 If(!(Test-Path Variable:Folder))
 {
 	$Folder = ""
@@ -609,6 +658,20 @@ If(!(Test-Path Variable:From))
 If(!(Test-Path Variable:To))
 {
 	$To = ""
+}
+If(!(Test-Path Variable:Dev))
+{
+	$Dev = $False
+}
+If(!(Test-Path Variable:ScriptInfo))
+{
+	$ScriptInfo = $False
+}
+
+If($Dev)
+{
+	$Error.Clear()
+	$Script:DevErrorFile = "$($pwd.Path)\VMwareInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 }
 
 If($Null -eq $MSWord)
@@ -884,27 +947,17 @@ Function SetWordHashTable
 	[string]$toc = $(
 		Switch ($CultureCode)
 		{
-			'ca-'	{ 'Taula automática 2' }
-
-			'da-'	{ 'Automatisk tabel 2' }
-
-			'de-'	{ 'Automatische Tabelle 2' }
-
-			'en-'	{ 'Automatic Table 2' }
-
-			'es-'	{ 'Tabla automática 2' }
-
-			'fi-'	{ 'Automaattinen taulukko 2' }
-
-			'fr-'	{ 'Sommaire Automatique 2' }
-
-			'nb-'	{ 'Automatisk tabell 2' }
-
-			'nl-'	{ 'Automatische inhoudsopgave 2' }
-
-			'pt-'	{ 'Sumário Automático 2' }
-
-			'sv-'	{ 'Automatisk innehållsförteckning2' }
+			'ca-'	{ 'Taula automática 2' ; Break}
+			'da-'	{ 'Automatisk tabel 2' ; Break}
+			'de-'	{ 'Automatische Tabelle 2' ; Break}
+			'en-'	{ 'Automatic Table 2' ; Break}
+			'es-'	{ 'Tabla automática 2' ; Break}
+			'fi-'	{ 'Automaattinen taulukko 2' ; Break}
+			'fr-'	{ 'Sommaire Automatique 2' ; Break}
+			'nb-'	{ 'Automatisk tabell 2' ; Break}
+			'nl-'	{ 'Automatische inhoudsopgave 2' ; Break}
+			'pt-'	{ 'Sumário Automático 2' ; Break}
+			'sv-'	{ 'Automatisk innehållsförteckning2' ; Break}
 		}
 	)
 
@@ -950,17 +1003,17 @@ Function GetCulture
 
 	Switch ($WordValue)
 	{
-		{$CatalanArray -contains $_} {$CultureCode = "ca-"}
-		{$DanishArray -contains $_} {$CultureCode = "da-"}
-		{$DutchArray -contains $_} {$CultureCode = "nl-"}
-		{$EnglishArray -contains $_} {$CultureCode = "en-"}
-		{$FinnishArray -contains $_} {$CultureCode = "fi-"}
-		{$FrenchArray -contains $_} {$CultureCode = "fr-"}
-		{$GermanArray -contains $_} {$CultureCode = "de-"}
-		{$NorwegianArray -contains $_} {$CultureCode = "nb-"}
-		{$PortugueseArray -contains $_} {$CultureCode = "pt-"}
-		{$SpanishArray -contains $_} {$CultureCode = "es-"}
-		{$SwedishArray -contains $_} {$CultureCode = "sv-"}
+		{$CatalanArray -contains $_} {$CultureCode = "ca-"; Break}
+		{$DanishArray -contains $_} {$CultureCode = "da-"; Break}
+		{$DutchArray -contains $_} {$CultureCode = "nl-"; Break}
+		{$EnglishArray -contains $_} {$CultureCode = "en-"; Break}
+		{$FinnishArray -contains $_} {$CultureCode = "fi-"; Break}
+		{$FrenchArray -contains $_} {$CultureCode = "fr-"; Break}
+		{$GermanArray -contains $_} {$CultureCode = "de-"; Break}
+		{$NorwegianArray -contains $_} {$CultureCode = "nb-"; Break}
+		{$PortugueseArray -contains $_} {$CultureCode = "pt-"; Break}
+		{$SpanishArray -contains $_} {$CultureCode = "es-"; Break}
+		{$SwedishArray -contains $_} {$CultureCode = "sv-"; Break}
 		Default {$CultureCode = "en-"}
 	}
 	
@@ -1277,6 +1330,7 @@ Function _SetDocumentProperty
 	Param([object]$Properties,[string]$Name,[string]$Value)
 	#get the property object
 	$prop = $properties | ForEach { 
+		$propname = ""
 		$propname=$_.GetType().InvokeMember("Name","GetProperty",$Null,$_,$Null)
 		If($propname -eq $Name) 
 		{
@@ -1751,12 +1805,12 @@ Function WriteWordLine
 	[string]$output = ""
 	Switch ($style)
 	{
-		0 {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing}
-		1 {$Script:Selection.Style = $Script:MyHash.Word_Heading1}
-		2 {$Script:Selection.Style = $Script:MyHash.Word_Heading2}
-		3 {$Script:Selection.Style = $Script:MyHash.Word_Heading3}
-		4 {$Script:Selection.Style = $Script:MyHash.Word_Heading4}
-		Default {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing}
+		0 {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing; Break}
+		1 {$Script:Selection.Style = $Script:MyHash.Word_Heading1; Break}
+		2 {$Script:Selection.Style = $Script:MyHash.Word_Heading2; Break}
+		3 {$Script:Selection.Style = $Script:MyHash.Word_Heading3; Break}
+		4 {$Script:Selection.Style = $Script:MyHash.Word_Heading4; Break}
+		Default {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing; Break}
 	}
 	
 	#build # of tabs
@@ -1946,22 +2000,22 @@ Function WriteHTMLLine
 		
 		Switch ($style)
 		{
-			1 {$HTMLStyle = "<h1>"}
-			2 {$HTMLStyle = "<h2>"}
-			3 {$HTMLStyle = "<h3>"}
-			4 {$HTMLStyle = "<h4>"}
-			Default {$HTMLStyle = ""}
+			1 {$HTMLStyle = "<h1>"; Break}
+			2 {$HTMLStyle = "<h2>"; Break}
+			3 {$HTMLStyle = "<h3>"; Break}
+			4 {$HTMLStyle = "<h4>"; Break}
+			Default {$HTMLStyle = ""; Break}
 		}
 
 		$HTMLBody += $HTMLStyle + $output
 
 		Switch ($style)
 		{
-			1 {$HTMLStyle = "</h1>"}
-			2 {$HTMLStyle = "</h2>"}
-			3 {$HTMLStyle = "</h3>"}
-			4 {$HTMLStyle = "</h4>"}
-			Default {$HTMLStyle = ""}
+			1 {$HTMLStyle = "</h1>"; Break}
+			2 {$HTMLStyle = "</h2>"; Break}
+			3 {$HTMLStyle = "</h3>"; Break}
+			4 {$HTMLStyle = "</h4>"; Break}
+			Default {$HTMLStyle = ""; Break}
 		}
 
 		$HTMLBody += $HTMLStyle +  "</font>"
@@ -3224,42 +3278,59 @@ Function ShowScriptOptions
 {
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
-	If($MSWord -or $PDF)
+	Write-Verbose "$(Get-Date): AddDateTime   : $($AddDateTime)"
+	Write-Verbose "$(Get-Date): Chart         : $($Chart)"
+	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Company Name    : $($Script:CoName)"
-		Write-Verbose "$(Get-Date): Cover Page      : $($CoverPage)"
-		Write-Verbose "$(Get-Date): User Name       : $($UserName)"
-		Write-Verbose "$(Get-Date): "
+		Write-Verbose "$(Get-Date): Company Name  : $($Script:CoName)"
 	}
-	Write-Verbose "$(Get-Date): Save As TEXT : $($TEXT)"
-	Write-Verbose "$(Get-Date): Save As WORD : $($MSWORD)"
-	Write-Verbose "$(Get-Date): Save As PDF  : $($PDF)"
-	Write-Verbose "$(Get-Date): Save As HTML : $($HTML)"
-	Write-Verbose "$(Get-Date): Add DateTime : $($AddDateTime)"
-	Write-Verbose "$(Get-Date): Filename1    : $($Script:FileName1)"
+	If($MSWORD -or $PDF)
+	{
+		Write-Verbose "$(Get-Date): Cover Page    : $($CoverPage)"
+	}
+	Write-Verbose "$(Get-Date): Dev           : $($Dev)"
+	If($Dev)
+	{
+		Write-Verbose "$(Get-Date): DevErrorFile  : $($Script:DevErrorFile)"
+	}
+	Write-Verbose "$(Get-Date): Export        : $($Export)"
+	Write-Verbose "$(Get-Date): Filename1     : $($Script:filename1)"
 	If($PDF)
 	{
-		Write-Verbose "$(Get-Date): Filename2    : $($Script:FileName2)"
+		Write-Verbose "$(Get-Date): Filename2     : $($Script:filename2)"
 	}
-	If(![System.String]::IsNullOrEmpty( $SmtpServer ))
+	Write-Verbose "$(Get-Date): Folder        : $($Folder)"
+	Write-Verbose "$(Get-Date): From          : $($From)"
+	Write-Verbose "$(Get-Date): Full          : $($Full)"
+	Write-Verbose "$(Get-Date): Import        : $($Import)"
+	Write-Verbose "$(Get-Date): Issues        : $($Issues)"
+	Write-Verbose "$(Get-Date): Save As HTML  : $($HTML)"
+	Write-Verbose "$(Get-Date): Save As PDF   : $($PDF)"
+	Write-Verbose "$(Get-Date): Save As TEXT  : $($TEXT)"
+	Write-Verbose "$(Get-Date): Save As WORD  : $($MSWORD)"
+	Write-Verbose "$(Get-Date): ScriptInfo    : $($ScriptInfo)"
+	Write-Verbose "$(Get-Date): Smtp Port     : $($SmtpPort)"
+	Write-Verbose "$(Get-Date): Smtp Server   : $($SmtpServer)"
+	Write-Verbose "$(Get-Date): Title         : $($Script:Title)"
+	Write-Verbose "$(Get-Date): To            : $($To)"
+	Write-Verbose "$(Get-Date): Use SSL       : $($UseSSL)"
+	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Smtp Server  : $($SmtpServer)"
-		Write-Verbose "$(Get-Date): Smtp Port    : $($SmtpPort)"
-		Write-Verbose "$(Get-Date): Use SSL      : $($UseSSL)"
-		Write-Verbose "$(Get-Date): From         : $($From)"
-		Write-Verbose "$(Get-Date): To           : $($To)"
+		Write-Verbose "$(Get-Date): User Name     : $($UserName)"
 	}
-	Write-Verbose "$(Get-Date): OS Detected  : $($Script:RunningOS)"
-	Write-Verbose "$(Get-Date): PSUICulture  : $($PSUICulture)"
-	Write-Verbose "$(Get-Date): PSCulture    : $($PSCulture)"
-	If($MSWord -or $PDF)
-	{
-		Write-Verbose "$(Get-Date): Word version : $($Script:WordProduct)"
-		Write-Verbose "$(Get-Date): Word language: $($Script:WordLanguageValue)"
-	}
-	Write-Verbose "$(Get-Date): PoSH version : $($Host.Version)"
+	Write-Verbose "$(Get-Date): VIServerName  : $($VIServerName)"
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): Script start : $($Script:StartTime)"
+	Write-Verbose "$(Get-Date): OS Detected   : $($Script:RunningOS)"
+	Write-Verbose "$(Get-Date): PoSH version  : $($Host.Version)"
+	Write-Verbose "$(Get-Date): PSCulture     : $($PSCulture)"
+	Write-Verbose "$(Get-Date): PSUICulture   : $($PSUICulture)"
+	If($MSWORD -or $PDF)
+	{
+		Write-Verbose "$(Get-Date): Word language : $($Script:WordLanguageValue)"
+		Write-Verbose "$(Get-Date): Word version  : $($Script:WordProduct)"
+	}
+	Write-Verbose "$(Get-Date): "
+	Write-Verbose "$(Get-Date): Script start  : $($Script:StartTime)"
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
 }
@@ -4052,10 +4123,10 @@ Function ProcessvCenter
         {
             Switch($xStatLevel.SamplingPeriod)
             {
-                300{$xInterval = "5 Minutes"}
-                1800{$xInterval = "30 Minutes"}
-                7200{$xInterval = "2 Hours"}
-                86400{$xInterval = "1 Day"}
+                300{$xInterval = "5 Minutes"; Break}
+                1800{$xInterval = "30 Minutes"; Break}
+                7200{$xInterval = "2 Hours"; Break}
+                86400{$xInterval = "1 Day"; Break}
             }
             ## Add the required key/values to the hashtable
 	        $WordTableRowHash = @{
@@ -4095,10 +4166,10 @@ Function ProcessvCenter
         {
             Switch($xStatLevel.SamplingPeriod)
             {
-                300{$xInterval = "5 Min."}
-                1800{$xInterval = "30 Min."}
-                7200{$xInterval = "2 Hours"}
-                86400{$xInterval = "1 Day"}
+                300{$xInterval = "5 Min."; Break}
+                1800{$xInterval = "30 Min."; Break}
+                7200{$xInterval = "2 Hours"; Break}
+                86400{$xInterval = "1 Day"; Break}
             }
             Line 1 "$($xInterval)`t`t`t$($xStatLevel.Enabled)`t`t$($xStatLevel.Name)`t$($xStatLevel.Level)"
         }
@@ -4112,10 +4183,10 @@ Function ProcessvCenter
         {
             Switch($xStatLevel.SamplingPeriod)
             {
-                300{$xInterval = "5 Min."}
-                1800{$xInterval = "30 Min."}
-                7200{$xInterval = "2 Hours"}
-                86400{$xInterval = "1 Day"}
+                300{$xInterval = "5 Min."; Break}
+                1800{$xInterval = "30 Min."; Break}
+                7200{$xInterval = "2 Hours"; Break}
+                86400{$xInterval = "1 Day"; Break}
             }
             $rowdata += @(,($xInterval,$htmlwhite,$xStatLevel.Enabled,$htmlWhite,$xStatLevel.Name,$htmlWhite,$xStatLevel.Level,$htmlWhite))
         }
@@ -6845,8 +6916,79 @@ Function ProcessScriptEnd
 		$runtime.Seconds,
 		$runtime.Milliseconds)
 	Write-Verbose "$(Get-Date): Elapsed time: $($Str)"
-	$runtime = $Null
-	$Str = $Null
+
+	If($Dev)
+	{
+		If($SmtpServer -eq "")
+		{
+			Out-File -FilePath $Script:DevErrorFile -InputObject $error 4>$Null
+		}
+		Else
+		{
+			Out-File -FilePath $Script:DevErrorFile -InputObject $error -Append 4>$Null
+		}
+	}
+
+	If($ScriptInfo)
+	{
+		$SIFile = "$($pwd.Path)\VMwareInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		Out-File -FilePath $SIFile -InputObject "" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime  : $($AddDateTime)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Chart         : $($Chart)" 4>$Null
+		If($MSWORD -or $PDF)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "Company Name  : $($Script:CoName)" 4>$Null		
+		}
+		If($MSWORD -or $PDF)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "Cover Page    : $($CoverPage)" 4>$Null
+		}
+		Out-File -FilePath $SIFile -Append -InputObject "Dev           : $($Dev)" 4>$Null
+		If($Dev)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile  : $($Script:DevErrorFile)" 4>$Null
+		}
+		Out-File -FilePath $SIFile -Append -InputObject "Export        : $($Export)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Filename1     : $($Script:FileName1)" 4>$Null
+		If($PDF)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "Filename2     : $($Script:FileName2)" 4>$Null
+		}
+		Out-File -FilePath $SIFile -Append -InputObject "Folder        : $($Folder)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "From          : $($From)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Full          : $($Full)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Import        : $($Import)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Issues        : $($Issues)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML  : $($HTML)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF   : $($PDF)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT  : $($TEXT)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD  : $($MSWORD)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script Info   : $($ScriptInfo)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port     : $($SmtpPort)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server   : $($SmtpServer)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Title         : $($Script:Title)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "To            : $($To)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Use SSL       : $($UseSSL)" 4>$Null
+		If($MSWORD -or $PDF)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "User Name     : $($UserName)" 4>$Null
+		}
+		Out-File -FilePath $SIFile -Append -InputObject "VIServerName  : $($VIServerName)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "OS Detected   : $($Script:RunningOS)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PoSH version  : $($Host.Version)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSCulture     : $($PSCulture)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture   : $($PSUICulture)" 4>$Null
+		If($MSWORD -or $PDF)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "Word language : $($Script:WordLanguageValue)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word version  : $($Script:WordProduct)" 4>$Null
+		}
+		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script start  : $($Script:StartTime)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time  : $($Str)" 4>$Null
+	}
+
 	$ErrorActionPreference = $SaveEAPreference
 }
 #endregion
@@ -6864,7 +7006,13 @@ Hello, <br />
 $Script:Title is attached.
 "@ 
 
+	If($Dev)
+	{
+		Out-File -FilePath $Script:DevErrorFile -InputObject $error 4>$Null
+	}
+	
 	$error.Clear()
+	
 	If($UseSSL)
 	{
 		Write-Verbose "$(Get-Date): Trying to send email using current user's credentials with SSL"
@@ -6886,9 +7034,15 @@ $Script:Title is attached.
 		#The server response was: 5.7.57 SMTP; Client was not authenticated to send anonymous mail during MAIL FROM
 		Write-Verbose "$(Get-Date): Current user's credentials failed. Ask for usable credentials."
 
-		$emailCredentials = Get-Credential -Message "Enter the email account and password to send email"
+		If($Dev)
+		{
+			Out-File -FilePath $Script:DevErrorFile -InputObject $error -Append 4>$Null
+		}
 
 		$error.Clear()
+
+		$emailCredentials = Get-Credential -Message "Enter the email account and password to send email"
+
 		If($UseSSL)
 		{
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
