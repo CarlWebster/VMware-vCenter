@@ -111,10 +111,12 @@
 .PARAMETER HTML
 	Creates an HTML file with an .html extension.
 	This parameter is disabled by default.
-	This parameter is reserved for a future update and no output is created at this time.
 .PARAMETER Full
 	Runs a full inventory for the Hosts, clusters, resoure pools, networking and virtual machines.
 	This parameter is disabled by default - only a summary is run when this parameter is not specified.
+.PARAMETER PCLICustom
+    Prompts user to locate the PowerCLI Scripts directory in a non-default installation
+    This parameter is disabled by default
 .PARAMETER Chart
     This parameter is still beta and is disabled by default
     Gathers data from VMware stats to build performance graphs for hosts and VMs
@@ -349,9 +351,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.63
-	AUTHOR: Jacob Rutski and Carl Webster Sr. Solutions Architect Choice Solutions
-	LASTEDIT: August 29, 2016
+	VERSION: 1.70
+	AUTHOR: Jacob Rutski and Carl Webster, Sr. Solutions Architect Choice Solutions
+	LASTEDIT: October 24, 2016
 #>
 
 #endregion
@@ -390,6 +392,9 @@ Param(
 	
 	[parameter(Mandatory=$False)] 
 	[Switch]$Full=$False,	
+
+    [parameter(Mandatory=$False)]
+    [Switch]$PCLICustom=$False,
 
     [parameter(Mandatory=$False)]
     [Switch]$Chart=$False,
@@ -531,6 +536,12 @@ Param(
 #	Add support for the -Dev and -ScriptInfo parameters
 #	Update the ShowScriptOptions function with all script parameters
 #	Add Break statements to most Switch statements
+#
+#
+#Version 1.70 24-Oct-2016
+#	Added support for PowerCLI installed in non-default locations
+#	Fixed formatting issues with HTML output
+#	Sort Guest Volume Paths by drive letter
 #
 #endregion
 
@@ -1869,7 +1880,7 @@ Function WriteWordLine
 	0 for Font Size denotes using the default font size of 2 or 10 point
 
 .EXAMPLE
-	WriteHTMLLine 0 0 ""
+	WriteHTMLLine 0 0 " "
 
 	Writes a blank line with no style or tab stops, obviously none needed.
 
@@ -1951,6 +1962,7 @@ Function WriteWordLine
 Function WriteHTMLLine
 #Function created by Ken Avram
 #Function created to make output to HTML easy in this script
+#headings fixed 12-Oct-2016 by Webster
 {
 	Param([int]$style=0, 
 	[int]$tabs = 0, 
@@ -1996,7 +2008,16 @@ Function WriteHTMLLine
 		#output the rest of the parameters.
 		$output += $name + $value
 
-		$HTMLBody += "<br><font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
+		#added by webster 12-oct-2016
+		#if a heading, don't add the <br>
+		If($HTMLStyle -eq "")
+		{
+			$HTMLBody += "<br><font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
+		}
+		Else
+		{
+			$HTMLBody += "<font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
+		}
 		
 		Switch ($style)
 		{
@@ -2030,7 +2051,13 @@ Function WriteHTMLLine
 			$HTMLBody += "</b>"
 		} 
 	}
-	$HTMLBody += <br />
+	
+	#added by webster 12-oct-2016
+	#if a heading, don't add the <br />
+	If($HTMLStyle -eq "")
+	{
+		$HTMLBody += "<br />"
+	}
 
 	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null
 }
@@ -2905,7 +2932,12 @@ Function VISetup( [string] $VIServer )
 
     Write-Verbose "$(Get-Date): Setting up VMware PowerCLI"
     #Check to see if PowerCLI is installed
-    If($env:PROCESSOR_ARCHITECTURE -like "*AMD64*"){$PCLIPath = "C:\Program Files (x86)\VMware\Infrastructure\vSphere PowerCLI\Scripts\Initialize-PowerCLIEnvironment.ps1"}
+    If($PCLICustom)
+    {
+        Write-Verbose "$(Get-Date): Custom PowerCLI Install location"
+        $PCLIPath = "$(Select-FolderDialog)\Initialize-PowerCLIEnvironment.ps1" 4>$Null
+    }
+    ElseIf($env:PROCESSOR_ARCHITECTURE -like "*AMD64*"){$PCLIPath = "C:\Program Files (x86)\VMware\Infrastructure\vSphere PowerCLI\Scripts\Initialize-PowerCLIEnvironment.ps1"}
     Else{$PCLIPath = "C:\Program Files\VMware\Infrastructure\vSphere PowerCLI\Scripts\Initialize-PowerCLIEnvironment.ps1"}
 
     If (Test-Path $PCLIPath)
@@ -2915,6 +2947,7 @@ Function VISetup( [string] $VIServer )
     Else
     {
             Write-Host "`nPowerCLI does not appear to be installed - please install the latest version of PowerCLI. This script will now exit."
+            Write-Host "*** If PowerCLI was installed to a non-Default location, please use the -PCLICustom parameter ***`n"
             Exit
         }
 
@@ -2945,6 +2978,27 @@ Function VISetup( [string] $VIServer )
     #[string]$script:Title = "VMware Inventory Report - $VIServerName"
     #SetFileName1andFileName2 "$($VIServer)-Inventory"
 
+}
+
+Function Select-FolderDialog
+{
+    # http://stackoverflow.com/questions/11412617/get-a-folder-path-from-the-explorer-menu-to-a-powershell-variable
+    param([string]$Description="Select PowerCLI Scripts Directory - Default is C:\Program Files (x86)\VMware\Infrastructure\vSphere PowerCLI\Scripts\",[string]$RootFolder="Desktop")
+
+    [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null     
+
+    $objForm = New-Object System.Windows.Forms.FolderBrowserDialog
+    $objForm.Rootfolder = $RootFolder
+    $objForm.Description = $Description
+    $Show = $objForm.ShowDialog()
+    If ($Show -eq "OK")
+    {
+        Return $objForm.SelectedPath
+    }
+    Else
+    {
+        Write-Error "Operation cancelled by user."
+    }
 }
 
 Function SetGlobals
@@ -3492,10 +3546,6 @@ Function SaveandCloseTextDocument
 
 Function SaveandCloseHTMLDocument
 {
-	If($AddDateTime)
-	{
-		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).html"
-	}
 	Out-File -FilePath $Script:FileName1 -Append -InputObject "<p></p></body></html>" 4>$Null
 }
 
@@ -4080,7 +4130,7 @@ Function ProcessvCenter
         $rowdata += @(,("SMTP Server",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where {$_.Name -like "mail.smtp.server"}).Value,$htmlwhite))
         $rowdata += @(,("SMTP Server Port",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where {$_.Name -like "mail.smtp.port"}).Value,$htmlwhite))
 
-        FormatHTMLTable "General Settings" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
+        FormatHTMLTable "General Settings" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
     }
     ElseIf($Text)
@@ -4191,7 +4241,7 @@ Function ProcessvCenter
             $rowdata += @(,($xInterval,$htmlwhite,$xStatLevel.Enabled,$htmlWhite,$xStatLevel.Name,$htmlWhite,$xStatLevel.Level,$htmlWhite))
         }
         FormatHTMLTable "Historical Statistics" -rowArray $rowdata -columnArray $columnHeaders
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
     }
 
     ## vCenter Licensing
@@ -4266,7 +4316,7 @@ Function ProcessvCenter
             }
         }
         FormatHTMLTable "Licensing" -rowArray $rowdata -columnArray $columnHeaders
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
     }
 
     ## vCenter Permissions
@@ -4321,7 +4371,7 @@ Function ProcessvCenter
             $rowData += @(,($VIPerm.Entity,$htmlwhite,$VIPerm.Principal,$htmlwhite,$VIPerm.Role,$htmlwhite))
         }
         FormatHTMLTable "vCenter Permissions" -columnArray $columnHeaders -rowArray $rowdata
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
     }
 
     ## vCenter Role Perms
@@ -4351,7 +4401,7 @@ Function ProcessvCenter
             {
                 WriteHTMLLine 0 0 $expandRole.Name -options $htmlBold -fontSize 3
                 foreach($privRole in $expandRole.PrivilegeList){WriteHTMLLine 0 0 $privRole -fontSize 2}
-                WriteHTMLLine 0 0 ""
+                WriteHTMLLine 0 0 " "
             }
         }
     }
@@ -4797,7 +4847,7 @@ Function OutputVMHosts
             $rowData += @(,("NTP Servers",($htmlsilver -bor $htmlbold),$xNTPServers,$htmlwhite))
         }
 
-        FormatHTMLTable "Host: $($VMHost.Name)" -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths
+        FormatHTMLTable "Host: $($VMHost.Name)" -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
         If($xVMHostStorage)
         {
@@ -4808,12 +4858,12 @@ Function OutputVMHosts
                 $rowdata += @(,($xLun.Model,$htmlwhite,$xLun.Vendor,$htmlwhite,"$("{0:N2}" -f $xLUN.CapacityGB + " GB")",$htmlwhite,$xLUN.RuntimeName,$htmlwhite,$xLUN.MultipathPolicy,$htmlwhite,$xLUN.CanonicalName,$htmlwhite))
             }
             FormatHTMLTable "Block Storage" -rowArray $rowData -columnArray $columnHeaders
-            WriteHTMLLine 0 0 ""
+            WriteHTMLLine 0 0 " "
         }
         If($VMHost.ConnectionState -like "*NotResponding*" -or $VMHost.PowerState -eq "PoweredOff")
         {
             WriteHTMLLine 0 1 "Note: $($VMHost.Name) is not responding or is in an unknown state - data in this and other reports will be missing or inaccurate." "" $Null 0 $htmlitalics
-            WriteHTMLLine 0 0 ""
+            WriteHTMLLine 0 0 " "
         }
     }
 }
@@ -5022,7 +5072,7 @@ Function OutputClusters
             $rowdata += @(,("VSAN Disk Claim Mode",($htmlsilver -bor $htmlbold),$VMCluster.VsanDiskClaimMode,$htmlwhite))
         }
 
-        FormatHTMLTable "Cluster: $($VMCluster.Name)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
+        FormatHTMLTable "Cluster: $($VMCluster.Name)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
 
         If ($VMCluster.DrsEnabled -and ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
@@ -5045,8 +5095,8 @@ Function OutputClusters
                 If($DRSRule.AntiAffineHostGrpName){$rowdata += @(,("Host Anti Affinity Group", ($htmlsilver -bor $htmlbold),$DRSRule.AntiAffineHostGrpName,$htmlwhite))}
                 If($DRSRule.AntiAffineHostGrpMembers){$rowdata += @(,("Anti Affinity Group Members", ($htmlsilver -bor $htmlbold),$DRSRule.AntiAffineHostGrpMembers,$htmlwhite))}
 
-                FormatHTMLTable "" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
-                WriteHTMLLine 0 0 ""
+                FormatHTMLTable "" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
+                WriteHTMLLine 0 0 " "
             }
         }
 
@@ -5286,7 +5336,7 @@ Function OutputResourcePools
         $rowdata += @(,("Memory Limit",($htmlsilver -bor $htmlbold),$xMemLimit,$htmlwhite))
         $rowdata += @(,("Memory Limit Expandable",($htmlsilver -bor $htmlbold),$ResourcePool.MemExpandableReservation,$htmlwhite))
 
-        FormatHTMLTable "Resource Pool: $($ResourcePoolName)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
+        FormatHTMLTable "Resource Pool: $($ResourcePoolName)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
 
         If($xResPoolHosts)
         {
@@ -5502,8 +5552,8 @@ Function OutputVMKPorts
         $rowdata += @(,("Management Traffic",($htmlsilver -bor $htmlbold),$xMgmtTraffic,$htmlwhite))
         $rowdata += @(,("Parent vSwitch",($htmlsilver -bor $htmlbold),$xSwitchDetail,$htmlwhite))
         
-        FormatHTMLTable "" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
-        WriteHTMLLine 0 0 ""
+        FormatHTMLTable "" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
+        WriteHTMLLine 0 0 " "
     }
     ElseIf($Text)
     {
@@ -5812,7 +5862,7 @@ Function OutputHostNetworking
             
         }
         FormatHTMLTable "Host Network Adapters" -rowArray $rowdata -columnArray $columnHeaders
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
     }
 }
 #endregion
@@ -5988,8 +6038,8 @@ Function OutputVMPortGroups
             $colWidths = @("150px","200px")
             $rowData += @(,("Parent vSwitch",($htmlsilver -bor $htmlbold),$VMPortGroup.Name,$htmlwhite))
             $rowData += @(,("VLAN ID",($htmlsilver -bor $htmlbold),$xPortVLAN,$htmlwhite))
-            FormatHTMLTable "VM Port Group: $($VMPortGroup.Name)" -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths
-            WriteHTMLLine 0 0 ""
+            FormatHTMLTable "VM Port Group: $($VMPortGroup.Name)" -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths -tablewidth "350"
+            WriteHTMLLine 0 0 " "
 
             If ($xVMOnNetwork)
             {
@@ -5998,7 +6048,7 @@ Function OutputVMPortGroups
                 {
                     WriteHTMLLine 0 1 $xVMNet.Parent
                 }
-                WriteHTMLLine 0 0 ""
+                WriteHTMLLine 0 0 " "
             }
         }
     }
@@ -6276,7 +6326,7 @@ Function OutputDVSwitching
             $rowData += @(,($dvSwitch.Name,$htmlwhite,$dvSwitch.Vendor,$htmlwhite,$dvSwitch.Version,$htmlwhite,$dvSwitch.NumUplinkPorts,$htmlwhite,$dvSwitch.Mtu,$htmlwhite))
         }
         FormatHTMLTable "DV Switches" -rowArray $rowData -columnArray $columnHeaders
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
 
         $rowData = @()
         $columnHeaders = @("Host Name",($htmlsilver -bor $htmlbold),"Entity",($htmlsilver -bor $htmlbold),"Port Group",($htmlsilver -bor $htmlbold),"Status",($htmlsilver -bor $htmlbold),"MAC Address",($htmlsilver -bor $htmlbold),"DV Switch",($htmlsilver -bor $htmlbold))
@@ -6291,7 +6341,7 @@ Function OutputDVSwitching
             }
         }
         FormatHTMLTable "DV SwitchPorts" -rowArray $rowData -columnArray $columnHeaders
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
     }
 
 }
@@ -6418,7 +6468,7 @@ Function OutputDatastores
         {
             $rowData += @(,("File System Version",($htmlsilver -bor $htmlbold),$Datastore.FileSystemVersion,$htmlWhite))
         }
-        FormatHTMLTable $Datastore.Name -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths
+        FormatHTMLTable $Datastore.Name -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
     }
     ElseIf($Text)
@@ -6603,7 +6653,7 @@ Function OutputVirtualMachines
         If($xVMDetail)
         {
             If($Import){$xVMDisks = $GuestImport.Disks}Else{$xVMDisks = $VM.Guest.Disks}
-            ForEach($VMVolume in $xVMDisks)
+            ForEach($VMVolume in ($xVMDisks | sort Path))
             {
                 $ScriptInformation += @{ Data = "Guest Volume Path"; Value = $VMVolume.Path; }
                 $ScriptInformation += @{ Data = "     Capacity"; Value = "{0:N2}" -f $VMVolume.CapacityGB + " GB"; }
@@ -6790,8 +6840,8 @@ Function OutputVirtualMachines
         }
         If(($Snapshots) | Where {$_.VM -like $VM.Name}){$rowdata += @(,("VM has Snapshots",($htmlsilver -bor $htmlbold),(($Snapshots) | Where {$_.VM -like $VM.Name}).Count,$htmlwhite))}
 
-        FormatHTMLTable "VM: $($VM.Name)" -rowArray $rowdata -noHeadCols 2 -fixedWidth $colWidths
-        WriteHTMLLine 0 0 ""
+        FormatHTMLTable "VM: $($VM.Name)" -rowArray $rowdata -noHeadCols 2 -fixedWidth $colWidths -tablewidth "350"
+        WriteHTMLLine 0 0 " "
     }
 }
 
@@ -6826,7 +6876,7 @@ Function OutputSnapIssues
     }
     ElseIf($HTML)
     {
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
         $rowdata = @()
         $columnHeaders = @("Virtual Machine",($htmlsilver -bor $htmlbold),"Snapshot Name",($htmlsilver -bor $htmlbold),"Created",($htmlsilver -bor $htmlbold),"Running Current",($htmlsilver -bor $htmlbold),"Parent",($htmlsilver -bor $htmlbold),"Quiesced",($htmlsilver -bor $htmlbold),"Description",($htmlsilver -bor $htmlbold))
 
@@ -6871,7 +6921,7 @@ Function OutputOpticalIssues
     }
     ElseIf($HTML)
     {
-        WriteHTMLLine 0 0 ""
+        WriteHTMLLine 0 0 " "
         $rowdata = @()
         $columnHeaders = @("Virtual Machine",($htmlsilver -bor $htmlbold),"ISO Path",($htmlsilver -bor $htmlbold),"Host Device",($htmlsilver -bor $htmlbold),"Remote Device",($htmlsilver -bor $htmlbold))
 
