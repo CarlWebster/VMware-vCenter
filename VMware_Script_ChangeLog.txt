@@ -9,7 +9,10 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
-#Version 1.6 Feb 23, 2015
+#Version 1.61 Apr 21, 2016
+#-Fixed title and subtitle for the Word/PDF cover page
+
+#Version 1.6 Feb 23, 2016
 #-Added several advanced settings for VMs and VMHosts
 #-Updated to ScriptTemplate 21-Feb-2016
 
