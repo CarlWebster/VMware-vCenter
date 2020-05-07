@@ -1,0 +1,33 @@
+#Original Script created November 3, 2014 by Jacob Rutski
+#VMware vCenter inventory
+#Jacob Rutski
+#jake@serioustek.net
+#http://blogs.serioustek.net
+
+#The Webster PS Framework
+#webster@carlwebster.com
+#@carlwebster on Twitter
+#http://www.CarlWebster.com
+
+#Version 1.x script
+#originally released to the community on December 11, 2014
+#-Fixed Get-Advanced parameters
+#-Added Heatmap legend table, DSN for Windows VCenter, left-aligned tables, VCenter server version
+
+#Version 0.4
+#-Added heatmaps for summary tables; host block storage connections; basic DVSwitching support
+#-Fixed multi column table width; fixed 32\64 OS path to PCLI
+#-Set summary to default, added -Full parameter for full inventory
+#-Swapped table formats for host and standard vSwitches
+
+#Version 0.3
+#-Any Gets used more than once made global
+#-Fixed empty cluster
+#-Finished text formatted output (no summary, compressed tables)
+#-Added NTP service, licensing, summary page, check for PowerCLI version
+
+#Version 0.2
+#-Added SSH service status, syslog log directory on hosts
+#-Added VMware email settings, global settings section
+#-Added VM Snapshot count
+#-Fix for multiple IPs on VM
