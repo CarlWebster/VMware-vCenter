@@ -9,7 +9,11 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
-#Version 1.x script
+#Version 1.1 December 16, 2014
+#-Fix for help text region tags, fixes from template script for save as PDF, fix for memory heatmap
+#-Added VCenter plugins
+
+#Version 1.0 script
 #originally released to the community on December 11, 2014
 #-Fixed Get-Advanced parameters
 #-Added Heatmap legend table, DSN for Windows VCenter, left-aligned tables, VCenter server version

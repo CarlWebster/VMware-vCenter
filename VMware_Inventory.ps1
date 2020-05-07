@@ -1,9 +1,10 @@
-#Requires -Version 3.0
+﻿#Requires -Version 3.0
 #This File is in Unicode format.  Do not edit in an ASCII editor.
 
 #region help text
 
 <#
+
 .SYNOPSIS
 	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and Microsoft Word 2010 or 2013.
 .DESCRIPTION
@@ -41,7 +42,7 @@
 		Alphabet (Word 2010. Works)
 		Annual (Word 2010. Doesn't work well for this report)
 		Austere (Word 2010. Works)
-		Austin (Word 2010/2013. Doesn't work in 2013, mostly works in 2010 but Subtitle/Subject & Author fields need to be moved after title box is moved up)
+		Austin (Word 2010/2013. Doesn't work in 2013, mostly works in 2010 but Subtitle/Subject & Author fields need to me moved after title box is moved up)
 		Banded (Word 2013. Works)
 		Conservative (Word 2010. Works)
 		Contrast (Word 2010. Works)
@@ -89,12 +90,6 @@
 	Creates an HTML file with an .html extension.
 	This parameter is disabled by default.
 	This parameter is reserved for a future update and no output is created at this time.
-.PARAMETER StartDate
-	Start date for the Configuration Logging report.
-	Default is today's date minus seven days.
-.PARAMETER EndDate
-	End date for the Configuration Logging report.
-	Default is today's date.
 .PARAMETER Full
 	Runs a full inventory for the Hosts, clusters, resoure pools, networking and virtual machines.
 	This parameter is disabled by default - only a summary is run when this parameter is not specified.
@@ -239,9 +234,9 @@
 	No objects are output from this script.  This script creates a Word or PDF document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.00
+	VERSION: 1.1
 	AUTHOR: Jacob Rutski
-	LASTEDIT: December 15, 2014
+	LASTEDIT: December 16, 2014
 #>
 
 #endregion
@@ -267,12 +262,6 @@ Param(
     [Alias("VIServer")]
     [ValidateNotNullOrEmpty()]
     [string]$VIServerName="",
-
-	[parameter(Mandatory=$False)] 
-	[Datetime]$StartDate = ((Get-Date -displayhint date).AddDays(-7)),
-
-	[parameter(Mandatory=$False)] 
-	[Datetime]$EndDate = (Get-Date -displayhint date),
 	
 	[parameter(Mandatory=$False)] 
 	[Switch]$Full=$False,	
@@ -331,6 +320,10 @@ Param(
 #Version 1.0
 #-Fixed Get-Advanced parameters
 #-Added Heatmap legend table, DSN for Windows VCenter, left-aligned tables, VCenter server version
+#
+#Version 1.1
+#-Fix for help text region tags, fixes from template script for save as PDF, fix for memory heatmap
+#-Added VCenter plugins
 #endregion
 
 #region initial variable testing and setup
@@ -356,14 +349,6 @@ If($Text -eq $Null)
 If($HTML -eq $Null)
 {
 	$HTML = $False
-}
-If($StartDate -eq $Null)
-{
-	$StartDate = ((Get-Date -displayhint date).AddDays(-7))
-}
-If($EndDate -eq $Null)
-{
-	$EndDate = ((Get-Date -displayhint date))
 }
 If($Full -eq $Null)
 {
@@ -393,14 +378,6 @@ If(!(Test-Path Variable:Text))
 If(!(Test-Path Variable:HTML))
 {
 	$HTML = $False
-}
-If(!(Test-Path Variable:StartDate))
-{
-	$StartDate = ((Get-Date -displayhint date).AddDays(-7))
-}
-If(!(Test-Path Variable:EndDate))
-{
-	$EndDate = ((Get-Date -displayhint date))
 }
 If(!(Test-Path Variable:Full))
 {
@@ -512,7 +489,7 @@ If($MSWord -or $PDF)
 	[int]$wdWord2010 = 14
 	[int]$wdWord2013 = 15
 	[int]$wdFormatDocumentDefault = 16
-	[int]$wdSaveFormatPDF = 17
+	[int]$wdFormatPDF = 17
 	#http://blogs.technet.com/b/heyscriptingguy/archive/2006/03/01/how-can-i-right-align-a-single-column-in-a-word-table.aspx
 	#http://msdn.microsoft.com/en-us/library/office/ff835817%28v=office.15%29.aspx
 	[int]$wdAlignParagraphLeft = 0
@@ -1528,6 +1505,7 @@ Function WriteWordLine
 #***********************************************************************************************************
 # WriteHTMLLine
 #***********************************************************************************************************
+
 <#
 .Synopsis
 	Writes a line of output for HTML output
@@ -1622,6 +1600,7 @@ Function WriteWordLine
     
 
 #>
+
 Function WriteHTMLLine
 #Function created by Ken Avram
 #Function created to make output to HTML easy in this script
@@ -1868,6 +1847,7 @@ Function AddHTMLTable
 #***********************************************************************************************************
 # FormatHTMLTable 
 #***********************************************************************************************************
+
 <#
 .Synopsis
 	Format table for HTML output document
@@ -1939,6 +1919,7 @@ Function AddHTMLTable
         htmlblack     
 
 #>
+
 Function FormatHTMLTable
 {
     Param([string]$tableheader,
@@ -2126,6 +2107,7 @@ Function SetupHTML
 #endregion
 
 #region Iain's Word table functions
+
 <#
 .Synopsis
 	Add a table to a Microsoft Word document
@@ -2173,6 +2155,7 @@ Function SetupHTML
 	display names for each specified column header has been overridden to display a
 	custom header. Note: the order of the header names must match the specified columns.
 #>
+
 Function AddWordTable
 {
 	[CmdletBinding()]
@@ -2417,6 +2400,7 @@ Function AddWordTable
 	in the table's 17th row and 3rd column.
 	Note: the $Table.Cell(17,3) returns a single Word COM cells object.
 #>
+
 Function SetWordCellFormat 
 {
 	[CmdletBinding(DefaultParameterSetName='Collection')]
@@ -2519,6 +2503,7 @@ Function SetWordCellFormat
 	This example sets every other table (starting with the second) row and sets the
 	background color to light orange (weColorLightOrange).
 #>
+
 Function SetWordTableAlternateRowColor 
 {
 	[CmdletBinding()]
@@ -2612,7 +2597,7 @@ Function SetGlobals
     $Global:Snapshots = Get-Snapshot -VM *
     $Global:HostAdvSettings = Get-AdvancedSetting -Entity (@(($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name) + $VIServerName)
     $Global:HostServices = Get-VMHostService -VMHost *
-    $Global:VirtualMachines = Get-VM | Sort Name
+    $Global:VirtualMachines = Get-VM | Sort Name    
     If($Full)
     {
         $Global:HostNetAdapters = Get-VMHostNetworkAdapter
@@ -2721,6 +2706,7 @@ Function SaveandCloseDocumentandShutdownWord
 	If($PDF)
 	{
 		Write-Verbose "$(Get-Date): Deleting $($Script:FileName1) since only $($Script:FileName2) is needed"
+        Start-Sleep 2
 		Remove-Item $Script:FileName1
 	}
 	Write-Verbose "$(Get-Date): System Cleanup"
@@ -2997,7 +2983,7 @@ Function ProcessSummary
             {$_ -ge 80 -and $_ -lt 90}{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(42495);}
             {$_ -ge 90 -and $_ -le 100}{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(238);}
         }
-        Switch($WordTableRowHash.MemoryPercent)
+        Switch([decimal]($WordTableRowHash.MemoryPercent -replace '%'))
         {
             {$_ -lt 70}{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(6); $heatMap.Color += @(7405514);}
             {$_ -ge 70 -and $_ -lt 80}{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(6); $heatMap.Color += @(9434879);}
@@ -3295,6 +3281,57 @@ Function ProcessVCenter
             }
         }
         Line 0 ""
+    }
+
+    ## vCenter Plugins
+    $vSpherePlugins = @()
+    $VMPlugins = (((Get-View extensionmanager).ExtensionList).Description)
+    If($MSWord -or $PDF)
+    {
+        ## Create an array of hashtables
+	    [System.Collections.Hashtable[]] $PluginsWordTable = @();
+	    ## Seed the row index from the second row
+	    [int] $CurrentServiceIndex = 2;
+        WriteWordLine 2 0 "VCenter Plugins"
+        Foreach ($VMPlugin in $VMPlugins)
+        {
+            ## Add the required key/values to the hashtable
+	        $WordTableRowHash = @{
+            PluginName = $VMPlugin.Label;
+            PluginDesc = $VMPlugin.Summary;
+            }  
+	        ## Add the hash to the array
+	        $PluginsWordTable += $WordTableRowHash;
+	        $CurrentServiceIndex++                       
+        }  
+
+        ## Add the table to the document, using the hashtable (-Alt is short for -AlternateBackgroundColor!)
+	    $Table = AddWordTable -Hashtable $PluginsWordTable `
+	    -Columns PluginName, PluginDesc `
+	    -Headers "Plugin", "Description" `
+	    -Format $wdTableGrid `
+	    -AutoFit $wdAutoFitContent;    
+
+	    ## IB - Set the header row format
+	    SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+	    $Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+	    FindWordDocumentEnd
+	    $Table = $Null
+
+	    WriteWordLine 0 0 ""    
+              
+    }
+    ElseIf($Text)
+    {
+        Line 0 "Plugins"
+        Line 1 ""
+        LIne 1 "Plugin`t`t`tDescription"
+        ForEach($VMPlugin in $VMPlugins)
+        {
+            Line 1 "$($VMPlugin.Label)`t$($VMPlugin.Summary)"
+        }
     }
 
 }
