@@ -9,11 +9,15 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 1.4 June 1, 2015
+#-Reworked HTML general and table functions
+#-Full HTML output now functional
+#-Added fix for closing Word with PDF file
+
 #Version 1.3 April 9, 2015
 #-Added support for PowerCLI 6.0
 #-Used latest script template
 #-Beta charting
-
 
 #Version 1.2 January 7, 2015
 #-Added Import and Export functionality to output all data to XML that can be taken offline to generate a document at a later time
