@@ -351,9 +351,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.70
+	VERSION: 1.71
 	AUTHOR: Jacob Rutski and Carl Webster, Sr. Solutions Architect Choice Solutions
-	LASTEDIT: October 24, 2016
+	LASTEDIT: November 9, 2016
 #>
 
 #endregion
@@ -537,11 +537,16 @@ Param(
 #	Update the ShowScriptOptions function with all script parameters
 #	Add Break statements to most Switch statements
 #
-#
-#Version 1.70 24-Oct-2016
+#Version 1.7 22-Oct-2016
 #	Added support for PowerCLI installed in non-default locations
 #	Fixed formatting issues with HTML output
 #	Sort Guest Volume Paths by drive letter
+#
+#Version 1.71 9-Nov-2016
+#	Added Chinese language support
+#	Fixed HTMLHeatMap
+#	Fixed PWD for save path issue when importing PCLI back to C:\
+#	Prompt to disconnect if PCLI is already connected
 #
 #endregion
 
@@ -932,7 +937,7 @@ Function SetWordHashTable
 {
 	Param([string]$CultureCode)
 
-	#optimized by Michael B. Smith
+	#optimized by Michael B. SMith
 	
 	# DE and FR translations for Word 2010 by Vladimir Radojevic
 	# Vladimir.Radojevic@Commerzreal.com
@@ -954,21 +959,23 @@ Function SetWordHashTable
 	#nl - Dutch
 	#pt - Portuguese
 	#sv - Swedish
-
+	#zh - Chinese
+	
 	[string]$toc = $(
 		Switch ($CultureCode)
 		{
-			'ca-'	{ 'Taula automática 2' ; Break}
-			'da-'	{ 'Automatisk tabel 2' ; Break}
-			'de-'	{ 'Automatische Tabelle 2' ; Break}
-			'en-'	{ 'Automatic Table 2' ; Break}
-			'es-'	{ 'Tabla automática 2' ; Break}
-			'fi-'	{ 'Automaattinen taulukko 2' ; Break}
-			'fr-'	{ 'Sommaire Automatique 2' ; Break}
-			'nb-'	{ 'Automatisk tabell 2' ; Break}
-			'nl-'	{ 'Automatische inhoudsopgave 2' ; Break}
-			'pt-'	{ 'Sumário Automático 2' ; Break}
-			'sv-'	{ 'Automatisk innehållsförteckning2' ; Break}
+			'ca-'	{ 'Taula automática 2'; Break }
+			'da-'	{ 'Automatisk tabel 2'; Break }
+			'de-'	{ 'Automatische Tabelle 2'; Break }
+			'en-'	{ 'Automatic Table 2'; Break }
+			'es-'	{ 'Tabla automática 2'; Break }
+			'fi-'	{ 'Automaattinen taulukko 2'; Break }
+			'fr-'	{ 'Sommaire Automatique 2'; Break }
+			'nb-'	{ 'Automatisk tabell 2'; Break }
+			'nl-'	{ 'Automatische inhoudsopgave 2'; Break }
+			'pt-'	{ 'Sumário Automático 2'; Break }
+			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+			'zh-'	{ '自动目录 2'; Break }
 		}
 	)
 
@@ -989,6 +996,7 @@ Function GetCulture
 	#codes obtained from http://support.microsoft.com/kb/221435
 	#http://msdn.microsoft.com/en-us/library/bb213877(v=office.12).aspx
 	$CatalanArray = 1027
+	$ChineseArray = 2052,3076,5124,4100
 	$DanishArray = 1030
 	$DutchArray = 2067, 1043
 	$EnglishArray = 3081, 10249, 4105, 9225, 6153, 8201, 5129, 13321, 7177, 11273, 2057, 1033, 12297
@@ -1011,20 +1019,22 @@ Function GetCulture
 	#nl - Dutch
 	#pt - Portuguese
 	#sv - Swedish
+	#zh - Chinese
 
 	Switch ($WordValue)
 	{
-		{$CatalanArray -contains $_} {$CultureCode = "ca-"; Break}
-		{$DanishArray -contains $_} {$CultureCode = "da-"; Break}
-		{$DutchArray -contains $_} {$CultureCode = "nl-"; Break}
-		{$EnglishArray -contains $_} {$CultureCode = "en-"; Break}
-		{$FinnishArray -contains $_} {$CultureCode = "fi-"; Break}
-		{$FrenchArray -contains $_} {$CultureCode = "fr-"; Break}
-		{$GermanArray -contains $_} {$CultureCode = "de-"; Break}
-		{$NorwegianArray -contains $_} {$CultureCode = "nb-"; Break}
-		{$PortugueseArray -contains $_} {$CultureCode = "pt-"; Break}
-		{$SpanishArray -contains $_} {$CultureCode = "es-"; Break}
-		{$SwedishArray -contains $_} {$CultureCode = "sv-"; Break}
+		{$CatalanArray -contains $_} {$CultureCode = "ca-"}
+		{$ChineseArray -contains $_} {$CultureCode = "zh-"}
+		{$DanishArray -contains $_} {$CultureCode = "da-"}
+		{$DutchArray -contains $_} {$CultureCode = "nl-"}
+		{$EnglishArray -contains $_} {$CultureCode = "en-"}
+		{$FinnishArray -contains $_} {$CultureCode = "fi-"}
+		{$FrenchArray -contains $_} {$CultureCode = "fr-"}
+		{$GermanArray -contains $_} {$CultureCode = "de-"}
+		{$NorwegianArray -contains $_} {$CultureCode = "nb-"}
+		{$PortugueseArray -contains $_} {$CultureCode = "pt-"}
+		{$SpanishArray -contains $_} {$CultureCode = "es-"}
+		{$SwedishArray -contains $_} {$CultureCode = "sv-"}
 		Default {$CultureCode = "en-"}
 	}
 	
@@ -1260,6 +1270,16 @@ Function ValidateCoverPage
 					"Kontrast", "Kritstreck", "Kuber", "Perspektiv", "Plattor", "Pussel", "Rutnät",
 					"RörElse", "Sidlinje", "Sobert", "Staplat", "Tidningspapper", "Årligt",
 					"Övergående")
+				}
+			}
+
+		'zh-'	{
+				If($xWordVersion -eq $wdWord2010 -or $xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
+				{
+					$xArray = ('奥斯汀', '边线型', '花丝', '怀旧', '积分',
+					'离子(浅色)', '离子(深色)', '母版型', '平面', '切片(浅色)',
+					'切片(深色)', '丝状', '网格', '镶边', '信号灯',
+					'运动型')
 				}
 			}
 
@@ -1537,6 +1557,14 @@ Function SetupWord
 						$CPChanged = $True
 					}
 				}
+
+			'zh-'	{
+					If($CoverPage -eq "Sideline")
+					{
+						$CoverPage = "边线型"
+						$CPChanged = $True
+					}
+				}
 		}
 
 		If($CPChanged)
@@ -1571,7 +1599,7 @@ Function SetupWord
 	[bool]$BuildingBlocksExist = $False
 
 	$Script:Word.Templates.LoadBuildingBlocks()
-	#word 2010/2013
+	#word 2010/2013/2016
 	$BuildingBlocksCollection = $Script:Word.Templates | Where {$_.name -eq "Built-In Building Blocks.dotx"}
 
 	Write-Verbose "$(Get-Date): Attempt to load cover page $($CoverPage)"
@@ -2463,6 +2491,21 @@ Function SetupHTML
     #echo $htmlhead > $FileName1
 	out-file -FilePath $Script:FileName1 -Force -InputObject $HTMLHead 4>$Null
 }
+
+Function HTMLHeatMap
+{
+    Param([decimal]$PValue)
+    
+    Switch($PValue)
+    {
+        {$_ -lt 70}{return $htmlgreen}
+        {$_ -ge 70 -and $_ -lt 80}{return $htmlyellow}
+        {$_ -ge 80 -and $_ -lt 90}{return $htmlorange}
+        {$_ -ge 90 -and $_ -le 100}{return $htmlred}
+    }
+
+}
+
 #endregion
 
 #region Iain's Word table functions
@@ -2942,6 +2985,8 @@ Function VISetup( [string] $VIServer )
 
     If (Test-Path $PCLIPath)
     {
+            # grab the PWD before PCLI resets it to C:\
+            $tempPWD = $pwd
             Import-Module $PCLIPath *>$Null
     }
     Else
@@ -2959,9 +3004,17 @@ Function VISetup( [string] $VIServer )
         Exit
     }
     
-    #Set PCLI defaults
+    #Set PCLI defaults and reset PWD
+    cd $tempPWD 4>$Null
     Write-Verbose "$(Get-Date): Setting PowerCLI global Configuration"
     Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings $False -Confirm:$False *>$Null
+
+    #Are we already connected to VC?
+    If($global:DefaultVIServer)
+    {
+        Write-Host "`nIt appears PowerCLI is already connected to a VCenter Server. Please use the 'Disconnect-VIServer' cmdlet to disconnect any sessions before running inventory."
+        Exit
+    }
 
     #Connect to VI Server
     Write-Verbose "$(Get-Date): Connecting to VIServer: $($VIServer)"
@@ -7168,6 +7221,10 @@ If($Full)
 
 #region finish script
 Write-Verbose "$(Get-Date): Finishing up document"
+
+#Disconnect from VCenter
+If(!($Import)){Disconnect-VIServer $VIServerName -Confirm:$False 4>$Null}
+
 #end of document processing
 
 ###Change the two lines below for your script###
