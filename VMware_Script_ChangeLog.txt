@@ -9,6 +9,9 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 1.5.2 October 5, 2015
+#-Added support for Word 2016
+
 #Version 1.5.1 July 20, 2015
 #-Cleaned up some extra PCLI calls - set to variables
 #-Removed almost all of the extra PCLI verbose messages - Thanks @carlwebster!!

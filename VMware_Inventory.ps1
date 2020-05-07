@@ -36,42 +36,50 @@
 	This parameter has an alias of CN.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
-	Only Word 2010 and 2013 are supported.
+	Only Word 2010, 2013 and 2016 are supported.
 	(default cover pages in Word en-US)
+	
 	Valid input is:
 		Alphabet (Word 2010. Works)
 		Annual (Word 2010. Doesn't work well for this report)
 		Austere (Word 2010. Works)
-		Austin (Word 2010/2013. Doesn't work in 2013, mostly works in 2010 but Subtitle/Subject & Author fields need to me moved after title box is moved up)
-		Banded (Word 2013. Works)
+		Austin (Word 2010/2013/2016. Doesn't work in 2013 or 2016, mostly works in 2010 but 
+						Subtitle/Subject & Author fields need to be moved 
+						after title box is moved up)
+		Banded (Word 2013/2016. Works)
 		Conservative (Word 2010. Works)
 		Contrast (Word 2010. Works)
 		Cubicles (Word 2010. Works)
 		Exposure (Word 2010. Works if you like looking sideways)
-		Facet (Word 2013. Works)
-		Filigree (Word 2013. Works)
-		Grid (Word 2010/2013.Works in 2010)
-		Integral (Word 2013. Works)
-		Ion (Dark) (Word 2013. Top date doesn't fit, box needs to be manually resized or font changed to 8 point)
-		Ion (Light) (Word 2013. Top date doesn't fit, box needs to be manually resized or font changed to 8 point)
+		Facet (Word 2013/2016. Works)
+		Filigree (Word 2013/2016. Works)
+		Grid (Word 2010/2013/2016. Works in 2010)
+		Integral (Word 2013/2016. Works)
+		Ion (Dark) (Word 2013/2016. Top date doesn't fit, box needs to be manually resized or font 
+						changed to 8 point)
+		Ion (Light) (Word 2013/2016. Top date doesn't fit, box needs to be manually resized or font 
+						changed to 8 point)
 		Mod (Word 2010. Works)
-		Motion (Word 2010/2013. Works if top date is manually changed to 36 point)
+		Motion (Word 2010/2013/2016. Works if top date is manually changed to 36 point)
 		Newsprint (Word 2010. Works but date is not populated)
 		Perspective (Word 2010. Works)
 		Pinstripes (Word 2010. Works)
-		Puzzle (Word 2010. Top date doesn't fit, box needs to be manually resized or font changed to 14 point)
-		Retrospect (Word 2013. Works)
-		Semaphore (Word 2013. Works)
-		Sideline (Word 2010/2013. Doesn't work in 2013, works in 2010)
-		Slice (Dark) (Word 2013. Doesn't work)
-		Slice (Light) (Word 2013. Doesn't work)
+		Puzzle (Word 2010. Top date doesn't fit, box needs to be manually resized or font 
+					changed to 14 point)
+		Retrospect (Word 2013/2016. Works)
+		Semaphore (Word 2013/2016. Works)
+		Sideline (Word 2010/2013/2016. Doesn't work in 2013 or 2016, works in 2010)
+		Slice (Dark) (Word 2013/2016. Doesn't work)
+		Slice (Light) (Word 2013/2016. Doesn't work)
 		Stacks (Word 2010. Works)
 		Tiles (Word 2010. Date doesn't fit unless changed to 26 point)
 		Transcend (Word 2010. Works)
-		ViewMaster (Word 2013. Works)
-		Whisp (Word 2013. Works)
+		ViewMaster (Word 2013/2016. Works)
+		Whisp (Word 2013/2016. Works)
+		
 	Default value is Sideline.
 	This parameter has an alias of CP.
+	This parameter is only valid with the MSWORD and PDF output parameters.
 .PARAMETER UserName
 	User name to use for the Cover Page and Footer.
 	Default value is contained in $env:username
@@ -261,9 +269,9 @@
 	No objects are output from this script.  This script creates a Word or PDF document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.51
+	VERSION: 1.52
 	AUTHOR: Jacob Rutski
-	LASTEDIT: July 20, 2015
+	LASTEDIT: October 5, 2015
 
 #>
 
@@ -391,6 +399,9 @@ Param(
 #-Removed almost all of the extra PCLI verbose messages - Thanks @carlwebster!!
 #-Set Issues parameter to disable full run
 #
+#Version 1.5.2 5-Oct-2015
+#	Added support for Word 2016
+
 #endregion
 
 #region initial variable testing and setup
@@ -539,6 +550,7 @@ If($MSWord -or $PDF)
 	[int]$wdWord2007 = 12
 	[int]$wdWord2010 = 14
 	[int]$wdWord2013 = 15
+	[int]$wdWord2016 = 16
 	[int]$wdFormatDocumentDefault = 16
 	[int]$wdFormatPDF = 17
 	#http://blogs.technet.com/b/heyscriptingguy/archive/2006/03/01/how-can-i-right-align-a-single-column-in-a-word-table.aspx
@@ -755,7 +767,14 @@ Function ValidateCoverPage
 	Switch ($CultureCode)
 	{
 		'ca-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2016)
+				{
+					$xArray = ("Austin", "En bandes", "Faceta", "Filigrana",
+					"Integral", "Ió (clar)", "Ió (fosc)", "Línia lateral",
+					"Moviment", "Quadrícula", "Retrospectiu", "Sector (clar)",
+					"Sector (fosc)", "Semàfor", "Visualització principal", "Whisp")
+				}
+				ElseIf($xWordVersion -eq $wdWord2013)
 				{
 					$xArray = ("Austin", "En bandes", "Faceta", "Filigrana",
 					"Integral", "Ió (clar)", "Ió (fosc)", "Línia lateral",
@@ -773,7 +792,14 @@ Function ValidateCoverPage
 			}
 
 		'da-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2016)
+				{
+					$xArray = ("Austin", "BevægElse", "Brusen", "Facet", "Filigran", 
+					"Gitter", "Integral", "Ion (lys)", "Ion (mørk)", 
+					"Retro", "Semafor", "Sidelinje", "Stribet", 
+					"Udsnit (lys)", "Udsnit (mørk)", "Visningsmaster")
+				}
+				ElseIf($xWordVersion -eq $wdWord2013)
 				{
 					$xArray = ("BevægElse", "Brusen", "Ion (lys)", "Filigran",
 					"Retro", "Semafor", "Visningsmaster", "Integral",
@@ -790,7 +816,15 @@ Function ValidateCoverPage
 			}
 
 		'de-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2016)
+				{
+					$xArray = ("Austin", "Bewegung", "Facette", "Filigran", 
+					"Gebändert", "Integral", "Ion (dunkel)", "Ion (hell)", 
+					"Pfiff", "Randlinie", "Raster", "Rückblick", 
+					"Segment (dunkel)", "Segment (hell)", "Semaphor", 
+					"ViewMaster")
+				}
+				ElseIf($xWordVersion -eq $wdWord2013)
 				{
 					$xArray = ("Semaphor", "Segment (hell)", "Ion (hell)",
 					"Raster", "Ion (dunkel)", "Filigran", "Rückblick", "Pfiff",
@@ -807,7 +841,7 @@ Function ValidateCoverPage
 			}
 
 		'en-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 				{
 					$xArray = ("Austin", "Banded", "Facet", "Filigree", "Grid",
 					"Integral", "Ion (Dark)", "Ion (Light)", "Motion", "Retrospect",
@@ -823,7 +857,14 @@ Function ValidateCoverPage
 			}
 
 		'es-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2016)
+				{
+					$xArray = ("Austin", "Con bandas", "Cortar (oscuro)", "Cuadrícula", 
+					"Whisp", "Faceta", "Filigrana", "Integral", "Ion (claro)", 
+					"Ion (oscuro)", "Línea lateral", "Movimiento", "Retrospectiva", 
+					"Semáforo", "Slice (luz)", "Vista principal", "Whisp")
+				}
+				ElseIf($xWordVersion -eq $wdWord2013)
 				{
 					$xArray = ("Whisp", "Vista principal", "Filigrana", "Austin",
 					"Slice (luz)", "Faceta", "Semáforo", "Retrospectiva", "Cuadrícula",
@@ -840,7 +881,14 @@ Function ValidateCoverPage
 			}
 
 		'fi-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2016)
+				{
+					$xArray = ("Filigraani", "Integraali", "Ioni (tumma)",
+					"Ioni (vaalea)", "Opastin", "Pinta", "Retro", "Sektori (tumma)",
+					"Sektori (vaalea)", "Vaihtuvavärinen", "ViewMaster", "Austin",
+					"Kuiskaus", "Liike", "Ruudukko", "Sivussa")
+				}
+				ElseIf($xWordVersion -eq $wdWord2013)
 				{
 					$xArray = ("Filigraani", "Integraali", "Ioni (tumma)",
 					"Ioni (vaalea)", "Opastin", "Pinta", "Retro", "Sektori (tumma)",
@@ -857,24 +905,25 @@ Function ValidateCoverPage
 			}
 
 		'fr-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 				{
-					$xArray = ("ViewMaster", "Secteur (foncé)", "Sémaphore",
-					"Rétrospective", "Ion (foncé)", "Ion (clair)", "Intégrale",
-					"Filigrane", "Facette", "Secteur (clair)", "À bandes", "Austin",
-					"Guide", "Whisp", "Lignes latérales", "Quadrillage")
+					$xArray = ("À bandes", "Austin", "Facette", "Filigrane", 
+					"Guide", "Intégrale", "Ion (clair)", "Ion (foncé)", 
+					"Lignes latérales", "Quadrillage", "Rétrospective", "Secteur (clair)", 
+					"Secteur (foncé)", "Sémaphore", "ViewMaster", "Whisp")
 				}
 				ElseIf($xWordVersion -eq $wdWord2010)
 				{
-					$xArray = ("Mosaïques", "Ligne latérale", "Annuel", "Perspective",
-					"Contraste", "Emplacements de bureau", "Moderne", "Blocs empilés",
-					"Rayures fines", "Austère", "Transcendant", "Classique", "Quadrillage",
-					"Exposition", "Alphabet", "Mots croisés", "Papier journal", "Austin", "Guide")
+					$xArray = ("Alphabet", "Annuel", "Austère", "Austin", 
+					"Blocs empilés", "Classique", "Contraste", "Emplacements de bureau", 
+					"Exposition", "Guide", "Ligne latérale", "Moderne", 
+					"Mosaïques", "Mots croisés", "Papier journal", "Perspective",
+					"Quadrillage", "Rayures fines", "Transcendant")
 				}
 			}
 
 		'nb-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 				{
 					$xArray = ("Austin", "BevegElse", "Dempet", "Fasett", "Filigran",
 					"Integral", "Ion (lys)", "Ion (mørk)", "Retrospekt", "Rutenett",
@@ -891,7 +940,7 @@ Function ValidateCoverPage
 			}
 
 		'nl-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 				{
 					$xArray = ("Austin", "Beweging", "Facet", "Filigraan", "Gestreept",
 					"Integraal", "Ion (donker)", "Ion (licht)", "Raster",
@@ -909,10 +958,10 @@ Function ValidateCoverPage
 			}
 
 		'pt-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 				{
 					$xArray = ("Animação", "Austin", "Em Tiras", "Exibição Mestra",
-					"Faceta", "Fatia (Clara)", "Fatia (Escura)", "Filete", "Filigrana",
+					"Faceta", "Fatia (Clara)", "Fatia (Escura)", "Filete", "Filigrana", 
 					"Grade", "Integral", "Íon (Claro)", "Íon (Escuro)", "Linha Lateral",
 					"Retrospectiva", "Semáforo")
 				}
@@ -926,7 +975,7 @@ Function ValidateCoverPage
 			}
 
 		'sv-'	{
-				If($xWordVersion -eq $wdWord2013)
+				If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 				{
 					$xArray = ("Austin", "Band", "Fasett", "Filigran", "Integrerad", "Jon (ljust)",
 					"Jon (mörkt)", "Knippe", "Rutnät", "RörElse", "Sektor (ljus)", "Sektor (mörk)",
@@ -942,11 +991,12 @@ Function ValidateCoverPage
 			}
 
 		Default	{
-					If($xWordVersion -eq $wdWord2013)
+					If($xWordVersion -eq $wdWord2013 -or $xWordVersion -eq $wdWord2016)
 					{
-						$xArray = ("Austin", "Banded", "Facet", "Filigree", "Grid", "Integral",
-						"Ion (Dark)", "Ion (Light)", "Motion", "Retrospect", "Semaphore",
-						"Sideline", "Slice (Dark)", "Slice (Light)", "ViewMaster", "Whisp")
+						$xArray = ("Austin", "Banded", "Facet", "Filigree", "Grid",
+						"Integral", "Ion (Dark)", "Ion (Light)", "Motion", "Retrospect",
+						"Semaphore", "Sideline", "Slice (Dark)", "Slice (Light)", "ViewMaster",
+						"Whisp")
 					}
 					ElseIf($xWordVersion -eq $wdWord2010)
 					{
@@ -1076,7 +1126,11 @@ Function SetupWord
 	SetWordHashTable $Script:WordCultureCode
 	
 	[int]$Script:WordVersion = [int]$Script:Word.Version
-	If($Script:WordVersion -eq $wdWord2013)
+	If($Script:WordVersion -eq $wdWord2016)
+	{
+		$Script:WordProduct = "Word 2016"
+	}
+	ElseIf($Script:WordVersion -eq $wdWord2013)
 	{
 		$Script:WordProduct = "Word 2013"
 	}
@@ -1165,7 +1219,7 @@ Function SetupWord
 			'fr-'	{
 					If($CoverPage -eq "Sideline")
 					{
-						If($Script:WordVersion -eq $wdWord2013)
+						If($Script:WordVersion -eq $wdWord2013 -or $Script:WordVersion -eq $wdWord2016)
 						{
 							$CoverPage = "Lignes latérales"
 							$CPChanged = $True
@@ -3047,7 +3101,7 @@ Function SaveandCloseDocumentandShutdownWord
 			$Script:Doc.SaveAs([REF]$Script:FileName2, [ref]$saveFormat)
 		}
 	}
-	ElseIf($Script:WordVersion -eq $wdWord2013)
+	ElseIf($Script:WordVersion -eq $wdWord2013 -or $Script:WordVersion -eq $wdWord2016)
 	{
 		If($PDF)
 		{
