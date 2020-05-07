@@ -335,9 +335,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.6
+	VERSION: 1.61
 	AUTHOR: Jacob Rutski
-	LASTEDIT: February 23, 2016
+	LASTEDIT: April 21, 2016
 #>
 
 #endregion
@@ -499,7 +499,9 @@ Param(
 #Version 1.6
 #-Added several advanced settings for VMs and VMHosts
 #-Updated to ScriptTemplate 21-Feb-2016
-
+#
+#Version 1.61 Apr 21, 2016
+#-Fixed title and subtitle for the Word/PDF cover page
 #endregion
 
 #region initial variable testing and setup
@@ -6961,8 +6963,8 @@ Write-Verbose "$(Get-Date): Finishing up document"
 #end of document processing
 
 ###Change the two lines below for your script###
-$AbstractTitle = "Template Script Report"
-$SubjectTitle = "Sample Template Script Report"
+$AbstractTitle = "VMware Inventory Report"
+$SubjectTitle = "VMware vCenter Inventory Report"
 
 UpdateDocumentProperties $AbstractTitle $SubjectTitle
 
