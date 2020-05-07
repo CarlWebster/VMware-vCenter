@@ -104,6 +104,10 @@
     This parameter is still beta and is disabled by default
     Gathers data from VMware stats to build performance graphs for hosts and VMs
     DOTNET chart controls are required
+.PARAMETER Issues
+    This parameter is still beta and is disabled by default
+    Gathers basic summary data as well as specific issues data with the idea to be run on a set schedule
+    This parameter does not currently support Import\Export
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
@@ -257,9 +261,9 @@
 	No objects are output from this script.  This script creates a Word or PDF document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.5
+	VERSION: 1.51
 	AUTHOR: Jacob Rutski
-	LASTEDIT: July 14, 2015
+	LASTEDIT: July 20, 2015
 
 #>
 
@@ -382,6 +386,11 @@ Param(
 #-Added vCenter permissions and non-standard roles
 #-Added DRS Rules and Groups
 #
+#Version 1.5.1
+#-Cleaned up some extra PCLI calls - set to variables
+#-Removed almost all of the extra PCLI verbose messages - Thanks @carlwebster!!
+#-Set Issues parameter to disable full run
+#
 #endregion
 
 #region initial variable testing and setup
@@ -476,7 +485,13 @@ Else
 	Write-Error "Unable to determine output parameter.  Script cannot continue"
 	Exit
 }
-
+If($Issues)
+{
+    Write-Verbose "$(Get-Date): Issues is set"
+    $Full = $False
+    $Import = $False
+    $Export = $False
+}
 If($Full)
 {
     Write-Warning ""
@@ -2583,7 +2598,7 @@ Function VISetup( [string] $VIServer )
 
     If (Test-Path $PCLIPath)
     {
-            Import-Module $PCLIPath
+            Import-Module $PCLIPath *>$Null
     }
     Else
     {
@@ -2591,7 +2606,7 @@ Function VISetup( [string] $VIServer )
             Exit
         }
 
-    $xPowerCLIVer = Get-PowerCLIVersion
+    $xPowerCLIVer = Get-PowerCLIVersion 4>$Null
     Write-Verbose "$(Get-Date): Loaded PowerCLI version $($xPowerCLIVer.Major).$($xPowerCLIVer.Minor)"
     If($xPowerCLIVer.Major -lt 5 -or ($xPowerCLIVer.Major -eq 5 -and $xPowerCLIVer.Minor -lt 1))
     {
@@ -2601,11 +2616,11 @@ Function VISetup( [string] $VIServer )
     
     #Set PCLI defaults
     Write-Verbose "$(Get-Date): Setting PowerCLI global Configuration"
-    Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings $False -Confirm:$False
+    Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings $False -Confirm:$False *>$Null
 
     #Connect to VI Server
     Write-Verbose "$(Get-Date): Connecting to VIServer: $($VIServer)"
-    $Script:VCObj = Connect-VIServer $VIServer
+    $Script:VCObj = Connect-VIServer $VIServer 4>$Null
 
     #Verify we successfully connected
     If(!($?))
@@ -2628,36 +2643,39 @@ Function SetGlobals
     {
         If(!(Test-Path .\Export))
         {
-            New-Item .\Export -type directory
+            New-Item .\Export -type directory *>$Null
         }
-        $Script:VMHosts = Get-VMHost | Sort Name
-        Get-Cluster | Sort Name | Export-Clixml .\Export\Cluster.xml
-        Get-VMHost | Sort Name | Export-Clixml .\Export\VMHost.xml
-        Get-Datastore | Sort Name | Export-Clixml .\Export\Datastore.xml
-        Get-Snapshot -VM * | Export-Clixml .\Export\Snapshot.xml
-        Get-AdvancedSetting -Entity $VIServerName | Where {$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\VCenterAdv.xml
-        Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name | Where {$_.Name -like "Syslog.global.logdir" -or $_.Name -like "Syslog.global.loghost"} | Export-Clixml .\Export\HostsAdv.xml
-        Get-VMHostService -VMHost * | Export-Clixml .\Export\HostService.xml
-        Get-VM | Sort Name  | Export-Clixml .\Export\VM.xml
-        Get-ResourcePool | Sort Name | Export-Clixml .\Export\ResourcePool.xml
-        Get-View (Get-View ServiceInstance).Content.PerfManager | Export-Clixml .\Export\VCenterStats.xml
-        Get-View ServiceInstance | Export-Clixml .\Export\ServiceInstance.xml
-        (((Get-View extensionmanager).ExtensionList).Description) | Export-Clixml .\Export\Plugins.xml
-        Get-View (Get-View serviceInstance | Select -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml
-        Get-VIPermission | Sort Entity | Export-Clixml .\Export\VIPerms.xml
-        Get-VIRole | Sort Name | Export-Clixml .\Export\VIRoles.xml
-        BuildDRSRules | Export-Clixml .\Export\DRSRules.xml
+        Write-Verbose "$(Get-Date): Gathering Compute data"
+        $Script:VMHosts = Get-VMHost 4>$Null| Sort Name 
+        Get-Cluster 4>$Null| Sort Name | Export-Clixml .\Export\Cluster.xml 4>$Null
+        $VMHosts | Sort Name | Export-Clixml .\Export\VMHost.xml 4>$Null
+        Get-Datastore 4>$Null| Sort Name | Export-Clixml .\Export\Datastore.xml 4>$Null
+        Get-Snapshot -VM * 4>$Null| Export-Clixml .\Export\Snapshot.xml 4>$Null
+        Get-AdvancedSetting -Entity $VIServerName 4>$Null| Where {$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\VCenterAdv.xml 4>$Null
+        Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null| Where {$_.Name -like "Syslog.global.logdir" -or $_.Name -like "Syslog.global.loghost"} | Export-Clixml .\Export\HostsAdv.xml 4>$Null
+        Get-VMHostService -VMHost * 4>$Null| Export-Clixml .\Export\HostService.xml 4>$Null
+        Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
+        $Script:VirtualMachines = Get-VM 4>$Null| Sort Name
+        $VirtualMachines | Export-Clixml .\Export\VM.xml 4>$Null
+        Get-ResourcePool 4>$Null| Sort Name | Export-Clixml .\Export\ResourcePool.xml 4>$Null
+        Get-View 4>$Null(Get-View ServiceInstance 4>$Null).Content.PerfManager | Export-Clixml .\Export\VCenterStats.xml 4>$Null
+        Get-View ServiceInstance 4>$Null| Export-Clixml .\Export\ServiceInstance.xml 4>$Null
+        (((Get-View extensionmanager).ExtensionList).Description 4>$Null) | Export-Clixml .\Export\Plugins.xml 4>$Null
+        Get-View 4>$Null(Get-View serviceInstance 4>$Null| Select -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml 4>$Null
+        Get-VIPermission 4>$Null| Sort Entity | Export-Clixml .\Export\VIPerms.xml 4>$Null
+        Get-VIRole 4>$Null| Sort Name | Export-Clixml .\Export\VIRoles.xml 4>$Null
+        BuildDRSRules | Export-Clixml .\Export\DRSRules.xml 4>$Null
         If($Full)
         {
             If(!(Test-Path .\Export\VMDetail))
             {
-                New-Item .\Export\VMDetail -type directory
-            }  
-            $Script:VirtualMachines = Get-VM | Sort Name          
-            Get-VMHostNetworkAdapter | Export-Clixml .\Export\HostNetwork.xml
-            Get-VirtualSwitch | Export-Clixml .\Export\vSwitch.xml
-            Get-NetworkAdapter * | Export-Clixml .\Export\NetworkAdapter.xml
-            Get-VirtualPortGroup | Export-Clixml .\Export\PortGroup.xml
+                New-Item .\Export\VMDetail -type directory *>$Null
+            }      
+            Write-Verbose "$(Get-Date): Gathering Networking data"
+            Get-VMHostNetworkAdapter 4>$Null| Export-Clixml .\Export\HostNetwork.xml 4>$Null
+            Get-VirtualSwitch 4>$Null| Export-Clixml .\Export\vSwitch.xml 4>$Null
+            Get-NetworkAdapter * 4>$Null| Export-Clixml .\Export\NetworkAdapter.xml 4>$Null
+            Get-VirtualPortGroup 4>$Null| Export-Clixml .\Export\PortGroup.xml 4>$Null
         }
     }
     ElseIf($Import)
@@ -2702,37 +2720,42 @@ Function SetGlobals
     }
     ElseIf($Issues)
     {
-        $Script:Clusters = Get-Cluster | Sort Name
-        $Script:VMHosts = Get-VMHost | Sort Name
-        $Script:Datastores = Get-Datastore | Sort Name
-        $Script:VirtualMachines = Get-VM | Sort Name
-        $Script:Snapshots = Get-Snapshot -VM * | Sort VM
+        Write-Verbose "$(Get-Date): Gathering Compute data"
+        $Script:Clusters = Get-Cluster 4>$Null | Sort Name
+        $Script:VMHosts = Get-VMHost 4>$Null | Sort Name
+        $Script:Datastores = Get-Datastore 4>$Null | Sort Name
+        Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
+        $Script:VirtualMachines = Get-VM 4>$Null | Sort Name
+        $Script:Snapshots = Get-Snapshot -VM * 4>$Null | Sort VM
     }
     Else
     {
-        $Script:Clusters = Get-Cluster | Sort Name
-        $Script:VMHosts = Get-VMHost | Sort Name
-        $Script:Datastores = Get-Datastore | Sort Name
-        $Script:HostAdvSettings = Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name
-        $Script:VCAdvSettings = Get-AdvancedSetting -Entity $VIServerName
-        $Script:HostServices = Get-VMHostService -VMHost *
-        $Script:VirtualMachines = Get-VM | Sort Name    
-        $Script:Resources = Get-ResourcePool | Sort Name
-        $Script:VMPlugins = (((Get-View extensionmanager).ExtensionList).Description)
-        $Script:ServiceInstance = Get-View ServiceInstance
-        $Script:VCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager
-        $Script:VCLicensing = Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager
-        $Script:VIPerms = Get-VIPermission | Sort Entity
-        $Script:VIRoles = Get-VIRole | Sort Name
+        Write-Verbose "$(Get-Date): Gathering Compute data"
+        $Script:Clusters = Get-Cluster 4>$Null| Sort Name 
+        $Script:VMHosts = Get-VMHost 4>$Null| Sort Name 
+        $Script:Datastores = Get-Datastore 4>$Null| Sort Name 
+        $Script:HostAdvSettings = Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null
+        $Script:VCAdvSettings = Get-AdvancedSetting -Entity $VIServerName 4>$Null
+        $Script:HostServices = Get-VMHostService -VMHost * 4>$Null
+        Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
+        $Script:VirtualMachines = Get-VM 4>$Null| Sort Name 
+        $Script:Resources = Get-ResourcePool 4>$Null| Sort Name 
+        $Script:VMPlugins = (((Get-View extensionmanager 4>$Null).ExtensionList).Description) 
+        $Script:ServiceInstance = Get-View ServiceInstance 4>$Null
+        $Script:VCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager 4>$Null
+        $Script:VCLicensing = Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager 4>$Null
+        $Script:VIPerms = Get-VIPermission 4>$Null| Sort Entity 
+        $Script:VIRoles = Get-VIRole 4>$Null| Sort Name 
         $Script:DRSRules = BuildDRSGroupsRules
 
         If($Full)
         {
-            $Script:Snapshots = Get-Snapshot -VM *
-            $Script:HostNetAdapters = Get-VMHostNetworkAdapter
-            $Script:VirtualSwitches = Get-VirtualSwitch
-            $Script:VMNetworkAdapters = Get-NetworkAdapter *
-            $Script:VirtualPortGroups = Get-VirtualPortGroup
+            $Script:Snapshots = Get-Snapshot -VM * 4>$Null
+            Write-Verbose "$(Get-Date): Gathering Networking data"
+            $Script:HostNetAdapters = Get-VMHostNetworkAdapter 4>$Null
+            $Script:VirtualSwitches = Get-VirtualSwitch 4>$Null
+            $Script:VMNetworkAdapters = Get-NetworkAdapter * 4>$Null
+            $Script:VirtualPortGroups = Get-VirtualPortGroup 4>$Null
         }
     }
 
@@ -2878,7 +2901,7 @@ Function AddStatsChart
 Function BuildDRSGroupsRules
 {
     ## From http://www.vnugglets.com/2011/07/backupexport-full-drs-rule-info-via.html
-    Get-View -ViewType ClusterComputeResource -Property Name, ConfigurationEx | %{
+    Get-View -ViewType ClusterComputeResource -Property Name, ConfigurationEx 4>$Null| %{
         ## if the cluster has any DRS rules
         if ($_.ConfigurationEx.Rule -ne $null) {
             $viewCurrClus = $_
@@ -2902,18 +2925,18 @@ Function BuildDRSGroupsRules
                     {$_ -is [VMware.Vim.ClusterVmHostRuleInfo]} {
                         $oRuleInfo.VMGroupName = $_.VmGroupName
                         ## get the VM group members' names
-                        $oRuleInfo.VMGroupMembers = (Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterVmGroup]) -and ($_.Name -eq $oRuleInfo.VMGroupName)}).Vm | %{$_.Name}) -join ","
+                        $oRuleInfo.VMGroupMembers = (Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterVmGroup]) -and ($_.Name -eq $oRuleInfo.VMGroupName)}).Vm 4>$Null| %{$_.Name}) -join ","
                         $oRuleInfo.AffineHostGrpName = $_.AffineHostGroupName
                         ## get affine hosts' names
-                        $oRuleInfo.AffineHostGrpMembers = if ($_.AffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AffineHostGrpName)}).Host | %{$_.Name}) -join ","}
+                        $oRuleInfo.AffineHostGrpMembers = if ($_.AffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AffineHostGrpName)}).Host 4>$Null| %{$_.Name}) -join ","}
                         $oRuleInfo.AntiAffineHostGrpName = $_.AntiAffineHostGroupName
                         ## get anti-affine hosts' names
-                        $oRuleInfo.AntiAffineHostGrpMembers = if ($_.AntiAffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AntiAffineHostGrpName)}).Host | %{$_.Name}) -join ","}
+                        $oRuleInfo.AntiAffineHostGrpMembers = if ($_.AntiAffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AntiAffineHostGrpName)}).Host 4>$Null| %{$_.Name}) -join ","}
                         break;
                     } 
                     ## if ClusterAffinityRuleSpec (or AntiAffinity), get the VM names (using Get-View)
                     {($_ -is [VMware.Vim.ClusterAffinityRuleSpec]) -or ($_ -is [VMware.Vim.ClusterAntiAffinityRuleSpec])} {
-                        $oRuleInfo.VMNames = if ($_.Vm.Count -gt 0) {(Get-View -Property Name -Id $_.Vm | %{$_.Name}) -join ","}
+                        $oRuleInfo.VMNames = if ($_.Vm.Count -gt 0) {(Get-View -Property Name -Id $_.Vm 4>$Null| %{$_.Name}) -join ","}
                     } 
                     {$_ -is [VMware.Vim.ClusterAffinityRuleSpec]} {
                         $oRuleInfo.bKeepTogether = $true
@@ -3612,7 +3635,7 @@ Function ProcessVCenter
         $RegExpObj | Add-Member -Name SQLDB -MemberType NoteProperty -Value ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Database")
         $RegExpObj | Add-Member -Name SQLServer -MemberType NoteProperty -Value ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server")
         $RegExpObj | Add-Member -Name SQLUser -MemberType NoteProperty -Value ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser")
-        $RegExpObj | Export-Clixml .\Export\RegSQL.xml
+        $RegExpObj | Export-Clixml .\Export\RegSQL.xml 4>$Null
     }
     If($MSWord -or $PDF)
     {
@@ -3847,7 +3870,7 @@ Function ProcessVCenter
         Line 0 "Licensing" 
         Line 1 ""
         Line 1 "License Name`t`t`tKey Last 5`tTotal Licenses`tLicenses Used"
-        Foreach ($LicenseMan in Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager) 
+        Foreach ($LicenseMan in $VCLicensing) 
         { 
             Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
             {
@@ -3860,7 +3883,7 @@ Function ProcessVCenter
     {
         $rowdata = @()
         $columnHeaders = @("License Name",($htmlsilver -bor $htmlbold),"Key Last 5",($htmlsilver -bor $htmlbold),"Total Licenses",($htmlsilver -bor $htmlbold),"Licenses Used",($htmlsilver -bor $htmlbold))
-        Foreach ($LicenseMan in Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager) 
+        Foreach ($LicenseMan in $VCLicensing) 
         { 
             Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
             {
@@ -4087,14 +4110,14 @@ Function OutputVMHosts
 {
     Param([object] $VMHost)
     $xHostService = ($HostServices) | Where {$_.VMHostId -eq $VMHost.Id}
-    If($Export) {(Get-VMHostNtpServer -VMHost $VMHost.Name) -join ", " | Export-Clixml .\Export\$($VMHost.Name)-NTP.xml}
+    If($Export) {(Get-VMHostNtpServer -VMHost $VMHost.Name 4>$Null) -join ", " | Export-Clixml .\Export\$($VMHost.Name)-NTP.xml 4>$Null} 
     $xHostAdvanced = ($HostAdvSettings) | Where {$_.Entity -like $VMHost.Name}
     ## Set vmhoststorage variable - will fail if host has no devices (headless - boot from USB\SD using NFS only)
     If($VMHost.PowerState -eq "PoweredOn")
     {
         If($Export)
         {
-            Get-VMHostStorage -VMHost $VMHost | Where {$_.ScsiLun.LunType -notlike "*cdrom*"} | Export-Clixml .\Export\$($VMHost.Name)-Storage.xml
+            Get-VMHostStorage -VMHost $VMHost 4>$Null| Where {$_.ScsiLun.LunType -notlike "*cdrom*"} | Export-Clixml .\Export\$($VMHost.Name)-Storage.xml 4>$Null
             If(!$?)
             {
                     Write-Warning ""
@@ -4108,7 +4131,7 @@ Function OutputVMHosts
         }
         Else
         {
-            $xVMHostStorage = Get-VMHostStorage -VMHost $VMHost | Where {$_.ScsiLun.LunType -notlike "*cdrom*"} 4>$null
+            $xVMHostStorage = Get-VMHostStorage -VMHost $VMHost 4>$Null| Where {$_.ScsiLun.LunType -notlike "*cdrom*"} 4>$null
             If(!$?)
             {
                     Write-Warning ""
@@ -4152,7 +4175,7 @@ Function OutputVMHosts
         }
         Else
         {
-            $xNTPServers = (Get-VMHostNtpServer -VMHost $VMHost.Name) -join ", "
+            $xNTPServers = (Get-VMHostNtpServer -VMHost $VMHost.Name 4>$Null) -join ", " 4>$Null
         }
     }
     Else
@@ -5594,7 +5617,7 @@ Function OutputVMPortGroups
 
 Function ProcessStandardVSwitch
 {
-    $DvSwitches = Get-VDSwitch
+    $DvSwitches = Get-VDSwitch 4>$Null
     If($DvSwitches)
     {
         ## DV Switches found - process them
@@ -5761,9 +5784,9 @@ Function OutputStandardVSwitch
 Function OutputDVSwitching
 {
     Param([object] $dvSwitches)
-    #$dvPortGroups = Get-VDPortgroup
+    Write-Verbose "$(Get-Date): Gathering DV Switch data"
 
-    $VdPortGroups = Get-VDPortgroup
+    $VdPortGroups = Get-VDPortgroup 4>$Null
     If($MSWord -or $PDF)
     {
 
@@ -5810,9 +5833,10 @@ Function OutputDVSwitching
 	    ## Seed the row index from the second row
 	    [int] $CurrentServiceIndex = 2;
 
+        Write-Verbose "$(Get-Date): Gathering DV Port data"
         ForEach($vdPortGroup in $VdPortGroups)
         {
-            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name | Where {$_.ConnectedEntity -ne $null}))
+            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name 4>$null| Where {$_.ConnectedEntity -ne $null}))
             {
                 #If($vdPort.ConnectedEntity -like "*vmk*"){$xPortName = "VMKernel"}Else{$xPortName = $vdPort.Name}
                 If($VdPort.IsLinkUp){$xLinkUp = "Up"}Else{$xLinkUp = "Down"}
@@ -5867,9 +5891,10 @@ Function OutputDVSwitching
         $rowData = @()
         $columnHeaders = @("Host Name",($htmlsilver -bor $htmlbold),"Entity",($htmlsilver -bor $htmlbold),"Port Group",($htmlsilver -bor $htmlbold),"Status",($htmlsilver -bor $htmlbold),"MAC Address",($htmlsilver -bor $htmlbold),"DV Switch",($htmlsilver -bor $htmlbold))
 
+        Write-Verbose "$(Get-Date): Gathering DV Port data"
         ForEach($vdPortGroup in $VdPortGroups)
         {
-            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name | Where {$_.ConnectedEntity -ne $null}))
+            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name 4>$null| Where {$_.ConnectedEntity -ne $null}))
             {
                 If($VdPort.IsLinkUp){$xLinkUp = "Up"}Else{$xLinkUp = "Down"}
                 $rowData += @(,($vdport.ProxyHost,$htmlwhite,$vdport.ConnectedEntity,$htmlwhite,$vdport.Portgroup,$htmlwhite,$xLinkUp,$htmlwhite,$vdport.MacAddress,$htmlwhite,$vdport.Switch,$htmlwhite))
@@ -6125,7 +6150,7 @@ Function OutputVirtualMachines
     If($VM.Guest.State -eq "Running")
     {
         $xVMDetail = $True
-        If($Export){$VM.Guest | Export-Clixml .\Export\VMDetail\$($VM.Name)-Detail.xml}
+        If($Export){$VM.Guest | Export-Clixml .\Export\VMDetail\$($VM.Name)-Detail.xml 4>$Null}
         If($Import){$GuestImport = Import-Clixml .\Export\VMDetail\$($VM.Name)-Detail.xml}
     }
 
@@ -6487,7 +6512,7 @@ If($Full)
 
 #region finish script
 #Disconnect from VCenter
-If(!($Import)){Disconnect-VIServer -confirm:$false}
+If(!($Import)){Disconnect-VIServer -confirm:$false 4>$Null}
 
 Write-Verbose "$(Get-Date): Finishing up document"
 #end of document processing
