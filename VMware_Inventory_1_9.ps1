@@ -7,12 +7,15 @@
 
 .SYNOPSIS
 	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and 
-	Microsoft Word 2010, 2013 or 2016.
+	Microsoft Word, PDF, plain text, or HTML.
 .DESCRIPTION
 	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and 
-	Microsoft Word and PowerShell.
-	Creates a Word document named after the vCenter server.
-	Document includes a Cover Page, Table of Contents and Footer.
+	Microsoft Word, PDF, plain text, or HTML.
+
+	Creates a document named after the vCenter server.
+	
+	The Word/PDF Document includes a Cover Page, Table of Contents and Footer.
+	
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
 		Chinese
@@ -26,11 +29,33 @@
 		Portuguese
 		Spanish
 		Swedish
-		
-.PARAMETER VIServerName
-    Name of the vCenter Server to connect to.
-    This parameter is mandatory and does not have a default value.
-    FQDN should be used; hostname can be used if it can be resolved correctly.
+.PARAMETER HTML
+	Creates an HTML file with an .html extension.
+	This parameter is disabled by default.
+.PARAMETER MSWord
+	SaveAs DOCX file
+	This parameter is set True if no other output format is selected.
+.PARAMETER PDF
+	SaveAs PDF file instead of DOCX file.
+	This parameter is disabled by default.
+	The PDF file is roughly 5X to 10X larger than the DOCX file.
+	This parameter requires Microsoft Word to be installed.
+	This parameter uses the Word SaveAs PDF capability.
+.PARAMETER Text
+	Creates a formatted text file with a .txt extension.
+	This parameter is disabled by default.
+.PARAMETER AddDateTime
+	Adds a date time stamp to the end of the file name.
+	Time stamp is in the format of yyyy-MM-dd_HHmm.
+	June 1, 2020 at 6PM is 2020-06-01_1800.
+	Output filename will be ReportName_2020-06-01_1800.docx (or .pdf).
+	This parameter is disabled by default.
+.PARAMETER Chart
+    This parameter is still beta and is disabled by default
+    Gathers data from VMware stats to build performance graphs for hosts and VMs
+    DOTNET chart controls are required
+	
+	This parameter is supported for MSWord and PDF only
 .PARAMETER CompanyAddress
 	Company Address to use for the Cover Page, if the Cover Page has the Address 
 	field.
@@ -133,25 +158,13 @@
 	The default value is Sideline.
 	This parameter has an alias of CP.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER UserName
-	Username to use for the Cover Page and Footer.
-	Default value is contained in $env:username
-	This parameter has an alias of UN.
-	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER HTML
-	Creates an HTML file with an .html extension.
-	This parameter is disabled by default.
-.PARAMETER MSWord
-	SaveAs DOCX file
-	This parameter is set True if no other output format is selected.
-.PARAMETER PDF
-	SaveAs PDF file instead of DOCX file.
-	This parameter is disabled by default.
-	The PDF file is roughly 5X to 10X larger than the DOCX file.
-	This parameter requires Microsoft Word to be installed.
-	This parameter uses the Word SaveAs PDF capability.
-.PARAMETER Text
-	Creates a formatted text file with a .txt extension.
+.PARAMETER Dev
+	Clears errors at the beginning of the script.
+	Outputs all errors to a text file at the end of the script.
+	
+	This is used when the script developer requests more troubleshooting data.
+	Text file is placed in the same folder from where the script is run.
+	
 	This parameter is disabled by default.
 .PARAMETER Export
     Runs this script gathering all required data from PowerCLI as normal, then 
@@ -159,38 +172,43 @@
     Once the export is completed, it can be copied offline to be run later with 
 	the -Import parameter
     This parameter overrides all other output formats
-.PARAMETER Import
-    Runs this script gathering all required data from a previously run Export
-    Export directory must be present in the same directory as the script itself
-    Does not require PowerCLI or a VIServerName to run in Import mode
+.PARAMETER Folder
+	Specifies the optional output folder to save the output report. 
 .PARAMETER Full
 	Runs a full inventory for the Hosts, clusters, resource pools, networking and 
 	virtual machines.
 	This parameter is disabled by default - only a summary is run when this 
 	parameter is not specified.
-.PARAMETER PCLICustom
-    Prompts user to locate the PowerCLI Scripts directory in a non-default 
-	installation
-    This parameter is disabled by default
-.PARAMETER Chart
-    This parameter is still beta and is disabled by default
-    Gathers data from VMware stats to build performance graphs for hosts and VMs
-    DOTNET chart controls are required
-	
-	This parameter is supported for MSWord and PDF only
+.PARAMETER Import
+    Runs this script gathering all required data from a previously run Export
+    Export directory must be present in the same directory as the script itself
+    Does not require PowerCLI or a VIServerName to run in Import mode
 .PARAMETER Issues
     This parameter is still beta and is disabled by default
     Gathers basic summary data as well as specific issues data with the idea to be 
 	run on a set schedule
     This parameter does not currently support Import\Export
-.PARAMETER AddDateTime
-	Adds a date time stamp to the end of the file name.
-	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2020 at 6PM is 2020-06-01_1800.
-	Output filename will be ReportName_2020-06-01_1800.docx (or .pdf).
+.PARAMETER Log
+	Generates a log file for troubleshooting.
+.PARAMETER PCLICustom
+    Prompts user to locate the PowerCLI Scripts directory in a non-default 
+	installation
+    This parameter is disabled by default
+.PARAMETER ScriptInfo
+	Outputs information about the script to a text file.
+	Text file is placed in the same folder from where the script is run.
+	
 	This parameter is disabled by default.
-.PARAMETER Folder
-	Specifies the optional output folder to save the output report. 
+	This parameter has an alias of SI.
+.PARAMETER UserName
+	Username to use for the Cover Page and Footer.
+	Default value is contained in $env:username
+	This parameter has an alias of UN.
+	This parameter is only valid with the MSWORD and PDF output parameters.
+.PARAMETER VIServerName
+    Name of the vCenter Server to connect to.
+    This parameter is mandatory and does not have a default value.
+    FQDN should be used; hostname can be used if it can be resolved correctly.
 .PARAMETER SmtpServer
 	Specifies the optional email server to send the output report. 
 .PARAMETER SmtpPort
@@ -205,22 +223,6 @@
 .PARAMETER To
 	Specifies the username for the To email address.
 	If SmtpServer is used, this is a required parameter.
-.PARAMETER Dev
-	Clears errors at the beginning of the script.
-	Outputs all errors to a text file at the end of the script.
-	
-	This is used when the script developer requests more troubleshooting data.
-	Text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-.PARAMETER ScriptInfo
-	Outputs information about the script to a text file.
-	Text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of SI.
-.PARAMETER Log
-	Generates a log file for troubleshooting.
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1
 	
@@ -370,43 +372,94 @@
 	
 	Output file will be saved in the path \\FileServer\ShareName
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer mail.domain.tld 
-	-From XDAdmin@domain.tld -To ITGroup@domain.tld -VIServerName testvc.lab.com
-	
-	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
-	"Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
+	PS C:\PSScript > .\VMware_Inventory.ps1 
+	-SmtpServer mail.domain.tld
+	-From XDAdmin@domain.tld 
+	-To ITGroup@domain.tld	
 
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-	
-	Script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
+	The script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
 	sending to ITGroup@domain.tld.
-	Script will use the default SMTP port 25 and will not use SSL.
-	If the current user's credentials are not valid to send email, the user will be 
-	prompted to enter valid credentials.
-.EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer smtp.office365.com 
-	-SmtpPort 587 -UseSSL -From admin@serioustek.net -To ITGroup@CarlWebster.com 
-	-VIServerName testvc.lab.com
-	
-	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
-	"Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
 
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	The script will use the default SMTP port 25 and will not use SSL.
+
+	If the current user's credentials are not valid to send email, 
+	the user will be prompted to enter valid credentials.
+.EXAMPLE
+	PS C:\PSScript > .\VMware_Inventory.ps1 
+	-SmtpServer mailrelay.domain.tld
+	-From Anonymous@domain.tld 
+	-To ITGroup@domain.tld	
+
+	***SENDING UNAUTHENTICATED EMAIL***
+
+	The script will use the email server mailrelay.domain.tld, sending from 
+	anonymous@domain.tld, sending to ITGroup@domain.tld.
+
+	To send unauthenticated email using an email relay server requires the From email account 
+	to use the name Anonymous.
+
+	The script will use the default SMTP port 25 and will not use SSL.
 	
-	Script will use the email server smtp.office365.com on port 587 using SSL, 
-	sending from admin@serioustek.net, sending to ITGroup@carlwebster.com.
-	If the current user's credentials are not valid to send email, the user will be 
-	prompted to enter valid credentials.
+	***GMAIL/G SUITE SMTP RELAY***
+	https://support.google.com/a/answer/2956491?hl=en
+	https://support.google.com/a/answer/176600?hl=en
+
+	To send email using a Gmail or g-suite account, you may have to turn ON
+	the "Less secure app access" option on your account.
+	***GMAIL/G SUITE SMTP RELAY***
+
+	The script will generate an anonymous secure password for the anonymous@domain.tld 
+	account.
+.EXAMPLE
+	PS C:\PSScript > .\VMware_Inventory.ps1 
+	-SmtpServer labaddomain-com.mail.protection.outlook.com
+	-UseSSL
+	-From SomeEmailAddress@labaddomain.com 
+	-To ITGroupDL@labaddomain.com	
+
+	***OFFICE 365 Example***
+
+	https://docs.microsoft.com/en-us/exchange/mail-flow-best-practices/how-to-set-up-a-multifunction-device-or-application-to-send-email-using-office-3
+	
+	This uses Option 2 from the above link.
+	
+	***OFFICE 365 Example***
+
+	The script will use the email server labaddomain-com.mail.protection.outlook.com, 
+	sending from SomeEmailAddress@labaddomain.com, sending to ITGroupDL@labaddomain.com.
+
+	The script will use the default SMTP port 25 and will use SSL.
+.EXAMPLE
+	PS C:\PSScript > .\VMware_Inventory.ps1 
+	-SmtpServer smtp.office365.com 
+	-SmtpPort 587
+	-UseSSL 
+	-From Webster@CarlWebster.com 
+	-To ITGroup@CarlWebster.com	
+
+	The script will use the email server smtp.office365.com on port 587 using SSL, 
+	sending from webster@carlwebster.com, sending to ITGroup@carlwebster.com.
+
+	If the current user's credentials are not valid to send email, 
+	the user will be prompted to enter valid credentials.
+.EXAMPLE
+	PS C:\PSScript > .\VMware_Inventory.ps1 
+	-SmtpServer smtp.gmail.com 
+	-SmtpPort 587
+	-UseSSL 
+	-From Webster@CarlWebster.com 
+	-To ITGroup@CarlWebster.com	
+
+	*** NOTE ***
+	To send email using a Gmail or g-suite account, you may have to turn ON
+	the "Less secure app access" option on your account.
+	*** NOTE ***
+	
+	The script will use the email server smtp.gmail.com on port 587 using SSL, 
+	sending from webster@gmail.com, sending to ITGroup@carlwebster.com.
+
+	If the current user's credentials are not valid to send email, 
+	the user will be prompted to enter valid credentials.
 .INPUTS
 	None.  You cannot pipe objects to this script.
 .OUTPUTS
@@ -414,9 +467,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.90
+	VERSION: 1.91
 	AUTHOR: Jacob Rutski and Carl Webster
-	LASTEDIT: January 8, 2020
+	LASTEDIT: May 7, 2020
 #>
 
 #endregion
@@ -426,124 +479,113 @@
 [CmdletBinding(SupportsShouldProcess = $False, ConfirmImpact = "None", DefaultParameterSetName = "Word") ]
 
 Param(
-    [parameter(Mandatory=$False)]
-    [Alias("VC")]
-    [ValidateNotNullOrEmpty()]
-    [string]$VIServerName="",
+	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
+	[Switch]$HTML=$False,
+
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[Switch]$MSWord=$False,
+
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[Switch]$PDF=$False,
+
+	[parameter(ParameterSetName="Text",Mandatory=$False)] 
+	[Switch]$Text=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Switch]$AddDateTime=$False,
 	
+    [parameter(Mandatory=$False)]
+    [Switch]$Chart=$False,
+
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CA")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyAddress="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CE")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyEmail="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CF")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyFax="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyName="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CPh")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyPhone="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CP")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
 
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Alias("UN")]
-	[ValidateNotNullOrEmpty()]
-	[string]$UserName=$env:username,
-
-	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$HTML=$False,
-
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$MSWord=$False,
-
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$PDF=$False,
-
-	[parameter(ParameterSetName="Text",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$Text=$False,
-
+	[parameter(Mandatory=$False)] 
+	[Switch]$Dev=$False,
+	
     [parameter(Mandatory=$False)]
     [Switch]$Export=$False,
 
-    [parameter(Mandatory=$False)]
-    [Switch]$Import=$False,
+	[parameter(Mandatory=$False)] 
+	[string]$Folder="",
 
 	[parameter(Mandatory=$False)] 
 	[Switch]$Full=$False,	
 
     [parameter(Mandatory=$False)]
-    [Switch]$PCLICustom=$False,
-
-    [parameter(Mandatory=$False)]
-    [Switch]$Chart=$False,
+    [Switch]$Import=$False,
 
     [parameter(Mandatory=$False)]
     [Switch]$Issues=$False,
 	
 	[parameter(Mandatory=$False)] 
-	[Switch]$AddDateTime=$False,
+	[Switch]$Log=$False,
 	
-	[parameter(Mandatory=$False)] 
-	[string]$Folder="",
+    [parameter(Mandatory=$False)]
+    [Switch]$PCLICustom=$False,
 
-	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
-	[string]$SmtpServer="",
-
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[int]$SmtpPort=25,
-
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[switch]$UseSSL=$False,
-
-	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
-	[string]$From="",
-
-	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
-	[string]$To="",
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Dev=$False,
-	
 	[parameter(Mandatory=$False)] 
 	[Alias("SI")]
 	[Switch]$ScriptInfo=$False,
 	
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[Alias("UN")]
+	[ValidateNotNullOrEmpty()]
+	[string]$UserName=$env:username,
+
+    [parameter(Mandatory=$False)]
+    [Alias("VC")]
+    [ValidateNotNullOrEmpty()]
+    [string]$VIServerName="",
+	
 	[parameter(Mandatory=$False)] 
-	[Switch]$Log=$False
+	[string]$SmtpServer="",
+
+	[parameter(Mandatory=$False)] 
+	[int]$SmtpPort=25,
+
+	[parameter(Mandatory=$False)] 
+	[switch]$UseSSL=$False,
+
+	[parameter(Mandatory=$False)] 
+	[string]$From="",
+
+	[parameter(Mandatory=$False)] 
+	[string]$To=""
 	
 	)
 #endregion
@@ -565,6 +607,22 @@ Param(
 #http://blogs.serioustek.net
 #@JRutski on Twitter
 #Created on November 3rd, 2014
+#
+#Version 1.91 7-May-2020
+#	Add checking for a Word version of 0, which indicates the Office installation needs repairing
+#	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
+#	Change location of the -Dev, -Log, and -ScriptInfo output files from the script folder to the -Folder location (Thanks to Guy Leech for the "suggestion")
+#	Change Text output to use [System.Text.StringBuilder]
+#		Updated Functions Line and SaveAndCloseTextDocument
+#	Fix issues with Text output
+#	Fix issues with $DRSGroupsRules, $tempPWD, and $VCDB variables not set
+#	Reformatted the terminating Write-Error messages to make them more visible and readable in the console
+#	Remove Function TestComputerName
+#	Remove the SMTP parameterset and manually verify the parameters
+#	Reorder parameters
+#	Update Function SendEmail to handle anonymous unauthenticated email
+#	Update Function SetWordCellFormat to change parameter $BackgroundColor to [int]
+#	Update Help Text
 #
 #Version 1.9 8-Jan-2020 by Carl Webster
 #	Added Function TextHeatMap
@@ -712,32 +770,6 @@ $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 
-#V1.8 added
-If($Log) 
-{
-	#start transcript logging
-	$Script:ThisScriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-	$Script:LogPath = "$Script:ThisScriptPath\VMwareDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
-	
-	try 
-	{
-		Start-Transcript -Path $Script:LogPath -Force -Verbose:$false | Out-Null
-		Write-Verbose "$(Get-Date): Transcript/log started at $Script:LogPath"
-		$Script:StartLog = $true
-	} 
-	catch 
-	{
-		Write-Verbose "$(Get-Date): Transcript/log failed at $Script:LogPath"
-		$Script:StartLog = $false
-	}
-}
-
-If($Dev)
-{
-	$Error.Clear()
-	$Script:DevErrorFile = "$($pwd.Path)\VMwareInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
-}
-
 If($Null -eq $MSWord)
 {
 	If($Text -or $HTML -or $PDF)
@@ -800,7 +832,88 @@ Else
 		Write-Verbose "$(Get-Date): Text is $($Text)"
 		Write-Verbose "$(Get-Date): HTML is $($HTML)"
 	}
-	Write-Error "Unable to determine output parameter.  Script cannot continue"
+	Write-Error "
+	`n`n
+	`t`t
+	Unable to determine output parameter.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n
+	"
+	Exit
+}
+
+If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($To))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified an SmtpServer but did not include a From or To email address.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified an SmtpServer and a To email address but did not include a From email address.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($To) -and ![String]::IsNullOrEmpty($From))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified an SmtpServer and a From email address but did not include a To email address.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified From and To email addresses but did not include the SmtpServer.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($SmtpServer))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified a From email address but did not include the SmtpServer.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
+	Exit
+}
+If(![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
+{
+	Write-Error "
+	`n`n
+	`t`t
+	You specified a To email address but did not include the SmtpServer.
+	`n`n
+	`t`t
+	Script cannot continue.
+	`n`n"
 	Exit
 }
 
@@ -810,11 +923,18 @@ If($Chart)
 	If($Text -or $HTML)
 	{
 		Write-Warning ""
-		Write-Warning "The Chart option was selected but Text or HTML output is used.
-		`n
+		Write-Warning "
+		`n`n
+		`t`t
+		The Chart option was selected but Text or HTML output is used.
+		`n`n
+		`t`t
 		The Chart option is only valid with MSWord or PDF.
-		`n
-		The Chart option is now disabled."
+		`n`n
+		`t`t
+		The Chart option is now disabled.
+		`n`n
+		"
 		Write-Warning ""
 		$Chart = $False
 	}
@@ -866,17 +986,75 @@ If($Folder -ne "")
 		Else
 		{
 			#it exists but it is a file not a folder
-			Write-Error "Folder $Folder is a file, not a folder.  Script cannot continue"
+			Write-Error "
+			`n`n
+			`t`t
+			Folder $Folder is a file, not a folder.
+			`n`n
+			`t`t
+			Script cannot continue.
+			`n`n
+			"
 			Exit
 		}
 	}
 	Else
 	{
 		#does not exist
-		Write-Error "Folder $Folder does not exist.  Script cannot continue"
+		Write-Error "
+		`n`n
+		`t`t
+		Folder $Folder does not exist.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		Exit
 	}
 }
+
+If($Folder -eq "")
+{
+	$Script:pwdpath = $pwd.Path
+}
+Else
+{
+	$Script:pwdpath = $Folder
+}
+
+If($Script:pwdpath.EndsWith("\"))
+{
+	#remove the trailing \
+	$Script:pwdpath = $Script:pwdpath.SubString(0, ($Script:pwdpath.Length - 1))
+}
+
+
+#V1.8 added
+If($Log) 
+{
+	#start transcript logging
+	$Script:LogPath = "$Script:pwdpath\VMwareDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	
+	try 
+	{
+		Start-Transcript -Path $Script:LogPath -Force -Verbose:$false | Out-Null
+		Write-Verbose "$(Get-Date): Transcript/log started at $Script:LogPath"
+		$Script:StartLog = $true
+	} 
+	catch 
+	{
+		Write-Verbose "$(Get-Date): Transcript/log failed at $Script:LogPath"
+		$Script:StartLog = $false
+	}
+}
+
+If($Dev)
+{
+	$Error.Clear()
+	$Script:DevErrorFile = "$Script:pwdpath\VMwareInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+}
+
 #endregion
 
 #region initialize variables for word html and text
@@ -892,8 +1070,8 @@ If($MSWord -or $PDF)
 	#http://groovy.codehaus.org/modules/scriptom/1.6.0/scriptom-office-2K3-tlb/apidocs/
 	#http://msdn.microsoft.com/en-us/library/office/aa211923(v=office.11).aspx
 	[int]$wdAlignPageNumberRight = 2
-	[long]$wdColorGray15 = 14277081
-	[long]$wdColorGray05 = 15987699 
+	[int]$wdColorGray15 = 14277081
+	[int]$wdColorGray05 = 15987699 
 	[int]$wdMove = 0
 	[int]$wdSeekMainDocument = 0
 	[int]$wdSeekPrimaryFooter = 4
@@ -991,7 +1169,7 @@ If($HTML)
 
 If($TEXT)
 {
-	$global:output = ""
+	[System.Text.StringBuilder] $global:Output = New-Object System.Text.StringBuilder( 16384 )
 }
 #endregion
 
@@ -1481,7 +1659,15 @@ Function SetupWord
 	{
 		Write-Warning "The Word object could not be created.  You may need to repair your Word installation."
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tThe Word object could not be created.  You may need to repair your Word installation.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		The Word object could not be created.  You may need to repair your Word installation.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		Exit
 	}
 
@@ -1498,7 +1684,15 @@ Function SetupWord
 	If(!($Script:WordLanguageValue -gt -1))
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tUnable to determine the Word language value.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		Unable to determine the Word language value.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 	Write-Verbose "$(Get-Date): Word language value is $($Script:WordLanguageValue)"
@@ -1523,13 +1717,45 @@ Function SetupWord
 	ElseIf($Script:WordVersion -eq $wdWord2007)
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tMicrosoft Word 2007 is no longer supported.`n`n`t`tScript will end.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		Microsoft Word 2007 is no longer supported.
+		`n`n
+		`t`t
+		Script will end.
+		`n`n
+		"
 		AbortScript
+	}
+	ElseIf($Script:WordVersion -eq 0)
+	{
+		Write-Error "
+		`n`n
+		`t`t
+		The Word Version is 0. You should run a full online repair of your Office installation.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
+		Exit
 	}
 	Else
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tYou are running an untested or unsupported version of Microsoft Word.`n`n`t`tScript will end.`n`n`t`tPlease send info on your version of Word to webster@carlwebster.com`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		You are running an untested or unsupported version of Microsoft Word.
+		`n`n
+		`t`t
+		Script will end.
+		`n`n
+		`t`t
+		Please send info on your version of Word to webster@carlwebster.com
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1671,7 +1897,15 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Verbose "$(Get-Date): Word language value $($Script:WordLanguageValue)"
 		Write-Verbose "$(Get-Date): Culture code $($Script:WordCultureCode)"
-		Write-Error "`n`n`t`tFor $($Script:WordProduct), $($CoverPage) is not a valid Cover Page option.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		For $($Script:WordProduct), $($CoverPage) is not a valid Cover Page option.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1734,7 +1968,15 @@ Function SetupWord
 	{
 		Write-Verbose "$(Get-Date): "
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tAn empty Word document could not be created.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		An empty Word document could not be created.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1743,7 +1985,15 @@ Function SetupWord
 	{
 		Write-Verbose "$(Get-Date): "
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Error "`n`n`t`tAn unknown error happened selecting the entire Word document for default formatting options.`n`n`t`tScript cannot continue.`n`n"
+		Write-Error "
+		`n`n
+		`t`t
+		An unknown error happened selecting the entire Word document for default formatting options.
+		`n`n
+		`t`t
+		Script cannot continue.
+		`n`n
+		"
 		AbortScript
 	}
 
@@ -1917,21 +2167,35 @@ Function Get-RegistryValue($path, $name)
 #region word, text and html line output functions
 Function line
 #function created by Michael B. Smith, Exchange MVP
-#@essentialexchange on Twitter
-#http://TheEssentialExchange.com
+#@essentialexch on Twitter
+#https://essential.exchange/blog
 #for creating the formatted text report
 #created March 2011
 #updated March 2014
+# updated March 2019 to use StringBuilder (about 100 times more efficient than simple strings)
 {
-	Param( [int]$tabs = 0, [string]$name = '', [string]$value = '', [string]$newline = "`r`n", [switch]$nonewline )
-	While( $tabs -gt 0 ) { $Global:Output += "`t"; $tabs--; }
+	Param
+	(
+		[Int]    $tabs = 0, 
+		[String] $name = '', 
+		[String] $value = '', 
+		[String] $newline = [System.Environment]::NewLine, 
+		[Switch] $nonewline
+	)
+
+	while( $tabs -gt 0 )
+	{
+		$null = $global:Output.Append( "`t" )
+		$tabs--
+	}
+
 	If( $nonewline )
 	{
-		$Global:Output += $name + $value
+		$null = $global:Output.Append( $name + $value )
 	}
 	Else
 	{
-		$Global:Output += $name + $value + $newline
+		$null = $global:Output.AppendLine( $name + $value )
 	}
 }
 
@@ -3119,6 +3383,8 @@ Function VISetup( [string] $VIServer )
 		$PSDefaultParameterValues = @{"*:Verbose"=$True}
 		# PowerCLI is installed via PowerShell Gallery\or the module is installed
 		Write-Verbose "$(Get-Date): PowerCLI Module install found"
+		# grab the PWD before PCLI resets it to C:\
+		$tempPWD = $pwd
 	}
 	Else
 	{
@@ -3157,8 +3423,16 @@ Function VISetup( [string] $VIServer )
 		}
 		Else
 		{
-			Write-Host "`nPowerCLI does not appear to be installed - please install the latest version of PowerCLI. This script will now exit."
-			Write-Host "*** If PowerCLI was installed to a non-Default location, please use the -PCLICustom parameter ***`n"
+			Write-Error "
+			`n`n
+			`t`t
+			PowerCLI does not appear to be installed - please install the latest version of PowerCLI.
+			`n`n
+			`t`t
+			This script will now exit.
+			`n`n
+			"
+			Write-Host "*** If PowerCLI was installed to a non-Default location, please use the -PCLICustom parameter ***"
 			Exit
 		}
 	}
@@ -3215,7 +3489,12 @@ Function Select-FolderDialog
 	}
 	Else
 	{
-		Write-Error "Operation cancelled by user."
+		Write-Error "
+		`n`n
+		`t`t
+		Operation cancelled by user.
+		`n`n
+		"
 	}
 }
 
@@ -3378,21 +3657,6 @@ Function AddStatsChart
 		[void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") 
 		[void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 
-		If($Folder -eq "")
-		{
-			$pwdpath = $pwd.Path
-		}
-		Else
-		{
-			$pwdpath = $Folder
-		}
-
-		If($pwdpath.EndsWith("\"))
-		{
-			#remove the trailing \
-			$pwdpath = $pwdpath.SubString(0, ($pwdpath.Length - 1))
-		}
-
 		# http://blogs.technet.com/b/richard_macdonald/archive/2009/04/28/3231887.aspx
 		# create the chart object
 		$Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart 
@@ -3511,11 +3775,11 @@ Function AddStatsChart
 
 		If(!$ExportName)
 		{
-			$Chart.SaveImage("$($pwdpath)\Chart$($Title).png", "PNG")
-			$Script:Word.Selection.InlineShapes.AddPicture("$($pwdpath)\Chart$($Title).png") | Out-Null
-			If(Test-Path "$($pwdpath)\Chart$($Title).png")
+			$Chart.SaveImage("$($Script:pwdpath)\Chart$($Title).png", "PNG")
+			$Script:Word.Selection.InlineShapes.AddPicture("$($Script:pwdpath)\Chart$($Title).png") | Out-Null
+			If(Test-Path "$($Script:pwdpath)\Chart$($Title).png")
 			{
-				Remove-Item "$($pwdpath)\Chart$($Title).png" -Force
+				Remove-Item "$($Script:pwdpath)\Chart$($Title).png" -Force
 			}
 		}
 	} # End Process
@@ -3574,6 +3838,10 @@ Function BuildDRSGroupsRules
                 $DRSGroupsRules += $oRuleInfo
             } 
         } 
+		Else
+		{
+            $DRSGroupsRules = @()
+		}
     } 
     Return $DRSGroupsRules
 }
@@ -3784,7 +4052,7 @@ Function SaveandCloseTextDocument
 		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 	}
 
-	Write-Output $Global:Output | Out-File $Script:Filename1 4>$Null
+	Write-Output $global:Output.ToString() | Out-File $Script:Filename1 4>$Null
 }
 
 Function SaveandCloseHTMLDocument
@@ -3798,26 +4066,26 @@ Function SetFileName1andFileName2
 	
 	If($Folder -eq "")
 	{
-		$pwdpath = $pwd.Path
+		$Script:pwdpath = $pwd.Path
 	}
 	Else
 	{
-		$pwdpath = $Folder
+		$Script:pwdpath = $Folder
 	}
 
-	If($pwdpath.EndsWith("\"))
+	If($Script:pwdpath.EndsWith("\"))
 	{
 		#remove the trailing \
-		$pwdpath = $pwdpath.SubString(0, ($pwdpath.Length - 1))
+		$Script:pwdpath = $Script:pwdpath.SubString(0, ($Script:pwdpath.Length - 1))
 	}
 
 	#set $filename1 and $filename2 with no file extension
 	If($AddDateTime)
 	{
-		[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName)"
+		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName)"
 		If($PDF)
 		{
-			[string]$Script:FileName2 = "$($pwdpath)\$($OutputFileName)"
+			[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName)"
 		}
 	}
 
@@ -3827,10 +4095,10 @@ Function SetFileName1andFileName2
 
 		If(!$AddDateTime)
 		{
-			[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName).docx"
+			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).docx"
 			If($PDF)
 			{
-				[string]$Script:FileName2 = "$($pwdpath)\$($OutputFileName).pdf"
+				[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName).pdf"
 			}
 		}
 
@@ -3840,7 +4108,7 @@ Function SetFileName1andFileName2
 	{
 		If(!$AddDateTime)
 		{
-			[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName).txt"
+			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).txt"
 		}
 		ShowScriptOptions
 	}
@@ -3848,66 +4116,11 @@ Function SetFileName1andFileName2
 	{
 		If(!$AddDateTime)
 		{
-			[string]$Script:FileName1 = "$($pwdpath)\$($OutputFileName).html"
+			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).html"
 		}
 		SetupHTML
 		ShowScriptOptions
 	}
-}
-
-Function TestComputerName
-{
-	Param([string]$Cname)
-	If(![String]::IsNullOrEmpty($CName)) 
-	{
-		#get computer name
-		#first test to make sure the computer is reachable
-		Write-Verbose "$(Get-Date): Testing to see if $($CName) is online and reachable"
-		If(Test-Connection -ComputerName $CName -quiet)
-		{
-			Write-Verbose "$(Get-Date): Server $($CName) is online."
-		}
-		Else
-		{
-			Write-Verbose "$(Get-Date): Computer $($CName) is offline"
-			$ErrorActionPreference = $SaveEAPreference
-			Write-Error "`n`n`t`tComputer $($CName) is offline.`nScript cannot continue.`n`n"
-			Exit
-		}
-	}
-
-	#if computer name is localhost, get actual computer name
-	If($CName -eq "localhost")
-	{
-		$CName = $env:ComputerName
-		Write-Verbose "$(Get-Date): Computer name has been renamed from localhost to $($CName)"
-		Return $CName
-	}
-
-	#if computer name is an IP address, get host name from DNS
-	#http://blogs.technet.com/b/gary/archive/2009/08/29/resolve-ip-addresses-to-hostname-using-powershell.aspx
-	#help from Michael B. Smith
-	$ip = $CName -as [System.Net.IpAddress]
-	If($ip)
-	{
-		$Result = [System.Net.Dns]::gethostentry($ip)
-		
-		If($? -and $Null -ne $Result)
-		{
-			$CName = $Result.HostName
-			Write-Verbose "$(Get-Date): Computer name has been renamed from $($ip) to $($CName)"
-			Return $CName
-		}
-		Else
-		{
-			Write-Warning "Unable to resolve $($CName) to a hostname"
-		}
-	}
-	Else
-	{
-		#computer is online but for some reason $ComputerName cannot be converted to a System.Net.IpAddress
-	}
-	Return $CName
 }
 
 Function ProcessDocumentOutput
@@ -4431,6 +4644,7 @@ Function ProcessvCenter
 		}
 		Else
 		{
+			$VCDB = $False
 			Write-Verbose "$(Get-Date): `tRunning VCSA"
 		}
     }
@@ -4971,7 +5185,10 @@ Function ProcessVMHosts
         $First = 0
         ForEach($VMHost in $VMHosts)
         {
-            If($First -ne 0){$Selection.InsertNewPage()}
+            If($First -ne 0 -and ($MSWord -or $PDF))
+			{
+				$Selection.InsertNewPage()
+			}
             OutputVMHosts $VMHost
             $First++
         }
@@ -7948,7 +8165,7 @@ Function ProcessScriptEnd
 
 	If($ScriptInfo)
 	{
-		$SIFile = "$($pwd.Path)\VMwareInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		$SIFile = "$Script:pwdpath\VMwareInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime   : $($AddDateTime)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Chart          : $($Chart)" 4>$Null
@@ -8036,84 +8253,126 @@ Function ProcessScriptEnd
 #endregion
 
 #region email function
+#region email function
 Function SendEmail
 {
-	Param([string]$Attachments, [string]$Subject)
+	Param([array]$Attachments)
 	Write-Verbose "$(Get-Date): Prepare to email"
+
 	$emailAttachment = $Attachments
 	$emailSubject = $Script:Title
 	$emailBody = @"
 Hello, <br />
 <br />
 $Script:Title is attached.
+
 "@ 
 
 	If($Dev)
 	{
 		Out-File -FilePath $Script:DevErrorFile -InputObject $error 4>$Null
 	}
-	
+
 	$error.Clear()
 	
-	If($UseSSL)
+	If($From -Like "anonymous@*")
 	{
-		Write-Verbose "$(Get-Date): Trying to send email using current user's credentials with SSL"
-		Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
-		-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
-		-UseSSL *>$Null
-	}
-	Else
-	{
-		Write-Verbose  "$(Get-Date): Trying to send email using current user's credentials without SSL"
-		Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
-		-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To *>$Null
-	}
-
-	$e = $error[0]
-
-	If($e.Exception.ToString().Contains("5.7.57"))
-	{
-		#The server response was: 5.7.57 SMTP; Client was not authenticated to send anonymous mail during MAIL FROM
-		Write-Verbose "$(Get-Date): Current user's credentials failed. Ask for usable credentials."
-
-		If($Dev)
-		{
-			Out-File -FilePath $Script:DevErrorFile -InputObject $error -Append 4>$Null
-		}
-
-		$error.Clear()
-
-		$emailCredentials = Get-Credential -Message "Enter the email account and password to send email"
+		#https://serverfault.com/questions/543052/sending-unauthenticated-mail-through-ms-exchange-with-powershell-windows-server
+		$anonUsername = "anonymous"
+		$anonPassword = ConvertTo-SecureString -String "anonymous" -AsPlainText -Force
+		$anonCredentials = New-Object System.Management.Automation.PSCredential($anonUsername,$anonPassword)
 
 		If($UseSSL)
 		{
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
 			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
-			-UseSSL -credential $emailCredentials *>$Null 
+			-UseSSL -credential $anonCredentials *>$Null 
 		}
 		Else
 		{
 			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
 			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
-			-credential $emailCredentials *>$Null 
+			-credential $anonCredentials *>$Null 
 		}
-
-		$e = $error[0]
-
-		If($? -and $Null -eq $e)
+		
+		If($?)
 		{
-			Write-Verbose "$(Get-Date): Email successfully sent using new credentials"
+			Write-Verbose "$(Get-Date): Email successfully sent using anonymous credentials"
 		}
-		Else
+		ElseIf(!$?)
 		{
+			$e = $error[0]
+
 			Write-Verbose "$(Get-Date): Email was not sent:"
 			Write-Warning "$(Get-Date): Exception: $e.Exception" 
 		}
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date): Email was not sent:"
-		Write-Warning "$(Get-Date): Exception: $e.Exception" 
+		If($UseSSL)
+		{
+			Write-Verbose "$(Get-Date): Trying to send email using current user's credentials with SSL"
+			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
+			-UseSSL *>$Null
+		}
+		Else
+		{
+			Write-Verbose  "$(Get-Date): Trying to send email using current user's credentials without SSL"
+			Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+			-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To *>$Null
+		}
+
+		If(!$?)
+		{
+			$e = $error[0]
+			
+			#error 5.7.57 is O365 and error 5.7.0 is gmail
+			If($null -ne $e.Exception -and $e.Exception.ToString().Contains("5.7"))
+			{
+				#The server response was: 5.7.xx SMTP; Client was not authenticated to send anonymous mail during MAIL FROM
+				Write-Verbose "$(Get-Date): Current user's credentials failed. Ask for usable credentials."
+
+				If($Dev)
+				{
+					Out-File -FilePath $Script:DevErrorFile -InputObject $error -Append 4>$Null
+				}
+
+				$error.Clear()
+
+				$emailCredentials = Get-Credential -UserName $From -Message "Enter the password to send email"
+
+				If($UseSSL)
+				{
+					Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+					-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
+					-UseSSL -credential $emailCredentials *>$Null 
+				}
+				Else
+				{
+					Send-MailMessage -Attachments $emailAttachment -Body $emailBody -BodyAsHtml -From $From `
+					-Port $SmtpPort -SmtpServer $SmtpServer -Subject $emailSubject -To $To `
+					-credential $emailCredentials *>$Null 
+				}
+
+				If($?)
+				{
+					Write-Verbose "$(Get-Date): Email successfully sent using new credentials"
+				}
+				ElseIf(!$?)
+				{
+					$e = $error[0]
+
+					Write-Verbose "$(Get-Date): Email was not sent:"
+					Write-Warning "$(Get-Date): Exception: $e.Exception" 
+				}
+			}
+			Else
+			{
+				Write-Verbose "$(Get-Date): Email was not sent:"
+				Write-Warning "$(Get-Date): Exception: $e.Exception" 
+			}
+		}
 	}
 }
 #endregion
