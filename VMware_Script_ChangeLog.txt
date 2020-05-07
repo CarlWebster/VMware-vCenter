@@ -8,6 +8,12 @@
 #webster@carlwebster.com
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
+#Sr. Solutions Architect Choice Solutions
+
+#Version 1.63 29-Aug-2016
+#	Add support for the -Dev and -ScriptInfo parameters
+#	Update the ShowScriptOptions function with all script parameters
+#	Add Break statements to most Switch statements
 
 #Version 1.62 19-Aug-2016
 #	Fixed several misspelled words
