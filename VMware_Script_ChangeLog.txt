@@ -10,6 +10,15 @@
 #http://www.CarlWebster.com
 #Sr. Solutions Architect Choice Solutions
 
+#Version 1.8 26-Feb-2018
+#	Added Log switch to create a transcript log
+#	Disconnect-VIServer if Word is open after connecting, etc
+#	Fix for PowerCLI module install from Gallery and Get-PowerCLIVersion deprecation
+#	Fixed path for PCLI 6.5 ..\Infrastructure\PowerCLI\..
+#	Updated Function ProcessScriptEnd for the new Log Parameter
+#	Updated Function ShowScriptOptions for the new Log Parameter
+#	Update help text
+
 #Version 1.74 15-Jan-2018
 #	Removed code that made sure all Parameters were set to default values if for some reason they did not exist or values were $Null
 #	Reordered the parameters in the help text and parameter list so they match and are grouped better
