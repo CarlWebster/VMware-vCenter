@@ -8,7 +8,38 @@
 #webster@carlwebster.com
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
-#Sr. Solutions Architect Choice Solutions
+
+#Version 1.9 8-Jan-2020 by Carl Webster
+#	Added Function TextHeatMap
+#	Added missing HTML and Text output and fix text output in all Process and Output functions
+#	Added missing Word/PDF data to all Process and Output functions
+#	Added more Write-Verbose statements
+#	Changed numerous $var -eq or -ne $Null to $Null -eq or -ne $var
+#	Fixed Swedish Table of Contents (Thanks to Johan Kallio)
+#		From 
+#			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
+#		To
+#			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
+#	Fixed missing Title variable not showing in Function ShowScriptOptions
+#	Fixed Chart option so Charts are now added to the Word/PDF output
+#	For Function OutputVirtualMachines:
+#		Renamed Guest Tools Status to Guest State (shows whether the Guest is Running or NotRunning)
+#		Added Guest Tools Status (shows toolsRunning or toolsNotRunning)
+#		Added Guest IP Address if the Guest State is Running
+#		Added Guest Tools Version
+#	For the vCenter Summary heat map, thanks to Guy Leech, the heat maps now support EMEA numbers
+#	General code cleanup
+#	If the Chart option is used, verify that MSWord or PDF is also used,
+#		If HTML or Text is used, set Chart to False.
+#	In Function ProcessvCenter, before trying to check the registry on the vCenter server,
+#		test if the vCenter server is runnng Windows (Thanks to Will Fulmer for the help)
+#	In the output for VMKernel ports, fix the output for Parent vSwitch.
+#	Tested with vCenter 6.7 U3 and PowerCLI 11.5
+#	Updated Function CheckWordPrereq to match the other documentation scripts
+#	Updated Function VISetup to remove most PowerCLI cmdlet loading verbose output
+#	Updated help text
+#	When using the Chart parameter, verify the various StatTypes are available before trying 
+#		to use them to prevent the script throwing red error messages
 
 #Version 1.81 9-Apr-2018
 #	Code clean-up with recommendations from Visual Studio Code
