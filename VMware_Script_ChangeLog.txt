@@ -10,6 +10,12 @@
 #http://www.CarlWebster.com
 #Sr. Solutions Architect Choice Solutions
 
+#Version 1.71 9-Nov-2016
+#	Added Chinese language support
+#	Fixed HTMLHeatMap
+#	Fixed PWD for save path issue when importing PCLI back to C:\
+#	Prompt to disconnect if PCLI is already connected
+
 #Version 1.70 24-Oct-2016
 #	Added support for PowerCLI installed in non-default locations
 #	Fixed formatting issues with HTML output
