@@ -9,6 +9,11 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 1.5.1 July 20, 2015
+#-Cleaned up some extra PCLI calls - set to variables
+#-Removed almost all of the extra PCLI verbose messages - Thanks @carlwebster!!
+#-Set Issues parameter to disable full run
+
 #Version 1.5 July 14, 2015
 #-Added vCenter permissions and non-standard roles
 #-Added DRS Rules and Groups
