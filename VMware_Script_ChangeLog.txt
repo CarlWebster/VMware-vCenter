@@ -10,6 +10,9 @@
 #http://www.CarlWebster.com
 #Sr. Solutions Architect Choice Solutions
 
+#Version 1.72 13-Feb-2017
+#	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
+
 #Version 1.71 9-Nov-2016
 #	Added Chinese language support
 #	Fixed HTMLHeatMap
