@@ -76,6 +76,14 @@
 	User name to use for the Cover Page and Footer.
 	Default value is contained in $env:username
 	This parameter has an alias of UN.
+.PARAMETER Export
+    Runs this script gathering all required data from PowerCLI as normal, then exporting data to XML files in the .\Export directory
+    Once the export is completed, it can be copied offline to be run later with the -Import paramater
+    This parameter overrides all other output formats
+.PARAMETER Import
+    Runs this script gathering all required data from a previously run Export
+    Export directory must be present in the same directory as the script itself
+    Does not require PowerCLI or a VIServerName to run in Import mode
 .PARAMETER PDF
 	SaveAs PDF file instead of DOCX file.
 	This parameter is disabled by default.
@@ -190,6 +198,18 @@
 		Mod for the Cover Page format.
 		Jacob Rutski for the User Name.
 .EXAMPLE
+    PS C:\PSScript .\VMware_Inventory.ps1 -Export -VIServerName testvc.lab.com
+
+	Will use all default values and use testvc.lab.com as the VCenter Server.
+    Script will output all data to XML files in the .\Export directory created
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
+	$env:username = Administrator
+
+	Jacob Rutski for the Company Name.
+	Sideline for the Cover Page format.
+	Administrator for the User Name.
+.EXAMPLE
 	PS C:\PSScript .\VMware_Inventory.ps1 -CN "Jacob Rutski Consulting" -CP "Mod" -UN "Jacob Rutski"
 
 	Will use:
@@ -234,9 +254,9 @@
 	No objects are output from this script.  This script creates a Word or PDF document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.1
+	VERSION: 1.2
 	AUTHOR: Jacob Rutski
-	LASTEDIT: December 16, 2014
+	LASTEDIT: January 7, 2015
 #>
 
 #endregion
@@ -258,13 +278,19 @@ Param(
 	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
 	[Switch]$HTML=$False,
 
-    [parameter(Mandatory=$True)]
+    [parameter(Mandatory=$False)]
     [Alias("VIServer")]
     [ValidateNotNullOrEmpty()]
     [string]$VIServerName="",
 	
 	[parameter(Mandatory=$False)] 
 	[Switch]$Full=$False,	
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Import=$False,
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Export=$False,
 	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
@@ -324,6 +350,9 @@ Param(
 #Version 1.1
 #-Fix for help text region tags, fixes from template script for save as PDF, fix for memory heatmap
 #-Added VCenter plugins
+#
+#Version 1.2
+#-Added Import and Export functionality to output all data to XML that can be taken offline to generate a document at a later time
 #endregion
 
 #region initial variable testing and setup
@@ -382,6 +411,14 @@ If(!(Test-Path Variable:HTML))
 If(!(Test-Path Variable:Full))
 {
 	$Full = $False
+}
+If(!(Test-Path Variable:Import))
+{
+	$Import = $False
+}
+If(!(Test-Path Variable:Export))
+{
+	$Export = $False
 }
 If(!(Test-Path Variable:AddDateTime))
 {
@@ -463,6 +500,23 @@ If($Full)
     Write-Warning ""
     Write-Warning "Full-Run is set. This will create a full VMware inventory and will take a significant amount of time."
     Write-Warning ""
+}
+
+If($Export)
+{
+    Write-Warning ""
+    Write-Warning "Export is set - Script will output to XML for later use, overriding any other output variables."
+    Write-Warning ""
+
+    $MSWord = $False
+    $PDF = $False
+    $Text = $False
+    $HTML = $False
+}
+
+If(!($VIServerName) -and !($Import))
+{
+    $VIServerName = Read-Host 'Please enter the FQDN of your vCenter server'
 }
 #endregion
 
@@ -577,7 +631,7 @@ If($HTML)
 
 If($TEXT)
 {
-	$global:output = ""
+	$Script:output = ""
 }
 #endregion
 
@@ -1422,14 +1476,14 @@ Function line
 #updated March 2014
 {
 	Param( [int]$tabs = 0, [string]$name = '', [string]$value = '', [string]$newline = "`r`n", [switch]$nonewline )
-	While( $tabs -gt 0 ) { $Global:Output += "`t"; $tabs--; }
+	While( $tabs -gt 0 ) { $Script:Output += "`t"; $tabs--; }
 	If( $nonewline )
 	{
-		$Global:Output += $name + $value
+		$Script:Output += $name + $value
 	}
 	Else
 	{
-		$Global:Output += $name + $value + $newline
+		$Script:Output += $name + $value + $newline
 	}
 }
 	
@@ -2548,39 +2602,39 @@ Function SetWordTableAlternateRowColor
 Function VISetup( [string] $VIServer )
 {
     $script:startTime = Get-Date
-    
+
     #Check to see if PowerCLI is installed
     If($env:PROCESSOR_ARCHITECTURE -like "*AMD64*"){$PCLIPath = "C:\Program Files (x86)\VMware\Infrastructure\vSphere PowerCLI\Scripts\Initialize-PowerCLIEnvironment.ps1"}
     Else{$PCLIPath = "C:\Program Files\VMware\Infrastructure\vSphere PowerCLI\Scripts\Initialize-PowerCLIEnvironment.ps1"}
 
     If (Test-Path $PCLIPath)
     {
-        Import-Module $PCLIPath
-        Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings $False -confirm:$false
-    }
+            Import-Module $PCLIPath
+            Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings $False -confirm:$false
+        }
     Else
     {
-        Write-Host "PowerCLI does not appear to be installed - please install the latest version of PowerCLI. This script will now exit."
-        Exit
-    }
+            Write-Host "PowerCLI does not appear to be installed - please install the latest version of PowerCLI. This script will now exit."
+            Exit
+        }
 
     $xPowerCLIVer = Get-PowerCLIVersion
     If($xPowerCLIVer.Major -lt 5 -or $xPowerCLIVer.Minor -lt 1)
     {
-        Write-Host "`nPowerCLI version $($xPowerCLIVer.Major).$($xPowerCLIVer.Minor) is installed. PowerCLI version 5.1 or later is required to run this script. `nPlease install the latest version and run this script again. This script will now exit."
-        Exit
-    }
+            Write-Host "`nPowerCLI version $($xPowerCLIVer.Major).$($xPowerCLIVer.Minor) is installed. PowerCLI version 5.1 or later is required to run this script. `nPlease install the latest version and run this script again. This script will now exit."
+            Exit
+        }
 
     #Connect to VI Server
     Write-Verbose "Connecting to VIServer: " $VIServer
-    $Global:VCObj = Connect-VIServer $VIServer
+    $Script:VCObj = Connect-VIServer $VIServer
 
     #Verify we successfully connected
     If(!($?))
     {
-        Write-Host "Connecting to VCenter failed with the following error: $($Error[0].Exception.Message.substring($Error[0].Exception.Message.IndexOf("Connect-VIServer") + 16).Trim()) This script will now exit."
-        Exit
-    }
+            Write-Host "Connecting to VCenter failed with the following error: $($Error[0].Exception.Message.substring($Error[0].Exception.Message.IndexOf("Connect-VIServer") + 16).Trim()) This script will now exit."
+            Exit
+        }
 
     SetFileName1andFileName2 "$($VIServer)-Inventory"
     [string]$script:Title      = "VMware Inventory Report - $VIServerName"
@@ -2589,21 +2643,101 @@ Function VISetup( [string] $VIServer )
 
 Function SetGlobals
 {
+    Write-Verbose "$(Get-Date): Gathering VMware data"
     ## Any Get used more than once is set to a global variable to limit the number of calls to PowerCLI
-    ## Get-AdvancedSetting -Entity * | Where {$_.Entity -in ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name -or $_.Type -eq "VIServer"}
-    $Global:Clusters = Get-Cluster | Sort Name
-    $Global:VMHosts = Get-VMHost | Sort Name
-    $Global:Datastores = Get-Datastore | Sort Name
-    $Global:Snapshots = Get-Snapshot -VM *
-    $Global:HostAdvSettings = Get-AdvancedSetting -Entity (@(($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name) + $VIServerName)
-    $Global:HostServices = Get-VMHostService -VMHost *
-    $Global:VirtualMachines = Get-VM | Sort Name    
-    If($Full)
+    ## Export commands from http://blogs.technet.com/b/heyscriptingguy/archive/2011/09/06/learn-how-to-save-powershell-objects-for-offline-analysis.aspx
+    If($Export)
     {
-        $Global:HostNetAdapters = Get-VMHostNetworkAdapter
-        $Global:VirtualSwitches = Get-VirtualSwitch
-        $Global:VMNetworkAdapters = Get-NetworkAdapter *
-        $Global:VirtualPortGroups = Get-VirtualPortGroup
+        If(!(Test-Path .\Export))
+        {
+            New-Item .\Export -type directory
+        }
+        $Script:VMHosts = Get-VMHost | Sort Name
+        Get-Cluster | Sort Name | Export-Clixml .\Export\Cluster.xml
+        Get-VMHost | Sort Name | Export-Clixml .\Export\VMHost.xml
+        Get-Datastore | Sort Name | Export-Clixml .\Export\Datastore.xml
+        Get-Snapshot -VM * | Export-Clixml .\Export\Snapshot.xml
+        Get-AdvancedSetting -Entity $VIServerName | Where {$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\VCenterAdv.xml
+        Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name | Where {$_.Name -like "Syslog.global.logdir" -or $_.Name -like "Syslog.global.loghost"} | Export-Clixml .\Export\HostsAdv.xml
+        Get-VMHostService -VMHost * | Export-Clixml .\Export\HostService.xml
+        Get-VM | Sort Name  | Export-Clixml .\Export\VM.xml
+        Get-ResourcePool | Sort Name | Export-Clixml .\Export\ResourcePool.xml
+        Get-View (Get-View ServiceInstance).Content.PerfManager | Export-Clixml .\Export\VCenterStats.xml
+        Get-View ServiceInstance | Export-Clixml .\Export\ServiceInstance.xml
+        (((Get-View extensionmanager).ExtensionList).Description) | Export-Clixml .\Export\Plugins.xml
+        Get-View (Get-View serviceInstance | Select -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml
+        If($Full)
+        {
+            If(!(Test-Path .\Export\VMDetail))
+            {
+                New-Item .\Export\VMDetail -type directory
+            }  
+            $Script:VirtualMachines = Get-VM | Sort Name          
+            Get-VMHostNetworkAdapter | Export-Clixml .\Export\HostNetwork.xml
+            Get-VirtualSwitch | Export-Clixml .\Export\vSwitch.xml
+            Get-NetworkAdapter * | Export-Clixml .\Export\NetworkAdapter.xml
+            Get-VirtualPortGroup | Export-Clixml .\Export\PortGroup.xml
+        }
+    }
+    ElseIf($Import)
+    {
+        $script:startTime = Get-Date
+        ## Check for export directory
+        If(Test-Path .\Export)
+        {
+            $Script:Clusters = Import-Clixml .\Export\Cluster.xml
+            $Script:VMHosts = Import-Clixml .\Export\VMHost.xml
+            $Script:Datastores = Import-Clixml .\Export\Datastore.xml
+            $Script:Snapshots = Import-Clixml .\Export\Snapshot.xml
+            $Script:HostAdvSettings = Import-Clixml .\Export\HostsAdv.xml
+            $Script:VCAdvSettings = Import-Clixml .\Export\VCenterAdv.xml
+            $Script:HostServices = Import-Clixml .\Export\HostService.xml
+            $Script:VirtualMachines = Import-Clixml .\Export\VM.xml
+            $Script:Resources = Import-Clixml .\Export\ResourcePool.xml
+            $SCript:VMPlugins = Import-Clixml .\Export\Plugins.xml
+            $Script:VCenterStatistics = Import-Clixml .\Export\VCenterStats.xml
+            $Script:VCLicensing = Import-Clixml .\Export\Licensing.xml
+            If(Test-Path .\Export\RegSQL.xml){$Script:RegSQL = Import-Clixml .\Export\RegSQL.xml}
+            If($Full)
+            {
+                $Script:HostNetAdapters = Import-Clixml .\Export\HostNetwork.xml
+                $Script:VirtualSwitches = Import-Clixml .\Export\vSwitch.xml
+                $Script:VMNetworkAdapters = Import-Clixml .\Export\NetworkAdapter.xml
+                $Script:VirtualPortGroups = Import-Clixml .\Export\PortGroup.xml
+            }
+            $VIServerName = (($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value
+            SetFileName1andFileName2 "$($VIServerName)-Inventory"
+            [string]$script:Title      = "VMware Inventory Report - $VIServerName"
+        }
+        Else
+        {
+            ## VMware Export not found, exit script
+            Write-Host "Import option set, but no Export data directory found. Please copy the Export folder into the same folder as this script and run it again. This script will now exit."
+            Exit
+        }
+    }
+    Else
+    {
+        $Script:Clusters = Get-Cluster | Sort Name
+        $Script:VMHosts = Get-VMHost | Sort Name
+        $Script:Datastores = Get-Datastore | Sort Name
+        $Script:Snapshots = Get-Snapshot -VM *
+        $Script:HostAdvSettings = Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name
+        $Script:VCAdvSettings = Get-AdvancedSetting -Entity $VIServerName
+        $Script:HostServices = Get-VMHostService -VMHost *
+        $Script:VirtualMachines = Get-VM | Sort Name    
+        $Script:Resources = Get-ResourcePool | Sort Name
+        $Script:VMPlugins = (((Get-View extensionmanager).ExtensionList).Description)
+        $Script:ServiceInstance = Get-View ServiceInstance
+        $Script:VCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager
+        $Script:VCLicensing = Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager
+        If($Full)
+        {
+            $Script:HostNetAdapters = Get-VMHostNetworkAdapter
+            $Script:VirtualSwitches = Get-VirtualSwitch
+            $Script:VMNetworkAdapters = Get-NetworkAdapter *
+            $Script:VirtualPortGroups = Get-VirtualPortGroup
+        }
     }
 
     ## Cannot use Get-VMHostStorage in the event of a completely headless server with no local storage (cdrom, local disk, etc)
@@ -2727,7 +2861,7 @@ Function SaveandCloseTextDocument
 		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 	}
 
-	Write-Output $Global:Output | Out-File $Script:Filename1
+	Write-Output $Script:Output | Out-File $Script:Filename1
 }
 
 Function SaveandCloseHTMLDocument
@@ -2844,6 +2978,8 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date): Full Run     : $($Full)"
 	Write-Verbose "$(Get-Date): Title        : $($Title)"
 	Write-Verbose "$(Get-Date): Filename1    : $($filename1)"
+    Write-Verbose "$(Get-Date): Import       : $($Import)"
+    Write-Verbose "$(Get-Date): Export       : $($Export)"
 	If($PDF)
 	{
 		Write-Verbose "$(Get-Date): Filename2    : $($filename2)"
@@ -2921,7 +3057,7 @@ Function ProcessSummary
 	    HAEnabled = $Cluster.HAEnabled;
 	    DRSEnabled = $Cluster.DrsEnabled;
         DRSAutomation = $Cluster.DrsAutomationLevel;
-        VMCount = @($VirtualMachines | Where {$_.VMHost -in @($VMHosts | Where {$_.ParentId -like $Cluster.Id})}).Count;
+        VMCount = @($VirtualMachines | Where {$_.VMHost -in @($VMHosts | Where {$_.ParentId -like $Cluster.Id}).Name}).Count;
 	    }
 	    ## Add the hash to the array
 	    $ClusterWordTable += $WordTableRowHash;
@@ -3088,33 +3224,51 @@ Function ProcessVCenter
     
     ## Global vCenter settings
     ## Try to get VCenter DSN if Windows Server
-    $RemReg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $VIServerName)
-    If($?)
+    If(!$Import)
     {
-        $VCDBKey = "SOFTWARE\\VMware, Inc.\\VMware VirtualCenter\\DB"
-        $VCDB = ($RemReg[0].OpenSubKey($VCDBKey,$true)).GetValue("1")
+        $RemReg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $VIServerName)
+        If($?)
+        {
+            $VCDBKey = "SOFTWARE\\VMware, Inc.\\VMware VirtualCenter\\DB"
+            $VCDB = ($RemReg[0].OpenSubKey($VCDBKey,$true)).GetValue("1")
 
-        $DBDetails = "SOFTWARE\\ODBC\\ODBC.INI\\$($VCDB)"   
+            $DBDetails = "SOFTWARE\\ODBC\\ODBC.INI\\$($VCDB)"   
+        }
     }
 
-    $xVCAdvanced = $HostAdvSettings | Where {$_.Entity -like $VIServerName}
+    If($Export)
+    {
+        $RegExpObj = New-Object psobject
+        $RegExpObj | Add-Member -Name VCDB -MemberType NoteProperty -Value $VCDB
+        $RegExpObj | Add-Member -Name SQLDB -MemberType NoteProperty -Value ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Database")
+        $RegExpObj | Add-Member -Name SQLServer -MemberType NoteProperty -Value ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server")
+        $RegExpObj | Add-Member -Name SQLUser -MemberType NoteProperty -Value ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser")
+        $RegExpObj | Export-Clixml .\Export\RegSQL.xml
+    }
     If($MSWord -or $PDF)
     {
         WriteWordLine 2 0 "Global Settings"
         [System.Collections.Hashtable[]] $ScriptInformation = @()
-        $ScriptInformation += @{ Data = "Name"; Value = (($xVCAdvanced) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value;}
+        $ScriptInformation += @{ Data = "Name"; Value = (($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value;}
         $ScriptInformation += @{ Data = "Version"; Value = $VCObj.Version; }
         $ScriptInformation += @{ Data = "Build"; Value = $VCObj.Build; }
-        If($VCDB)
+        If($Import -and $RegSQL)
+        {
+            $ScriptInformation += @{ Data = "DSN Name"; Value = $RegSQL.VCDB; }
+            $ScriptInformation += @{ Data = "SQL Database"; Value = $RegSQL.SQLDB; }
+            $ScriptInformation += @{ Data = "SQL Server"; Value = $RegSQL.SQLServer; }
+            $ScriptInformation += @{ Data = "Last SQL User"; Value = $RegSQL.SQLUser; }
+        }
+        ElseIf($VCDB)
         {
             $ScriptInformation += @{ Data = "DSN Name"; Value = $VCDB; }
             $ScriptInformation += @{ Data = "SQL Database"; Value = ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Database"); }
             $ScriptInformation += @{ Data = "SQL Server"; Value = ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server"); }
             $ScriptInformation += @{ Data = "Last SQL User"; Value = ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser"); }
         }
-        $ScriptInformation += @{ Data = "EMail Sender"; Value = (($xVCAdvanced) | Where {$_.Name -like "mail.sender"}).Value; }
-        $ScriptInformation += @{ Data = "SMTP Server"; Value = (($xVCAdvanced) | Where {$_.Name -like "mail.smtp.server"}).Value; }
-        $ScriptInformation += @{ Data = "SMTP Server Port"; Value = (($xVCAdvanced) | Where {$_.Name -like "mail.smtp.port"}).Value; }
+        $ScriptInformation += @{ Data = "EMail Sender"; Value = (($VCAdvSettings) | Where {$_.Name -like "mail.sender"}).Value; }
+        $ScriptInformation += @{ Data = "SMTP Server"; Value = (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.server"}).Value; }
+        $ScriptInformation += @{ Data = "SMTP Server Port"; Value = (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.port"}).Value; }
 
         $Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -3138,7 +3292,7 @@ Function ProcessVCenter
     {
         Line 0 "Global Settings" 
         Line 1 ""
-        Line 1 "Server Name:`t`t" (($xVCAdvanced) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value
+        Line 1 "Server Name:`t`t" (($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value
         Line 1 "Version:`t`t" $VCObj.Version
         Line 1 "Build:`t`t`t" $VCObj.Build
         If($VCDB)
@@ -3148,15 +3302,14 @@ Function ProcessVCenter
             Line 1 "SQL Server:`t`t" ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server")
             Line 1 "Last SQL User:`t`t" ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser")
         }
-        Line 1 "Email Sender:`t`t" (($xVCAdvanced) | Where {$_.Name -like "mail.sender"}).Value
-        Line 1 "SMTP Server:`t`t" (($xVCAdvanced) | Where {$_.Name -like "mail.smtp.server"}).Value
-        Line 1 "SMTP Server Port:`t" (($xVCAdvanced) | Where {$_.Name -like "mail.smtp.port"}).Value
+        Line 1 "Email Sender:`t`t" (($VCAdvSettings) | Where {$_.Name -like "mail.sender"}).Value
+        Line 1 "SMTP Server:`t`t" (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.server"}).Value
+        Line 1 "SMTP Server Port:`t" (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.port"}).Value
         Line 0 ""
     }
 
     ## vCenter historical statistics
     $vCenterStats = @()
-    $xVCenterStats = Get-View (Get-View ServiceInstance).Content.PerfManager
     If($MSWord -or $PDF)
     {
         ## Create an array of hashtables
@@ -3164,7 +3317,7 @@ Function ProcessVCenter
 	    ## Seed the row index from the second row
 	    [int] $CurrentServiceIndex = 2;
         WriteWordLine 2 0 "Historical Statistics"
-        Foreach($xStatLevel in $xVCenterStats.HistoricalInterval)
+        Foreach($xStatLevel in $VCenterStatistics.HistoricalInterval)
         {
             Switch($xStatLevel.SamplingPeriod)
             {
@@ -3223,7 +3376,6 @@ Function ProcessVCenter
 
     ## vCenter Licensing
     $vSphereLicInfo = @() 
-    $ServiceInstance = Get-View ServiceInstance 
     If($MSWord -or $PDF)
     {
         ## Create an array of hashtables
@@ -3232,7 +3384,7 @@ Function ProcessVCenter
 	    [int] $CurrentServiceIndex = 2;
         WriteWordLine 2 0 "Licensing"
         #http://blogs.vmware.com/PowerCLI/2012/05/retrieving-license-keys-from-multiple-vcenters.html
-        Foreach ($LicenseMan in Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager) 
+        Foreach ($LicenseMan in $VCLicensing) 
         { 
             Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
             {
@@ -3285,7 +3437,6 @@ Function ProcessVCenter
 
     ## vCenter Plugins
     $vSpherePlugins = @()
-    $VMPlugins = (((Get-View extensionmanager).ExtensionList).Description)
     If($MSWord -or $PDF)
     {
         ## Create an array of hashtables
@@ -3394,16 +3545,34 @@ Function OutputVMHosts
 {
     Param([object] $VMHost)
     $xHostService = ($HostServices) | Where {$_.VMHostId -eq $VMHost.Id}
-    $xHostAdvanced = ($HostAdvSettings) | Where {$_.Entity -eq $VMHost.Name}
+    If($Export) {(Get-VMHostNtpServer -VMHost $VMHost.Name) -join ", " | Export-Clixml .\Export\$($VMHost.Name)-NTP.xml}
+    $xHostAdvanced = ($HostAdvSettings) | Where {$_.Entity -like $VMHost.Name}
     ## Set vmhoststorage variable - will fail if host has no devices (headless - boot from USB\SD using NFS only)
     If($VMHost.PowerState -eq "PoweredOn")
     {
-        $xVMHostStorage = Get-VMHostStorage -VMHost $VMHost | Where {$_.ScsiLun.LunType -notlike "*cdrom*"}
-        If(!$?)
+        If($Export)
         {
-                Write-Warning ""
-                Write-Warning "Get-VMHostStorage failed. If $($VMHost) has no local storage and uses NFS only, the above error can be ignored."
-                Write-Warning ""
+            Get-VMHostStorage -VMHost $VMHost | Where {$_.ScsiLun.LunType -notlike "*cdrom*"} | Export-Clixml .\Export\$($VMHost.Name)-Storage.xml
+            If(!$?)
+            {
+                    Write-Warning ""
+                    Write-Warning "Get-VMHostStorage failed. If $($VMHost) has no local storage and uses NFS only, the above error can be ignored."
+                    Write-Warning ""
+            }
+        }
+        ElseIf($Import)
+        {
+            $xVMHostStorage = Import-Clixml .\Export\$($VMHost.Name)-Storage.xml
+        }
+        Else
+        {
+            $xVMHostStorage = Get-VMHostStorage -VMHost $VMHost | Where {$_.ScsiLun.LunType -notlike "*cdrom*"}
+            If(!$?)
+            {
+                    Write-Warning ""
+                    Write-Warning "Get-VMHostStorage failed. If $($VMHost) has no local storage and uses NFS only, the above error can be ignored."
+                    Write-Warning ""
+            }
         }
     }
 
@@ -3435,7 +3604,14 @@ Function OutputVMHosts
     If ((($xHostService) | Where {$_.Key -eq "ntpd"}).Running)
     {
         $xNTPService = "Running"
-        $xNTPServers = (Get-VMHostNtpServer -VMHost $VMHost.Name) -join ", "
+        If($Import)
+        {
+            $xNTPServers = Import-Clixml .\Export\$($VMHost.Name)-NTP.xml
+        }
+        Else
+        {
+            $xNTPServers = (Get-VMHostNtpServer -VMHost $VMHost.Name) -join ", "
+        }
     }
     Else
     {
@@ -3474,7 +3650,7 @@ Function OutputVMHosts
         $ScriptInformation += @{ Data = "CPU Core Count"; Value = $VMHost.NumCpu; }
         $ScriptInformation += @{ Data = "Hyperthreading"; Value = $xHyperthreading; }
         $ScriptInformation += @{ Data = "Total Memory"; Value = "$([decimal]::round($VMHost.MemoryTotalGB)) GB"; }
-        If($VMHost.PowerState -eq "PoweredOn")
+        If($VMHost.PowerState -like "PoweredOn")
         {
             $ScriptInformation += @{ Data = "SSH Service Policy"; Value = (($xHostService) | Where {$_.Key -eq "TSM-SSH"}).Policy; }
             $ScriptInformation += @{ Data = "SSH Service Status"; Value = $xSSHService; }
@@ -3592,6 +3768,17 @@ Function OutputVMHosts
             Line 1 "NTP Servers" $xNTPServers
         }
         Line 0 ""
+        If($xVMHostStorage)
+        {
+            Line 0 "Block Storage"
+            Line 0 ""
+            Line 1 "Model`tVendor`tCapacity`tRunTime Name`tMultipath`tIdentifier"
+            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where {$_.LunType -notlike "*cdrom*"})
+            {
+                Line 1 "$($xLUN.Model)`t$($xLUN.Vendor)`t$("{0:N2}" -f $xLUN.CapacityGB + " GB")`t$($xLUN.RuntimeName)`t$($xLUN.MultipathPolicy)`t$(truncate $xLUN.CanonicalName 28)"
+            }
+            Line 0 ""
+        }
         If($VMHost.ConnectionState -like "*NotResponding*" -or $VMHost.PowerState -eq "PoweredOff")
         {
             Line 0 "Note: $($VMHost.Name) is not responding or is in an unknown state - data in this and other reports will be missing or inaccurate."
@@ -3766,7 +3953,6 @@ Function OutputClusters
 Function ProcessResourcePools
 {
     Write-Verbose "$(Get-Date): Processing VMware Resource Pools"
-    $Resources = Get-ResourcePool | Sort Name
     If($MSWord -or $PDF)
 	{
 		$Selection.InsertNewPage()
@@ -3977,7 +4163,7 @@ Function ProcessVMKPorts
 	{
 		Line 0 "VMKernel Ports"
 	}
-    $Global:VMKPortGroups = @()
+    $Script:VMKPortGroups = @()
     ForEach ($VMHost in ($VMHosts) | where {($_.ConnectionState -like "*Connected*") -or ($_.ConnectionState -like "*Maintenance*")})
     {
         If($MSWord -or $PDF){WriteWordLine 2 0 "VMKernel Ports on: $($VMHost.Name)"}
@@ -4008,7 +4194,7 @@ Function ProcessVMKPorts
         }
         Else
         {
-    	    Write-Warning "Unable to retrieve VMKernel ports"
+    	    If(!($Export)){Write-Warning "Unable to retrieve VMKernel ports"}
 		    If($MSWord -or $PDF)
 		    {
 			    WriteWordLine 0 1 "Unable to retrieve VMKernel ports"
@@ -4030,7 +4216,7 @@ Function OutputVMKPorts
     Param([object] $VMK)
 
     $xSwitchDetail = $VirtualPortGroups | Where {$_.Name -like $VMK.PortGroupName} | Select -Unique
-    $Global:VMKPortGroups += $VMK.PortGroupName
+    $Script:VMKPortGroups += $VMK.PortGroupName
 
     If ($VMK.VMotionEnabled)
     {
@@ -4183,7 +4369,7 @@ Function ProcessHostNetworking
     }
     Else
     {
-    	    Write-Warning "Unable to retrieve Host Network Adapters"
+    	    If(!($Export)){Write-Warning "Unable to retrieve Host Network Adapters"}
 		    If($MSWord -or $PDF)
 		    {
 			    WriteWordLine 0 1 "Unable to retrieve Host Network Adapters"
@@ -4396,7 +4582,7 @@ Function ProcessVMPortGroups
     }
     Else
     {
-    	Write-Warning "Unable to retrieve VM Port Groups"
+    	If(!($Export)){Write-Warning "Unable to retrieve VM Port Groups"}
 		If($MSWord -or $PDF)
 		{
 			WriteWordLine 0 1 "Unable to retrieve VM Port Groups"
@@ -4416,7 +4602,7 @@ Function OutputVMPortGroups
 {
     Param([object] $VMPortGroup)
 
-    If ($Global:VMKPortGroups -notcontains $VMPortGroup.Name)
+    If ($Script:VMKPortGroups -notcontains $VMPortGroup.Name)
     {
 
         Switch ($VMPortGroup.VLanId)
@@ -4585,7 +4771,7 @@ Function ProcessStandardVSwitch
         }
     Else
     {
-    	    Write-Warning "Unable to retrieve standard VSwitches configured"
+    	    If(!($Export)){Write-Warning "Unable to retrieve standard VSwitches configured"}
 		    If($MSWord -or $PDF)
 		    {
 			    WriteWordLine 0 1 "Unable to retrieve standard VSwitches configured"
@@ -4765,8 +4951,7 @@ Function ProcessDatastores
 		Line 0 "VM Datastores"
 	}
 
-    $VMDatastores = Get-Datastore
-    ForEach ($Datastore in $VMDatastores)
+    ForEach ($Datastore in $Datastores)
     {
         OutputDatastores $Datastore
     }
@@ -4897,7 +5082,7 @@ Function ProcessVirtualMachines
         $First = $True
         ForEach($VM in $VirtualMachines)
         {
-            If(!$First){$Selection.InsertNewPage()}
+            If(!$First -and !$Export){$Selection.InsertNewPage()}
             OutputVirtualMachines $VM
             $First = $False
         }
@@ -4968,6 +5153,8 @@ Function OutputVirtualMachines
     If($VM.Guest.State -eq "Running")
     {
         $xVMDetail = $True
+        If($Export){$VM.Guest | Export-Clixml .\Export\VMDetail\$($VM.Name)-Detail.xml}
+        If($Import){$GuestImport = Import-Clixml .\Export\VMDetail\$($VM.Name)-Detail.xml}
     }
 
     If($MSWord -or $PDF)
@@ -5003,17 +5190,19 @@ Function OutputVirtualMachines
             $ScriptInformation += @{ Data = "Network Adapter $($xNicCount)"; Value = $VMNic.Type; }
             $ScriptInformation += @{ Data = "     Port Group"; Value = $VMNic.NetworkName; }
             $ScriptInformation += @{ Data = "     MAC Address"; Value = $VMNic.MacAddress; }
-            If($xVMDetail){$ScriptInformation += @{ Data = "     IP Address"; Value = (($VM.Guest.Nics | Where {$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where {$_ -notlike "*:*"}) -join ", "; }}
+            If($Import){$xVMGuestNics = $GuestImport.Nics}Else{$xVMGuestNic = $VM.Guest.Nics}
+            If($xVMDetail){$ScriptInformation += @{ Data = "     IP Address"; Value = (($xVMGuestNics | Where {$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where {$_ -notlike "*:*"}) -join ", "; }}
         }
         $ScriptInformation += @{ Data = "Storage Allocation"; Value = "$([decimal]::Round($VM.ProvisionedSpaceGB)) GB"; }
         $ScriptInformation += @{ Data = "Storage Usage"; Value = "{0:N2}" -f $VM.UsedSpaceGB + " GB"; }
         If($xVMDetail)
         {
-            ForEach($VMVolume in $VM.Guest.Disks)
+            If($Import){$xVMDisks = $GuestImport.Disks}Else{$xVMDisks = $VM.Guest.Disks}
+            ForEach($VMVolume in $xVMDisks)
             {
-            $ScriptInformation += @{ Data = "Guest Volume Path"; Value = $VMVolume.Path; }
-            $ScriptInformation += @{ Data = "     Capacity"; Value = "{0:N2}" -f $VMVolume.CapacityGB + " GB"; }
-            $ScriptInformation += @{ Data = "     Free Space"; Value = "{0:N2}" -f $VMVolume.FreeSpaceGB + " GB"; }
+                $ScriptInformation += @{ Data = "Guest Volume Path"; Value = $VMVolume.Path; }
+                $ScriptInformation += @{ Data = "     Capacity"; Value = "{0:N2}" -f $VMVolume.CapacityGB + " GB"; }
+                $ScriptInformation += @{ Data = "     Free Space"; Value = "{0:N2}" -f $VMVolume.FreeSpaceGB + " GB"; }
             }
         }
         $xDiskCount = 0
@@ -5103,7 +5292,7 @@ Function OutputVirtualMachines
 
 #region script core
 #Script begins
-VISetup $VIServerName
+If(!($Import)){VISetup $VIServerName}
 
 SetGlobals
 ProcessSummary
@@ -5125,7 +5314,7 @@ If($Full)
 
 #region finish script
 #Disconnect from VCenter
-Disconnect-VIServer -confirm:$false
+If(!($Import)){Disconnect-VIServer -confirm:$false}
 
 Write-Verbose "$(Get-Date): Finishing up document"
 #end of document processing
