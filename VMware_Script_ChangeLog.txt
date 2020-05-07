@@ -9,6 +9,10 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 1.5 July 14, 2015
+#-Added vCenter permissions and non-standard roles
+#-Added DRS Rules and Groups
+
 #Version 1.4 June 1, 2015
 #-Reworked HTML general and table functions
 #-Full HTML output now functional

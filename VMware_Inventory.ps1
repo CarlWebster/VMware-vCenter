@@ -257,9 +257,9 @@
 	No objects are output from this script.  This script creates a Word or PDF document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.4
+	VERSION: 1.5
 	AUTHOR: Jacob Rutski
-	LASTEDIT: June 1, 2015
+	LASTEDIT: July 14, 2015
 
 #>
 
@@ -298,6 +298,9 @@ Param(
 
     [parameter(Mandatory=$False)]
     [Switch]$Export=$False,
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Issues=$False,
 	
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
@@ -374,6 +377,10 @@ Param(
 #-Reworked HTML general and table functions
 #-Full HTML output now functional
 #-Added fix for closing Word with PDF file
+#
+#Version 1.5
+#-Added vCenter permissions and non-standard roles
+#-Added DRS Rules and Groups
 #
 #endregion
 
@@ -2637,6 +2644,9 @@ Function SetGlobals
         Get-View ServiceInstance | Export-Clixml .\Export\ServiceInstance.xml
         (((Get-View extensionmanager).ExtensionList).Description) | Export-Clixml .\Export\Plugins.xml
         Get-View (Get-View serviceInstance | Select -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml
+        Get-VIPermission | Sort Entity | Export-Clixml .\Export\VIPerms.xml
+        Get-VIRole | Sort Name | Export-Clixml .\Export\VIRoles.xml
+        BuildDRSRules | Export-Clixml .\Export\DRSRules.xml
         If($Full)
         {
             If(!(Test-Path .\Export\VMDetail))
@@ -2668,6 +2678,9 @@ Function SetGlobals
             $SCript:VMPlugins = Import-Clixml .\Export\Plugins.xml
             $Script:VCenterStatistics = Import-Clixml .\Export\VCenterStats.xml
             $Script:VCLicensing = Import-Clixml .\Export\Licensing.xml
+            $Script:VIPerms = Import-Clixml .\Export\VIPerms.xml
+            $Script:VIRoles = Import-Clixml .\Export\VIRoles.xml
+            $Script:DRSRules = Import-Clixml .\Export\DRSRules.xml
             If(Test-Path .\Export\RegSQL.xml){$Script:RegSQL = Import-Clixml .\Export\RegSQL.xml}
             If($Full)
             {
@@ -2687,6 +2700,14 @@ Function SetGlobals
             Exit
         }
     }
+    ElseIf($Issues)
+    {
+        $Script:Clusters = Get-Cluster | Sort Name
+        $Script:VMHosts = Get-VMHost | Sort Name
+        $Script:Datastores = Get-Datastore | Sort Name
+        $Script:VirtualMachines = Get-VM | Sort Name
+        $Script:Snapshots = Get-Snapshot -VM * | Sort VM
+    }
     Else
     {
         $Script:Clusters = Get-Cluster | Sort Name
@@ -2701,6 +2722,10 @@ Function SetGlobals
         $Script:ServiceInstance = Get-View ServiceInstance
         $Script:VCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager
         $Script:VCLicensing = Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager
+        $Script:VIPerms = Get-VIPermission | Sort Entity
+        $Script:VIRoles = Get-VIRole | Sort Name
+        $Script:DRSRules = BuildDRSGroupsRules
+
         If($Full)
         {
             $Script:Snapshots = Get-Snapshot -VM *
@@ -2848,6 +2873,62 @@ Function AddStatsChart
         }
 
     } # End Process
+}
+
+Function BuildDRSGroupsRules
+{
+    ## From http://www.vnugglets.com/2011/07/backupexport-full-drs-rule-info-via.html
+    Get-View -ViewType ClusterComputeResource -Property Name, ConfigurationEx | %{
+        ## if the cluster has any DRS rules
+        if ($_.ConfigurationEx.Rule -ne $null) {
+            $viewCurrClus = $_
+            $DRSGroupsRules = @()
+            $viewCurrClus.ConfigurationEx.Rule | %{
+                $oRuleInfo = New-Object -Type PSObject -Property @{
+                    ClusterName = $viewCurrClus.Name
+                    RuleName = $_.Name
+                    RuleType = $_.GetType().Name
+                    bRuleEnabled = $_.Enabled
+                    bMandatory = $_.Mandatory
+                } 
+ 
+                ## add members to the output object, to be populated in a bit
+                "bKeepTogether,VMNames,VMGroupName,VMGroupMembers,AffineHostGrpName,AffineHostGrpMembers,AntiAffineHostGrpName,AntiAffineHostGrpMembers".Split(",") | %{Add-Member -InputObject $oRuleInfo -MemberType NoteProperty -Name $_ -Value $null}
+ 
+                ## switch statement based on the object type of the .NET view object
+                switch ($_){
+                    ## if it is a ClusterVmHostRuleInfo rule, get the VM info from the cluster View object
+                    #   a ClusterVmHostRuleInfo item "identifies virtual machines and host groups that determine virtual machine placement"
+                    {$_ -is [VMware.Vim.ClusterVmHostRuleInfo]} {
+                        $oRuleInfo.VMGroupName = $_.VmGroupName
+                        ## get the VM group members' names
+                        $oRuleInfo.VMGroupMembers = (Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterVmGroup]) -and ($_.Name -eq $oRuleInfo.VMGroupName)}).Vm | %{$_.Name}) -join ","
+                        $oRuleInfo.AffineHostGrpName = $_.AffineHostGroupName
+                        ## get affine hosts' names
+                        $oRuleInfo.AffineHostGrpMembers = if ($_.AffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AffineHostGrpName)}).Host | %{$_.Name}) -join ","}
+                        $oRuleInfo.AntiAffineHostGrpName = $_.AntiAffineHostGroupName
+                        ## get anti-affine hosts' names
+                        $oRuleInfo.AntiAffineHostGrpMembers = if ($_.AntiAffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AntiAffineHostGrpName)}).Host | %{$_.Name}) -join ","}
+                        break;
+                    } 
+                    ## if ClusterAffinityRuleSpec (or AntiAffinity), get the VM names (using Get-View)
+                    {($_ -is [VMware.Vim.ClusterAffinityRuleSpec]) -or ($_ -is [VMware.Vim.ClusterAntiAffinityRuleSpec])} {
+                        $oRuleInfo.VMNames = if ($_.Vm.Count -gt 0) {(Get-View -Property Name -Id $_.Vm | %{$_.Name}) -join ","}
+                    } 
+                    {$_ -is [VMware.Vim.ClusterAffinityRuleSpec]} {
+                        $oRuleInfo.bKeepTogether = $true
+                    } 
+                    {$_ -is [VMware.Vim.ClusterAntiAffinityRuleSpec]} {
+                        $oRuleInfo.bKeepTogether = $false
+                    }
+                    default {"none of the above"}
+                }
+ 
+                $DRSGroupsRules += $oRuleInfo
+            } 
+        } 
+    } 
+    Return $DRSGroupsRules
 }
 
 Function truncate
@@ -3790,6 +3871,93 @@ Function ProcessVCenter
         WriteHTMLLine 0 0 ""
     }
 
+    ## vCenter Permissions
+    If($MSWord -or $PDF)
+    {
+        ## Create an array of hashtables
+	    [System.Collections.Hashtable[]] $PermsWordTable = @();
+	    ## Seed the row index from the second row
+	    [int] $CurrentServiceIndex = 2;
+        WriteWordLine 2 0 "VCenter Permissions"
+        foreach ($VIPerm in $VIPerms)
+        {
+            ## Add the required key/values to the hashtable
+	        $WordTableRowHash = @{
+            Entity = $VIPerm.Entity;
+            Principal = $VIPerm.Principal;
+            Role = $VIPerm.Role;
+            }
+            ## Add the hash to the array
+            $PermsWordTable += $WordTableRowHash
+            $CurrentServiceIndex++
+        }
+
+        ## Add the table to the document, using the hashtable (-Alt is short for -AlternateBackgroundColor!)
+	    $Table = AddWordTable -Hashtable $PermsWordTable `
+	    -Columns Entity, Principal, Role `
+	    -Headers "Entity", "Principal", "Role" `
+	    -Format $wdTableGrid `
+	    -AutoFit $wdAutoFitContent; 
+
+	    ## IB - Set the header row format
+	    SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+	    $Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+	    FindWordDocumentEnd
+	    $Table = $Null
+
+	    WriteWordLine 0 0 ""  
+
+    }
+    ElseIf($Text)
+    {
+
+    }
+    ElseIf($HTML)
+    {
+        $rowData = @()
+        $columnHeaders = @("Entity",($htmlsilver -bor $htmlbold),"Principal",($htmlsilver -bor $htmlbold),"Role",($htmlsilver -bor $htmlbold))
+        foreach($VIPerm in $VIPerms)
+        {
+            $rowData += @(,($VIPerm.Entity,$htmlwhite,$VIPerm.Principal,$htmlwhite,$VIPerm.Role,$htmlwhite))
+        }
+        FormatHTMLTable "VCenter Permissions" -columnArray $columnHeaders -rowArray $rowdata
+        WriteHTMLLine 0 0 ""
+    }
+
+    ## vCenter Role Perms
+    If($MSWord -or $PDF)
+    {
+        WriteWordLine 2 0 "Active non-Standard vCenter Roles"
+        foreach($role in ($VIPerms | select Role -Unique))
+        {
+            foreach($expandRole in $VIRoles | Where {$_.Name -eq $role.Role -and $_.IsSystem -eq $false})
+            {
+                WriteWordLine 0 0 $expandRole.Name -boldface $true
+                foreach($privRole in $expandRole.PrivilegeList){WriteWordLine 0 0 $privRole -fontSize 8}
+                WriteWordLine 0 0 ""
+            }
+        }
+    }
+    ElseIf($Text)
+    {
+
+    }
+    ElseIf($HTML)
+    {
+        WriteHTMLLine 1 0 "Active non-Standard vCenter Roles"
+        foreach($role in ($VIPerms | Select Role -Unique))
+        {
+            foreach($expandRole in $VIRoles | Where {$_.Name -eq $role.Role -and $_.IsSystem -eq $false})
+            {
+                WriteHTMLLine 0 0 $expandRole.Name -options $htmlBold -fontSize 3
+                foreach($privRole in $expandRole.PrivilegeList){WriteHTMLLine 0 0 $privRole -fontSize 2}
+                WriteHTMLLine 0 0 ""
+            }
+        }
+    }
+
     ## vCenter Plugins
     $vSpherePlugins = @()
     If($MSWord -or $PDF)
@@ -4345,6 +4513,43 @@ Function OutputClusters
 		$Table = $Null
 		WriteWordLine 0 0 ""
 
+        If ($VMCluster.DrsEnabled -and ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+        {
+            WriteWordLine 2 0 "DRS Rules and Groups"
+            foreach($DRSRule in ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+            {
+                [System.Collections.Hashtable[]] $ScriptInformation = @()
+                $ScriptInformation += @{ Data = "Rule Name"; Value = $DRSRule.RuleName; }
+                $ScriptInformation += @{ Data = "Rule Type"; Value = $DRSRule.RuleType; }
+                $ScriptInformation += @{ Data = "Rule Enabled"; Value = $DRSRule.bRuleEnabled; }
+                If($DRSRule.bMandatory){$ScriptInformation += @{ Data = "Mandatory"; Value = $DRSRule.bMandatory; }}
+                If($DRSRule.bKeepTogether){$ScriptInformation += @{ Data = "Keep Together"; Value = $DRSRule.bKeepTogether; }}
+                If($DRSRule.VMNames){$ScriptInformation += @{ Data = "Virtual Machines"; Value = $DRSRule.VMNames; }}
+                If($DRSRule.VMGroupName){$ScriptInformation += @{ Data = "VM Group"; Value = $DRSRule.VMGroupName; }}
+                If($DRSRule.VMGroupMembers){$ScriptInformation += @{ Data = "Virtual Machines"; Value = $DRSRule.VMGroupMembers; }}
+                If($DRSRule.AffineHostGrpName){$ScriptInformation += @{ Data = "Host Affinity Group"; Value = $DRSRule.AffineHostGrpName; }}
+                If($DRSRule.AffineHostGrpMembers){$ScriptInformation += @{ Data = "Affinity Group Members"; Value = $DRSRule.AffineHostGrpMembers; }}
+                If($DRSRule.AntiAffineHostGrpName){$ScriptInformation += @{ Data = "Host Anti Affinity Group"; Value = $DRSRule.AntiAffineHostGrpName; }}
+                If($DRSRule.AntiAffineHostGrpMembers){$ScriptInformation += @{ Data = "Anti Affinity Group Members"; Value = $DRSRule.AntiAffineHostGrpMembers; }}
+
+                $Table = AddWordTable -Hashtable $ScriptInformation `
+                -Columns Data,Value -List -Format $wdTableGrid -AutoFit $wdAutoFitFixed
+
+		        ## IB - Set the header row format
+		        SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		        $Table.Columns.Item(1).Width = 225;
+		        $Table.Columns.Item(2).Width = 200;
+
+		        # $Table.Rows.SetLeftIndent($Indent1TabStops,$wdAdjustProportional)
+
+		        FindWordDocumentEnd
+		        $Table = $Null
+		        WriteWordLine 0 0 ""
+
+            }
+        }
+
         If($xClusterHosts)
         {
             [System.Collections.Hashtable[]] $ScriptInformation = @()
@@ -4407,12 +4612,38 @@ Function OutputClusters
         FormatHTMLTable "Cluster: $($VMCluster.Name)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
         WriteHTMLLine 0 1 ""
 
+        If ($VMCluster.DrsEnabled -and ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+        {
+            WriteHTMLLine 0 0 "DRS Rules and Groups" -options $htmlbold -fontSize 4
+            foreach($DRSRule in ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+            {
+                $rowdata = @()
+                $colWidths = @("150px","200px")
+                $rowdata += @(,("Rule Name", ($htmlsilver -bor $htmlbold),$DRSRule.RuleName,$htmlwhite))
+                $rowdata += @(,("Rule Type", ($htmlsilver -bor $htmlbold),$DRSRule.RuleType,$htmlwhite))
+                $rowdata += @(,("Rule Enabled", ($htmlsilver -bor $htmlbold),$DRSRule.bRuleEnabled,$htmlwhite))
+                If($DRSRule.bMandatory){$rowdata += @(,("Mandatory", ($htmlsilver -bor $htmlbold),$DRSRule.bMandatory,$htmlwhite))}
+                If($DRSRule.bKeepTogether){$rowdata += @(,("Keep Together", ($htmlsilver -bor $htmlbold),$DRSRule.bKeepTogether,$htmlwhite))}
+                If($DRSRule.VMNames){$rowdata += @(,("Virtual Machines", ($htmlsilver -bor $htmlbold),$DRSRule.VMNames,$htmlwhite))}
+                If($DRSRule.VMGroupName){$rowdata += @(,("VM Group", ($htmlsilver -bor $htmlbold),$DRSRule.VMGroupName,$htmlwhite))}
+                If($DRSRule.VMGroupMembers){$rowdata += @(,("Virtual Machines", ($htmlsilver -bor $htmlbold),$DRSRule.VMGroupMembers,$htmlwhite))}
+                If($DRSRule.AffineHostGrpName){$rowdata += @(,("Host Affinity Group", ($htmlsilver -bor $htmlbold),$DRSRule.AffineHostGrpName,$htmlwhite))}
+                If($DRSRule.AffineHostGrpMembers){$rowdata += @(,("Affinity Group Members", ($htmlsilver -bor $htmlbold),$DRSRule.AffineHostGrpMembers,$htmlwhite))}
+                If($DRSRule.AntiAffineHostGrpName){$rowdata += @(,("Host Anti Affinity Group", ($htmlsilver -bor $htmlbold),$DRSRule.AntiAffineHostGrpName,$htmlwhite))}
+                If($DRSRule.AntiAffineHostGrpMembers){$rowdata += @(,("Anti Affinity Group Members", ($htmlsilver -bor $htmlbold),$DRSRule.AntiAffineHostGrpMembers,$htmlwhite))}
+
+                FormatHTMLTable "" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths
+                WriteHTMLLine 0 0 ""
+            }
+        }
+
         If ($xClusterHosts)
         {
-            WriteHTMLLine 3 0 "Hosts in $($VMCluster.Name)"
+            WriteHTMLLine 0 0 "Hosts in $($VMCluster.Name)" -options $htmlbold -fontSize 4
             ForEach ($cluHost in $xClusterHosts -split "`n"){WriteHTMLLine 0 1 $cluHost}
             WriteHTMLLine 0 1 ""
         }
+
     }
     ElseIf($Text)
     {
@@ -6115,6 +6346,99 @@ Function OutputVirtualMachines
 
 #endregion
 
+#region VCenter Issues functions
+
+Function ProcessSnapIssues
+{
+    If($Snapshots)
+    {
+        Write-Verbose "$(Get-Date): Processing Issues: Virtual Machine Snapshots found"
+        If($MSWord -or $PDF)
+	    {
+		    $Selection.InsertNewPage()
+		    WriteWordLine 1 0 "Virtual Machines with Snapshots"
+	    }
+	    ElseIf($Text){Line 0 "Issue: Virtual Machines with Snapshots"}
+            
+        OutputSnapIssues $Snapshots
+
+    }
+}
+
+Function OutputSnapIssues
+{
+    Param([object] $VMSnaps)
+
+    If($MSWord -or $PDF)
+    {
+
+    }
+    ElseIf($HTML)
+    {
+        WriteHTMLLine 0 0 ""
+        $rowdata = @()
+        $columnHeaders = @("Virtual Machine",($htmlsilver -bor $htmlbold),"Snapshot Name",($htmlsilver -bor $htmlbold),"Created",($htmlsilver -bor $htmlbold),"Running Current",($htmlsilver -bor $htmlbold),"Parent",($htmlsilver -bor $htmlbold),"Quiesced",($htmlsilver -bor $htmlbold),"Description",($htmlsilver -bor $htmlbold))
+
+        foreach($Snap in $VMSnaps)
+        {
+            $rowdata += @(,($Snap.VM,$htmlwhite,$Snap.Name,$htmlwhite,$Snap.Created,$htmlwhite,$Snap.IsCurrent,$htmlwhite,$Snap.ParentSnapshot,$htmlwhite,$Snap.Quiesced,$htmlwhite,$Snap.Description,$htmlwhite))
+        }
+
+        FormatHTMLTable "VMs with Snapshots" -rowArray $rowdata -columnArray $columnHeaders
+    }
+    ElseIf($Text)
+    {
+
+    }
+}
+
+Function ProcessOpticalIssues
+{
+    $VMCDRom = $VirtualMachines | Where {$_.CDDrives.ConnectionState.Connected}
+    If($VMCDRom)
+    {
+        Write-Verbose "$(Get-Date): Processing Issues: Mounted CDROM drives found"
+        If($MSWord -or $PDF)
+	    {
+		    $Selection.InsertNewPage()
+		    WriteWordLine 1 0 "Virtual Machines with CDROM drives mounted"
+	    }
+	    ElseIf($Text){Line 0 "Virtual Machines with CDROM drives mounted"}
+
+        OutputOpticalIssues $VMCDRom
+    }
+    
+}
+
+Function OutputOpticalIssues
+{
+    Param([object] $VMCDRoms)
+
+    If($MSWord -or $PDF)
+    {
+
+    }
+    ElseIf($HTML)
+    {
+        WriteHTMLLine 0 0 ""
+        $rowdata = @()
+        $columnHeaders = @("Virtual Machine",($htmlsilver -bor $htmlbold),"ISO Path",($htmlsilver -bor $htmlbold),"Host Device",($htmlsilver -bor $htmlbold),"Remote Device",($htmlsilver -bor $htmlbold))
+
+        foreach($VMCD in $VMCDRoms)
+        {
+            $rowdata += @(,($VMCD.Name,$htmlwhite,$VMCD.CDDrives.IsoPath,$htmlwhite,$VMCD.CDDrives.HostDevice,$htmlwhite,$VMCD.CDDrives.RemoteDevice,$htmlwhite))
+        }
+
+        FormatHTMLTable "VMs with mounted CDROM" -rowArray $rowdata -columnArray $columnHeaders
+    }
+    ElseIf($Text)
+    {
+
+    }
+}
+
+#endregion
+
 #region script setup function
 Function ProcessScriptSetup
 {
@@ -6132,11 +6456,21 @@ ProcessScriptSetup
 If(!($Import)){VISetup $VIServerName}
 
 SetGlobals
-ProcessSummary
-ProcessVCenter
-ProcessClusters
-ProcessResourcePools
-ProcessVMHosts
+
+If($Issues)
+{
+    ProcessSummary
+    ProcessSnapIssues
+    ProcessOpticalIssues
+}
+Else
+{
+    ProcessSummary
+    ProcessVCenter
+    ProcessClusters
+    ProcessResourcePools
+    ProcessVMHosts
+}
 
 #Process full inventory
 If($Full)
