@@ -9,8 +9,9 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
-#Version 1.5.2 October 5, 2015
-#-Added support for Word 2016
+#Version 1.6 Feb 23, 2015
+#-Added several advanced settings for VMs and VMHosts
+#-Updated to ScriptTemplate 21-Feb-2016
 
 #Version 1.5.1 July 20, 2015
 #-Cleaned up some extra PCLI calls - set to variables
