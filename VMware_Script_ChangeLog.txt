@@ -9,6 +9,9 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 1.2 January 7, 2015
+#-Added Import and Export functionality to output all data to XML that can be taken offline to generate a document at a later time
+
 #Version 1.1 December 16, 2014
 #-Fix for help text region tags, fixes from template script for save as PDF, fix for memory heatmap
 #-Added VCenter plugins
