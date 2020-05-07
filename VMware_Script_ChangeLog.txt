@@ -9,6 +9,9 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 1.62 19-Aug-2016
+#	Fixed several misspelled words
+
 #Version 1.61 Apr 21, 2016
 #-Fixed title and subtitle for the Word/PDF cover page
 

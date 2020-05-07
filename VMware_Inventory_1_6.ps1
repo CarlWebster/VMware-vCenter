@@ -25,7 +25,7 @@
 		Swedish
 		
 .PARAMETER VIServerName
-    Name of the VCenter Server to connect to.
+    Name of the vCenter Server to connect to.
     This parameter is mandatory and does not have a default value.
     FQDN should be used; hostname can be used if it can be resolved correctly.
 .PARAMETER CompanyName
@@ -148,7 +148,7 @@
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1
 	
-	Will use all default values and prompt for VCenter Server.
+	Will use all default values and prompt for vCenter Server.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
@@ -159,7 +159,7 @@
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -VIServerName testvc.lab.com
 	
-	Will use all default values and use testvc.lab.com as the VCenter Server.
+	Will use all default values and use testvc.lab.com as the vCenter Server.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
@@ -238,7 +238,7 @@
 .EXAMPLE
     PS C:\PSScript .\VMware_Inventory.ps1 -Export -VIServerName testvc.lab.com
 
-	Will use all default values and use testvc.lab.com as the VCenter Server.
+	Will use all default values and use testvc.lab.com as the vCenter Server.
     Script will output all data to XML files in the .\Export directory created
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
@@ -335,9 +335,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.61
+	VERSION: 1.62
 	AUTHOR: Jacob Rutski
-	LASTEDIT: April 21, 2016
+	LASTEDIT: August 19, 2016
 #>
 
 #endregion
@@ -466,11 +466,11 @@ Param(
 #
 #Version 1.0
 #-Fixed Get-Advanced parameters
-#-Added Heatmap legend table, DSN for Windows VCenter, left-aligned tables, VCenter server version
+#-Added Heatmap legend table, DSN for Windows vCenter, left-aligned tables, vCenter server version
 #
 #Version 1.1
 #-Fix for help text region tags, fixes from template script for save as PDF, fix for memory heatmap
-#-Added VCenter plugins
+#-Added vCenter plugins
 #
 #Version 1.2
 #-Added Import and Export functionality to output all data to XML that can be taken offline to generate a document at a later time
@@ -502,6 +502,10 @@ Param(
 #
 #Version 1.61 Apr 21, 2016
 #-Fixed title and subtitle for the Word/PDF cover page
+#
+#Version 1.62 19-Aug-2016
+#	Fixed several misspelled words
+#
 #endregion
 
 #region initial variable testing and setup
@@ -854,7 +858,7 @@ Function SetWordHashTable
 {
 	Param([string]$CultureCode)
 
-	#optimized by Michael B. SMith
+	#optimized by Michael B. Smith
 	
 	# DE and FR translations for Word 2010 by Vladimir Radojevic
 	# Vladimir.Radojevic@Commerzreal.com
@@ -2488,7 +2492,7 @@ Function AddWordTable
 			{
 				If($Null -eq $Columns) 
 				{
-					## Build the available columns from all availble PSCustomObject note properties
+					## Build the available columns from all available PSCustomObject note properties
 					[string[]] $Columns = @();
 					## Add each NoteProperty name to the array
 					ForEach($Property in ($CustomObject | Get-Member -MemberType NoteProperty)) 
@@ -2880,7 +2884,7 @@ Function VISetup( [string] $VIServer )
     #Verify we successfully connected
     If(!($?))
     {
-            Write-Host "Connecting to VCenter failed with the following error: $($Error[0].Exception.Message.substring($Error[0].Exception.Message.IndexOf("Connect-VIServer") + 16).Trim()) This script will now exit."
+            Write-Host "Connecting to vCenter failed with the following error: $($Error[0].Exception.Message.substring($Error[0].Exception.Message.IndexOf("Connect-VIServer") + 16).Trim()) This script will now exit."
             Exit
         }
 
@@ -2906,14 +2910,14 @@ Function SetGlobals
         $VMHosts | Sort Name | Export-Clixml .\Export\VMHost.xml 4>$Null
         Get-Datastore 4>$Null| Sort Name | Export-Clixml .\Export\Datastore.xml 4>$Null
         Get-Snapshot -VM * 4>$Null| Export-Clixml .\Export\Snapshot.xml 4>$Null
-        Get-AdvancedSetting -Entity $VIServerName 4>$Null| Where {$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\VCenterAdv.xml 4>$Null
+        Get-AdvancedSetting -Entity $VIServerName 4>$Null| Where {$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\vCenterAdv.xml 4>$Null
         Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null| Where {$_.Name -like "Syslog.global.logdir" -or $_.Name -like "Syslog.global.loghost"} | Export-Clixml .\Export\HostsAdv.xml 4>$Null
         Get-VMHostService -VMHost * 4>$Null| Export-Clixml .\Export\HostService.xml 4>$Null
         Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
         $Script:VirtualMachines = Get-VM 4>$Null| Sort Name
         $VirtualMachines | Export-Clixml .\Export\VM.xml 4>$Null
         Get-ResourcePool 4>$Null| Sort Name | Export-Clixml .\Export\ResourcePool.xml 4>$Null
-        Get-View 4>$Null(Get-View ServiceInstance 4>$Null).Content.PerfManager | Export-Clixml .\Export\VCenterStats.xml 4>$Null
+        Get-View 4>$Null(Get-View ServiceInstance 4>$Null).Content.PerfManager | Export-Clixml .\Export\vCenterStats.xml 4>$Null
         Get-View ServiceInstance 4>$Null| Export-Clixml .\Export\ServiceInstance.xml 4>$Null
         (((Get-View extensionmanager).ExtensionList).Description 4>$Null) | Export-Clixml .\Export\Plugins.xml 4>$Null
         Get-View 4>$Null(Get-View serviceInstance 4>$Null| Select -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml 4>$Null
@@ -2944,13 +2948,13 @@ Function SetGlobals
             $Script:Datastores = Import-Clixml .\Export\Datastore.xml
             $Script:Snapshots = Import-Clixml .\Export\Snapshot.xml
             $Script:HostAdvSettings = Import-Clixml .\Export\HostsAdv.xml
-            $Script:VCAdvSettings = Import-Clixml .\Export\VCenterAdv.xml
+            $Script:VCAdvSettings = Import-Clixml .\Export\vCenterAdv.xml
             $Script:VCObj = Import-Clixml .\Export\VCObj.xml
             $Script:HostServices = Import-Clixml .\Export\HostService.xml
             $Script:VirtualMachines = Import-Clixml .\Export\VM.xml
             $Script:Resources = Import-Clixml .\Export\ResourcePool.xml
             $SCript:VMPlugins = Import-Clixml .\Export\Plugins.xml
-            $Script:VCenterStatistics = Import-Clixml .\Export\VCenterStats.xml
+            $Script:vCenterStatistics = Import-Clixml .\Export\vCenterStats.xml
             $Script:VCLicensing = Import-Clixml .\Export\Licensing.xml
             $Script:VIPerms = Import-Clixml .\Export\VIPerms.xml
             $Script:VIRoles = Import-Clixml .\Export\VIRoles.xml
@@ -2997,7 +3001,7 @@ Function SetGlobals
         $Script:Resources = Get-ResourcePool 4>$Null| Sort Name 
         $Script:VMPlugins = (((Get-View extensionmanager 4>$Null).ExtensionList).Description) 
         $Script:ServiceInstance = Get-View ServiceInstance 4>$Null
-        $Script:VCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager 4>$Null
+        $Script:vCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager 4>$Null
         $Script:VCLicensing = Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager 4>$Null
         $Script:VIPerms = Get-VIPermission 4>$Null| Sort Entity 
         $Script:VIRoles = Get-VIRole 4>$Null| Sort Name 
@@ -3621,7 +3625,7 @@ Function AbortScript
 }
 #endregion
 
-#region Summary and VCenter functions
+#region Summary and vCenter functions
 Function ProcessSummary
 {
     Write-Verbose "$(Get-Date): Processing Summary page"
@@ -3897,25 +3901,25 @@ Function ProcessSummary
     }
 }
 
-Function ProcessVCenter
+Function ProcessvCenter
 {
-    Write-Verbose "$(Get-Date): Processing VCenter Global Settings"
+    Write-Verbose "$(Get-Date): Processing vCenter Global Settings"
     If($MSWord -or $PDF)
 	{
         $Selection.InsertNewPage()
-		WriteWordLine 1 0 "VCenter Server"
+		WriteWordLine 1 0 "vCenter Server"
 	}
     ElseIf($HTML)
     {
-        WriteHTMLLine 1 0 "VCenter Server"
+        WriteHTMLLine 1 0 "vCenter Server"
     }
 	ElseIf($Text)
 	{
-		Line 0 "VCenter Server"
+		Line 0 "vCenter Server"
 	} 
     
     ## Global vCenter settings
-    ## Try to get VCenter DSN if Windows Server
+    ## Try to get vCenter DSN if Windows Server
     If(!$Import)
     {
         $RemReg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $VIServerName)
@@ -4044,7 +4048,7 @@ Function ProcessVCenter
 	    ## Seed the row index from the second row
 	    [int] $CurrentServiceIndex = 2;
         WriteWordLine 2 0 "Historical Statistics"
-        Foreach($xStatLevel in $VCenterStatistics.HistoricalInterval)
+        Foreach($xStatLevel in $vCenterStatistics.HistoricalInterval)
         {
             Switch($xStatLevel.SamplingPeriod)
             {
@@ -4087,7 +4091,7 @@ Function ProcessVCenter
         Line 0 "Historical Statistics" 
         Line 1 ""
         Line 1 "Interval Duration`tEnabled`t`tSave For`tStatistics Level"
-        Foreach($xStatLevel in $VCenterStatistics.HistoricalInterval)
+        Foreach($xStatLevel in $vCenterStatistics.HistoricalInterval)
         {
             Switch($xStatLevel.SamplingPeriod)
             {
@@ -4104,7 +4108,7 @@ Function ProcessVCenter
     {
         $rowdata = @()
         $columnHeaders = @("Interval Duration",($htmlsilver -bor $htmlbold),"Enabled",($htmlsilver -bor $htmlbold),"Save For",($htmlsilver -bor $htmlbold),"Statistics Level",($htmlsilver -bor $htmlbold))
-        Foreach($xStatLevel in $VCenterStatistics.HistoricalInterval)
+        Foreach($xStatLevel in $vCenterStatistics.HistoricalInterval)
         {
             Switch($xStatLevel.SamplingPeriod)
             {
@@ -4128,7 +4132,7 @@ Function ProcessVCenter
 	    ## Seed the row index from the second row
 	    [int] $CurrentServiceIndex = 2;
         WriteWordLine 2 0 "Licensing"
-        #http://blogs.vmware.com/PowerCLI/2012/05/retrieving-license-keys-from-multiple-vcenters.html
+        #http://blogs.vmware.com/PowerCLI/2012/05/retrieving-license-keys-from-multiple-vCenters.html
         Foreach ($LicenseMan in $VCLicensing) 
         { 
             Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
@@ -4201,7 +4205,7 @@ Function ProcessVCenter
 	    [System.Collections.Hashtable[]] $PermsWordTable = @();
 	    ## Seed the row index from the second row
 	    [int] $CurrentServiceIndex = 2;
-        WriteWordLine 2 0 "VCenter Permissions"
+        WriteWordLine 2 0 "vCenter Permissions"
         foreach ($VIPerm in $VIPerms)
         {
             ## Add the required key/values to the hashtable
@@ -4245,7 +4249,7 @@ Function ProcessVCenter
         {
             $rowData += @(,($VIPerm.Entity,$htmlwhite,$VIPerm.Principal,$htmlwhite,$VIPerm.Role,$htmlwhite))
         }
-        FormatHTMLTable "VCenter Permissions" -columnArray $columnHeaders -rowArray $rowdata
+        FormatHTMLTable "vCenter Permissions" -columnArray $columnHeaders -rowArray $rowdata
         WriteHTMLLine 0 0 ""
     }
 
@@ -4289,7 +4293,7 @@ Function ProcessVCenter
 	    [System.Collections.Hashtable[]] $PluginsWordTable = @();
 	    ## Seed the row index from the second row
 	    [int] $CurrentServiceIndex = 2;
-        WriteWordLine 2 0 "VCenter Plugins"
+        WriteWordLine 2 0 "vCenter Plugins"
         Foreach ($VMPlugin in $VMPlugins)
         {
             ## Add the required key/values to the hashtable
@@ -4338,7 +4342,7 @@ Function ProcessVCenter
         {
             $rowData += @(,($VMPlugin.Label,$htmlwhite,$VMPlugin.Summary,$htmlwhite))
         }
-        FormatHTMLTable "VCenter Plugins" -columnArray $columnHeaders -rowArray $rowdata
+        FormatHTMLTable "vCenter Plugins" -columnArray $columnHeaders -rowArray $rowdata
     }
 
 }
@@ -6722,7 +6726,7 @@ Function OutputVirtualMachines
 
 #endregion
 
-#region VCenter Issues functions
+#region vCenter Issues functions
 
 Function ProcessSnapIssues
 {
@@ -6939,7 +6943,7 @@ If($Issues)
 Else
 {
     ProcessSummary
-    ProcessVCenter
+    ProcessvCenter
     ProcessClusters
     ProcessResourcePools
     ProcessVMHosts
