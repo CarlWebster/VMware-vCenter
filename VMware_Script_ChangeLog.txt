@@ -10,6 +10,11 @@
 #http://www.CarlWebster.com
 #Sr. Solutions Architect Choice Solutions
 
+#Version 1.70 24-Oct-2016
+#	Added support for PowerCLI installed in non-default locations
+#	Fixed formatting issues with HTML output
+#	Sort Guest Volume Paths by drive letter
+
 #Version 1.63 29-Aug-2016
 #	Add support for the -Dev and -ScriptInfo parameters
 #	Update the ShowScriptOptions function with all script parameters
