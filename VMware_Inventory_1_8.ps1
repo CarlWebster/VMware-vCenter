@@ -412,9 +412,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.8
+	VERSION: 1.81
 	AUTHOR: Jacob Rutski and Carl Webster, Sr. Solutions Architect Choice Solutions
-	LASTEDIT: February 26, 2018
+	LASTEDIT: April 9, 2018
 #>
 
 #endregion
@@ -664,6 +664,10 @@ Param(
 #	Updated Function ProcessScriptEnd for the new Log Parameter
 #	Updated Function ShowScriptOptions for the new Log Parameter
 #	Update help text
+#
+#Version 1.81 9-Apr-2018
+#	Code clean-up with recommendations from Visual Studio Code
+#
 #endregion
 
 #region initial variable testing and setup
@@ -897,43 +901,43 @@ If($MSWord -or $PDF)
 
 If($HTML)
 {
-    Set htmlredmask         -Option AllScope -Value "#FF0000" 4>$Null
-    Set htmlcyanmask        -Option AllScope -Value "#00FFFF" 4>$Null
-    Set htmlbluemask        -Option AllScope -Value "#0000FF" 4>$Null
-    Set htmldarkbluemask    -Option AllScope -Value "#0000A0" 4>$Null
-    Set htmllightbluemask   -Option AllScope -Value "#ADD8E6" 4>$Null
-    Set htmlpurplemask      -Option AllScope -Value "#800080" 4>$Null
-    Set htmlyellowmask      -Option AllScope -Value "#FFFF00" 4>$Null
-    Set htmllimemask        -Option AllScope -Value "#00FF00" 4>$Null
-    Set htmlmagentamask     -Option AllScope -Value "#FF00FF" 4>$Null
-    Set htmlwhitemask       -Option AllScope -Value "#FFFFFF" 4>$Null
-    Set htmlsilvermask      -Option AllScope -Value "#C0C0C0" 4>$Null
-    Set htmlgraymask        -Option AllScope -Value "#808080" 4>$Null
-    Set htmlblackmask       -Option AllScope -Value "#000000" 4>$Null
-    Set htmlorangemask      -Option AllScope -Value "#FFA500" 4>$Null
-    Set htmlmaroonmask      -Option AllScope -Value "#800000" 4>$Null
-    Set htmlgreenmask       -Option AllScope -Value "#008000" 4>$Null
-    Set htmlolivemask       -Option AllScope -Value "#808000" 4>$Null
+    Set-Variable htmlredmask         -Option AllScope -Value "#FF0000" 4>$Null
+    Set-Variable htmlcyanmask        -Option AllScope -Value "#00FFFF" 4>$Null
+    Set-Variable htmlbluemask        -Option AllScope -Value "#0000FF" 4>$Null
+    Set-Variable htmldarkbluemask    -Option AllScope -Value "#0000A0" 4>$Null
+    Set-Variable htmllightbluemask   -Option AllScope -Value "#ADD8E6" 4>$Null
+    Set-Variable htmlpurplemask      -Option AllScope -Value "#800080" 4>$Null
+    Set-Variable htmlyellowmask      -Option AllScope -Value "#FFFF00" 4>$Null
+    Set-Variable htmllimemask        -Option AllScope -Value "#00FF00" 4>$Null
+    Set-Variable htmlmagentamask     -Option AllScope -Value "#FF00FF" 4>$Null
+    Set-Variable htmlwhitemask       -Option AllScope -Value "#FFFFFF" 4>$Null
+    Set-Variable htmlsilvermask      -Option AllScope -Value "#C0C0C0" 4>$Null
+    Set-Variable htmlgraymask        -Option AllScope -Value "#808080" 4>$Null
+    Set-Variable htmlblackmask       -Option AllScope -Value "#000000" 4>$Null
+    Set-Variable htmlorangemask      -Option AllScope -Value "#FFA500" 4>$Null
+    Set-Variable htmlmaroonmask      -Option AllScope -Value "#800000" 4>$Null
+    Set-Variable htmlgreenmask       -Option AllScope -Value "#008000" 4>$Null
+    Set-Variable htmlolivemask       -Option AllScope -Value "#808000" 4>$Null
 
-    Set htmlbold        -Option AllScope -Value 1 4>$Null
-    Set htmlitalics     -Option AllScope -Value 2 4>$Null
-    Set htmlred         -Option AllScope -Value 4 4>$Null
-    Set htmlcyan        -Option AllScope -Value 8 4>$Null
-    Set htmlblue        -Option AllScope -Value 16 4>$Null
-    Set htmldarkblue    -Option AllScope -Value 32 4>$Null
-    Set htmllightblue   -Option AllScope -Value 64 4>$Null
-    Set htmlpurple      -Option AllScope -Value 128 4>$Null
-    Set htmlyellow      -Option AllScope -Value 256 4>$Null
-    Set htmllime        -Option AllScope -Value 512 4>$Null
-    Set htmlmagenta     -Option AllScope -Value 1024 4>$Null
-    Set htmlwhite       -Option AllScope -Value 2048 4>$Null
-    Set htmlsilver      -Option AllScope -Value 4096 4>$Null
-    Set htmlgray        -Option AllScope -Value 8192 4>$Null
-    Set htmlolive       -Option AllScope -Value 16384 4>$Null
-    Set htmlorange      -Option AllScope -Value 32768 4>$Null
-    Set htmlmaroon      -Option AllScope -Value 65536 4>$Null
-    Set htmlgreen       -Option AllScope -Value 131072 4>$Null
-    Set htmlblack       -Option AllScope -Value 262144 4>$Null
+    Set-Variable htmlbold        -Option AllScope -Value 1 4>$Null
+    Set-Variable htmlitalics     -Option AllScope -Value 2 4>$Null
+    Set-Variable htmlred         -Option AllScope -Value 4 4>$Null
+    Set-Variable htmlcyan        -Option AllScope -Value 8 4>$Null
+    Set-Variable htmlblue        -Option AllScope -Value 16 4>$Null
+    Set-Variable htmldarkblue    -Option AllScope -Value 32 4>$Null
+    Set-Variable htmllightblue   -Option AllScope -Value 64 4>$Null
+    Set-Variable htmlpurple      -Option AllScope -Value 128 4>$Null
+    Set-Variable htmlyellow      -Option AllScope -Value 256 4>$Null
+    Set-Variable htmllime        -Option AllScope -Value 512 4>$Null
+    Set-Variable htmlmagenta     -Option AllScope -Value 1024 4>$Null
+    Set-Variable htmlwhite       -Option AllScope -Value 2048 4>$Null
+    Set-Variable htmlsilver      -Option AllScope -Value 4096 4>$Null
+    Set-Variable htmlgray        -Option AllScope -Value 8192 4>$Null
+    Set-Variable htmlolive       -Option AllScope -Value 16384 4>$Null
+    Set-Variable htmlorange      -Option AllScope -Value 32768 4>$Null
+    Set-Variable htmlmaroon      -Option AllScope -Value 65536 4>$Null
+    Set-Variable htmlgreen       -Option AllScope -Value 131072 4>$Null
+    Set-Variable htmlblack       -Option AllScope -Value 262144 4>$Null
 }
 
 If($TEXT)
@@ -1335,7 +1339,7 @@ Function CheckWordPrereq
 	$SessionID = (Get-Process -PID $PID).SessionId
 	
 	#Find out if winword is running in our session
-	[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}) -ne $Null
+	[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
 	If($wordrunning)
 	{
 		$ErrorActionPreference = $SaveEAPreference
@@ -1633,13 +1637,13 @@ Function SetupWord
 
 	$Script:Word.Templates.LoadBuildingBlocks()
 	#word 2010/2013/2016
-	$BuildingBlocksCollection = $Script:Word.Templates | Where {$_.name -eq "Built-In Building Blocks.dotx"}
+	$BuildingBlocksCollection = $Script:Word.Templates | Where-Object{$_.name -eq "Built-In Building Blocks.dotx"}
 
 	Write-Verbose "$(Get-Date): Attempt to load cover page $($CoverPage)"
 	$part = $Null
 
 	$BuildingBlocksCollection | 
-	ForEach{
+	ForEach-Object{
 		If ($_.BuildingBlockEntries.Item($CoverPage).Name -eq $CoverPage) 
 		{
 			$BuildingBlocks = $_
@@ -1780,10 +1784,10 @@ Function UpdateDocumentProperties
             Set-DocumentProperty -Document $Script:Doc -DocProperty Title -Value $Script:title
 
 			#Get the Coverpage XML part
-			$cp = $Script:Doc.CustomXMLParts | Where {$_.NamespaceURI -match "coverPageProps$"}
+			$cp = $Script:Doc.CustomXMLParts | Where-Object{$_.NamespaceURI -match "coverPageProps$"}
 
 			#get the abstract XML part
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "Abstract"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object{$_.basename -eq "Abstract"}
 			#set the text
 			If([String]::IsNullOrEmpty($Script:CoName))
 			{
@@ -1796,30 +1800,30 @@ Function UpdateDocumentProperties
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyAddress"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object{$_.basename -eq "CompanyAddress"}
 			#set the text
 			[string]$abstract = $CompanyAddress
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyEmail"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object{$_.basename -eq "CompanyEmail"}
 			#set the text
 			[string]$abstract = $CompanyEmail
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyFax"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object{$_.basename -eq "CompanyFax"}
 			#set the text
 			[string]$abstract = $CompanyFax
 			$ab.Text = $abstract
 
 			#added 8-Jun-2017
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyPhone"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object{$_.basename -eq "CompanyPhone"}
 			#set the text
 			[string]$abstract = $CompanyPhone
 			$ab.Text = $abstract
 
-			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "PublishDate"}
+			$ab = $cp.documentelement.ChildNodes | Where-Object{$_.basename -eq "PublishDate"}
 			#set the text
 			[string]$abstract = (Get-Date -Format d).ToString()
 			$ab.Text = $abstract
@@ -2171,8 +2175,6 @@ Function AddHTMLTable
 		$htmlbody = $htmlbody + "<tr>"
 		For($columnIndex = 0; $columnIndex -lt $colCount; $columnindex+=2)
 		{
-			$fontitalics = $False
-			$fontbold = $false
 			$tmp = CheckHTMLColor $rd[$columnIndex+1]
 
 			If($fixedInfo.Length -eq 0)
@@ -2414,7 +2416,6 @@ Function FormatHTMLTable
 				}
 				Else
 				{
-					$found = $false
 					For($i=0;$i -lt $columnArray[$columnIndex].length;$i+=2)
 					{
 						If($columnArray[$columnIndex][$i] -eq " ")
@@ -3034,7 +3035,7 @@ Function VISetup( [string] $VIServer )
 
     Write-Verbose "$(Get-Date): Setting up VMware PowerCLI"
     #Check to see if PowerCLI is installed via Module or MSI
-    If (((Get-Module -ListAvailable | Where {$_.Name -eq "VMware.PowerCLI"}) -ne $null))
+    If (((Get-Module -ListAvailable | Where-Object{$_.Name -eq "VMware.PowerCLI"}) -ne $null))
     {
         # PowerCLI is installed via PowerShell Gallery\or the module is installed
         Write-Verbose "$(Get-Date): PowerCLI Module install found"
@@ -3078,7 +3079,7 @@ Function VISetup( [string] $VIServer )
     }
     
     #Set PCLI defaults and reset PWD
-    cd $tempPWD 4>$Null
+    Set-Location $tempPWD 4>$Null
     Write-Verbose "$(Get-Date): Setting PowerCLI global Configuration"
     Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings $False -Confirm:$False *>$Null
 
@@ -3139,25 +3140,25 @@ Function SetGlobals
             New-Item .\Export -type directory *>$Null
         }
         Write-Verbose "$(Get-Date): Gathering Compute data"
-        $Script:VMHosts = Get-VMHost 4>$Null| Sort Name 
-        Get-Cluster 4>$Null| Sort Name | Export-Clixml .\Export\Cluster.xml 4>$Null
-        $VMHosts | Sort Name | Export-Clixml .\Export\VMHost.xml 4>$Null
-        Get-Datastore 4>$Null| Sort Name | Export-Clixml .\Export\Datastore.xml 4>$Null
+        $Script:VMHosts = Get-VMHost 4>$Null| Sort-Object Name 
+        Get-Cluster 4>$Null| Sort-Object Name | Export-Clixml .\Export\Cluster.xml 4>$Null
+        $VMHosts | Sort-Object Name | Export-Clixml .\Export\VMHost.xml 4>$Null
+        Get-Datastore 4>$Null| Sort-Object Name | Export-Clixml .\Export\Datastore.xml 4>$Null
         Get-Snapshot -VM * 4>$Null| Export-Clixml .\Export\Snapshot.xml 4>$Null
-        Get-AdvancedSetting -Entity $VIServerName 4>$Null| Where {$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\vCenterAdv.xml 4>$Null
-        Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null| Where {$_.Name -like "Syslog.global.logdir" -or $_.Name -like "Syslog.global.loghost"} | Export-Clixml .\Export\HostsAdv.xml 4>$Null
+        Get-AdvancedSetting -Entity $VIServerName 4>$Null| Where-Object{$_.Type -eq "VIServer" -and ($_.Name -like "mail.smtp.port" -or $_.Name -like "mail.smtp.server" -or $_.Name -like "mail.sender" -or $_.Name -like "VirtualCenter.FQDN")} | Export-Clixml .\Export\vCenterAdv.xml 4>$Null
+        Get-AdvancedSetting -Entity ($VMHosts | Where-Object{$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null| Where-Object{$_.Name -like "Syslog.global.logdir" -or $_.Name -like "Syslog.global.loghost"} | Export-Clixml .\Export\HostsAdv.xml 4>$Null
         Get-View -ViewType ClusterComputeResource -Property Name,ConfigurationEx | Export-Clixml .\Export\ClusterView.xml 4>$Null
         Get-VMHostService -VMHost * 4>$Null| Export-Clixml .\Export\HostService.xml 4>$Null
         Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
-        $Script:VirtualMachines = Get-VM 4>$Null| Sort Name
+        $Script:VirtualMachines = Get-VM 4>$Null| Sort-Object Name
         $VirtualMachines | Export-Clixml .\Export\VM.xml 4>$Null
-        Get-ResourcePool 4>$Null| Sort Name | Export-Clixml .\Export\ResourcePool.xml 4>$Null
+        Get-ResourcePool 4>$Null| Sort-Object Name | Export-Clixml .\Export\ResourcePool.xml 4>$Null
         Get-View 4>$Null(Get-View ServiceInstance 4>$Null).Content.PerfManager | Export-Clixml .\Export\vCenterStats.xml 4>$Null
         Get-View ServiceInstance 4>$Null| Export-Clixml .\Export\ServiceInstance.xml 4>$Null
         (((Get-View extensionmanager).ExtensionList).Description 4>$Null) | Export-Clixml .\Export\Plugins.xml 4>$Null
-        Get-View 4>$Null(Get-View serviceInstance 4>$Null| Select -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml 4>$Null
-        Get-VIPermission 4>$Null| Sort Entity | Export-Clixml .\Export\VIPerms.xml 4>$Null
-        Get-VIRole 4>$Null| Sort Name | Export-Clixml .\Export\VIRoles.xml 4>$Null
+        Get-View 4>$Null(Get-View serviceInstance 4>$Null| Select-Object -First 1).Content.LicenseManager | Export-Clixml .\Export\Licensing.xml 4>$Null
+        Get-VIPermission 4>$Null| Sort-Object Entity | Export-Clixml .\Export\VIPerms.xml 4>$Null
+        Get-VIRole 4>$Null| Sort-Object Name | Export-Clixml .\Export\VIRoles.xml 4>$Null
         BuildDRSRules | Export-Clixml .\Export\DRSRules.xml 4>$Null
         If($Full)
         {
@@ -3203,7 +3204,7 @@ Function SetGlobals
                 $Script:VMNetworkAdapters = Import-Clixml .\Export\NetworkAdapter.xml
                 $Script:VirtualPortGroups = Import-Clixml .\Export\PortGroup.xml
             }
-            $Script:VIServerName = (($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value
+            $Script:VIServerName = (($VCAdvSettings) | Where-Object{$_.Name -like "VirtualCenter.FQDN"}).Value
 
         }
         Else
@@ -3216,32 +3217,32 @@ Function SetGlobals
     ElseIf($Issues)
     {
         Write-Verbose "$(Get-Date): Gathering Compute data"
-        $Script:Clusters = Get-Cluster 4>$Null | Sort Name
-        $Script:VMHosts = Get-VMHost 4>$Null | Sort Name
-        $Script:Datastores = Get-Datastore 4>$Null | Sort Name
+        $Script:Clusters = Get-Cluster 4>$Null | Sort-Object Name
+        $Script:VMHosts = Get-VMHost 4>$Null | Sort-Object Name
+        $Script:Datastores = Get-Datastore 4>$Null | Sort-Object Name
         Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
-        $Script:VirtualMachines = Get-VM 4>$Null | Sort Name
-        $Script:Snapshots = Get-Snapshot -VM * 4>$Null | Sort VM
+        $Script:VirtualMachines = Get-VM 4>$Null | Sort-Object Name
+        $Script:Snapshots = Get-Snapshot -VM * 4>$Null | Sort-Object VM
     }
     Else
     {
         Write-Verbose "$(Get-Date): Gathering Compute data"
-        $Script:Clusters = Get-Cluster 4>$Null| Sort Name 
-        $Script:VMHosts = Get-VMHost 4>$Null| Sort Name 
-        $Script:Datastores = Get-Datastore 4>$Null| Sort Name 
-        $Script:HostAdvSettings = Get-AdvancedSetting -Entity ($VMHosts | Where {$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null
+        $Script:Clusters = Get-Cluster 4>$Null| Sort-Object Name 
+        $Script:VMHosts = Get-VMHost 4>$Null| Sort-Object Name 
+        $Script:Datastores = Get-Datastore 4>$Null| Sort-Object Name 
+        $Script:HostAdvSettings = Get-AdvancedSetting -Entity ($VMHosts | Where-Object{$_.ConnectionState -like "*Connected*" -or $_.ConnectionState -like "*Maintenance*"}).Name 4>$Null
         $Script:ClusterView = Get-View -ViewType ClusterComputeResource -Property Name,ConfigurationEx 4>$Null
         $Script:VCAdvSettings = Get-AdvancedSetting -Entity $VIServerName 4>$Null
         $Script:HostServices = Get-VMHostService -VMHost * 4>$Null
         Write-Verbose "$(Get-Date): Gathering Virtual Machine data"
-        $Script:VirtualMachines = Get-VM 4>$Null| Sort Name 
-        $Script:Resources = Get-ResourcePool 4>$Null| Sort Name 
+        $Script:VirtualMachines = Get-VM 4>$Null| Sort-Object Name 
+        $Script:Resources = Get-ResourcePool 4>$Null| Sort-Object Name 
         $Script:VMPlugins = (((Get-View extensionmanager 4>$Null).ExtensionList).Description) 
         $Script:ServiceInstance = Get-View ServiceInstance 4>$Null
         $Script:vCenterStatistics = Get-View ($ServiceInstance).Content.PerfManager 4>$Null
-        $Script:VCLicensing = Get-View ($ServiceInstance | Select -First 1).Content.LicenseManager 4>$Null
-        $Script:VIPerms = Get-VIPermission 4>$Null| Sort Entity 
-        $Script:VIRoles = Get-VIRole 4>$Null| Sort Name 
+        $Script:VCLicensing = Get-View ($ServiceInstance | Select-Object -First 1).Content.LicenseManager 4>$Null
+        $Script:VIPerms = Get-VIPermission 4>$Null| Sort-Object Entity 
+        $Script:VIRoles = Get-VIRole 4>$Null| Sort-Object Name 
         $Script:DRSRules = BuildDRSGroupsRules
 
         If($Full)
@@ -3307,7 +3308,7 @@ Function AddStatsChart
         $VMValue = @(ForEach($stamp2 in $StatData){$stamp2.Value})
 
         # convert KB memory to GB
-        If(($StatData.unit | Select -Unique) -eq "KB")
+        If(($StatData.unit | Select-Object -Unique) -eq "KB")
         {
             $KBConversion = $true
             $ChartArea.AxisY.Title = "GB"
@@ -3320,7 +3321,7 @@ Function AddStatsChart
         }
         Else
         {
-            If($StatData.unit | Select -Unique){ $ChartArea.AxisY.Title = ($StatData.unit | Select -Unique) }
+            If($StatData.unit | Select-Object -Unique){ $ChartArea.AxisY.Title = ($StatData.unit | Select-Object -Unique) }
         }
 
         # add titles and data series
@@ -3397,12 +3398,12 @@ Function AddStatsChart
 Function BuildDRSGroupsRules
 {
     ## From http://www.vnugglets.com/2011/07/backupexport-full-drs-rule-info-via.html
-    Get-View -ViewType ClusterComputeResource -Property Name, ConfigurationEx 4>$Null| %{
+    Get-View -ViewType ClusterComputeResource -Property Name, ConfigurationEx 4>$Null| ForEach-Object{
         ## if the cluster has any DRS rules
         if ($_.ConfigurationEx.Rule -ne $null) {
             $viewCurrClus = $_
             $DRSGroupsRules = @()
-            $viewCurrClus.ConfigurationEx.Rule | %{
+            $viewCurrClus.ConfigurationEx.Rule | ForEach-Object {
                 $oRuleInfo = New-Object -Type PSObject -Property @{
                     ClusterName = $viewCurrClus.Name
                     RuleName = $_.Name
@@ -3412,7 +3413,7 @@ Function BuildDRSGroupsRules
                 } 
  
                 ## add members to the output object, to be populated in a bit
-                "bKeepTogether,VMNames,VMGroupName,VMGroupMembers,AffineHostGrpName,AffineHostGrpMembers,AntiAffineHostGrpName,AntiAffineHostGrpMembers".Split(",") | %{Add-Member -InputObject $oRuleInfo -MemberType NoteProperty -Name $_ -Value $null}
+                "bKeepTogether,VMNames,VMGroupName,VMGroupMembers,AffineHostGrpName,AffineHostGrpMembers,AntiAffineHostGrpName,AntiAffineHostGrpMembers".Split(",") | ForEach-Object {Add-Member -InputObject $oRuleInfo -MemberType NoteProperty -Name $_ -Value $null}
  
                 ## switch statement based on the object type of the .NET view object
                 switch ($_){
@@ -3421,18 +3422,18 @@ Function BuildDRSGroupsRules
                     {$_ -is [VMware.Vim.ClusterVmHostRuleInfo]} {
                         $oRuleInfo.VMGroupName = $_.VmGroupName
                         ## get the VM group members' names
-                        $oRuleInfo.VMGroupMembers = (Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterVmGroup]) -and ($_.Name -eq $oRuleInfo.VMGroupName)}).Vm 4>$Null| %{$_.Name}) -join ","
+                        $oRuleInfo.VMGroupMembers = (Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | Where-Object {($_ -is [VMware.Vim.ClusterVmGroup]) -and ($_.Name -eq $oRuleInfo.VMGroupName)}).Vm 4>$Null| ForEach-Object {$_.Name}) -join ","
                         $oRuleInfo.AffineHostGrpName = $_.AffineHostGroupName
                         ## get affine hosts' names
-                        $oRuleInfo.AffineHostGrpMembers = if ($_.AffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AffineHostGrpName)}).Host 4>$Null| %{$_.Name}) -join ","}
+                        $oRuleInfo.AffineHostGrpMembers = if ($_.AffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | Where-Object {($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AffineHostGrpName)}).Host 4>$Null| ForEach-Object {$_.Name}) -join ","}
                         $oRuleInfo.AntiAffineHostGrpName = $_.AntiAffineHostGroupName
                         ## get anti-affine hosts' names
-                        $oRuleInfo.AntiAffineHostGrpMembers = if ($_.AntiAffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | ?{($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AntiAffineHostGrpName)}).Host 4>$Null| %{$_.Name}) -join ","}
+                        $oRuleInfo.AntiAffineHostGrpMembers = if ($_.AntiAffineHostGroupName -ne $null) {(Get-View -Property Name -Id ($viewCurrClus.ConfigurationEx.Group | Where-Object {($_ -is [VMware.Vim.ClusterHostGroup]) -and ($_.Name -eq $oRuleInfo.AntiAffineHostGrpName)}).Host 4>$Null| ForEach-Object {$_.Name}) -join ","}
                         break;
                     } 
                     ## if ClusterAffinityRuleSpec (or AntiAffinity), get the VM names (using Get-View)
                     {($_ -is [VMware.Vim.ClusterAffinityRuleSpec]) -or ($_ -is [VMware.Vim.ClusterAntiAffinityRuleSpec])} {
-                        $oRuleInfo.VMNames = if ($_.Vm.Count -gt 0) {(Get-View -Property Name -Id $_.Vm 4>$Null| %{$_.Name}) -join ","}
+                        $oRuleInfo.VMNames = if ($_.Vm.Count -gt 0) {(Get-View -Property Name -Id $_.Vm 4>$Null| ForEach-Object {$_.Name}) -join ","}
                     } 
                     {$_ -is [VMware.Vim.ClusterAffinityRuleSpec]} {
                         $oRuleInfo.bKeepTogether = $true
@@ -3525,9 +3526,9 @@ Function validStateProp( [object] $object, [string] $topLevel, [string] $secondL
 	#function created 8-jan-2014 by Michael B. Smith
 	if( $object )
 	{
-		If( ( gm -Name $topLevel -InputObject $object ) )
+		If( ( Get-Member -Name $topLevel -InputObject $object ) )
 		{
-			If( ( gm -Name $secondLevel -InputObject $object.$topLevel ) )
+			If( ( Get-Member -Name $secondLevel -InputObject $object.$topLevel ) )
 			{
 				Return $True
 			}
@@ -3919,11 +3920,11 @@ Function ProcessSummary
             ## Add the required key/values to the hashtable
 	        $WordTableRowHash = @{ 
 	        Cluster = $Cluster.Name;
-	        HostsinCluster = @($VMHosts | Where {$_.IsStandAlone -eq $False -and $_.Parent -like $Cluster.Name}).Count;
+	        HostsinCluster = @($VMHosts | Where-Object{$_.IsStandAlone -eq $False -and $_.Parent -like $Cluster.Name}).Count;
 	        HAEnabled = $Cluster.HAEnabled;
 	        DRSEnabled = $Cluster.DrsEnabled;
             DRSAutomation = $Cluster.DrsAutomationLevel;
-            VMCount = @($VirtualMachines | Where {$_.VMHost -in @($VMHosts | Where {$_.ParentId -like $Cluster.Id}).Name}).Count;
+            VMCount = @($VirtualMachines | Where-Object{$_.VMHost -in @($VMHosts | Where-Object{$_.ParentId -like $Cluster.Id}).Name}).Count;
 	        }
 	        ## Add the hash to the array
 	        $ClusterWordTable += $WordTableRowHash;
@@ -3955,7 +3956,7 @@ Function ProcessSummary
 
         ForEach($Cluster in $Clusters)
         {
-            $rowData += @(,($Cluster.Name,$htmlwhite,@($VMHosts | Where {$_.IsStandAlone -eq $False -and $_.Parent -like $Cluster.Name}).Count,$htmlwhite,$Cluster.HAEnabled,$htmlwhite,$Cluster.DrsEnabled,$htmlwhite,$Cluster.DrsAutomationLevel,$htmlwhite,@($VirtualMachines | Where {$_.VMHost -in @($VMHosts | Where {$_.ParentId -like $Cluster.Id}).Name}).Count,$htmlwhite))
+            $rowData += @(,($Cluster.Name,$htmlwhite,@($VMHosts | Where-Object{$_.IsStandAlone -eq $False -and $_.Parent -like $Cluster.Name}).Count,$htmlwhite,$Cluster.HAEnabled,$htmlwhite,$Cluster.DrsEnabled,$htmlwhite,$Cluster.DrsAutomationLevel,$htmlwhite,@($VirtualMachines | Where-Object{$_.VMHost -in @($VMHosts | Where-Object{$_.ParentId -like $Cluster.Id}).Name}).Count,$htmlwhite))
         }
         FormatHTMLTable "Cluster Summary" -rowArray $rowData -columnArray $columnHeaders
         WriteHTMLLine 0 1 ""
@@ -3991,7 +3992,7 @@ Function ProcessSummary
 	        ClusterMember = $xStandAlone;
 	        CPUPercent = $("{0:P2}" -f $($VMHost.CpuUsageMhz / $VMHost.CpuTotalMhz));
             MemoryPercent = $("{0:P2}" -f $($VMhost.MemoryUsageGB / $VMHost.MemoryTotalGB));
-            VMCount = @(($VirtualMachines) | Where {$_.VMHost -like $VMHost.Name}).Count;
+            VMCount = @(($VirtualMachines) | Where-Object{$_.VMHost -like $VMHost.Name}).Count;
 	        }
 
             ## Build VMHost heatmap
@@ -4054,7 +4055,7 @@ Function ProcessSummary
 
             $cpuPerc = HTMLHeatMap (($VMHost.CpuUsageMhz / $VMHost.CpuTotalMhz) * 100)
             $memPerc = HTMLHeatMap (($VMhost.MemoryUsageGB / $VMHost.MemoryTotalGB) * 100)
-            $rowData += @(,($VMHost.Name,$htmlwhite,$VMHost.ConnectionState,$htmlwhite,$VMHost.Version,$htmlwhite,$xStandAlone,$htmlwhite,$("{0:P2}" -f $($VMHost.CpuUsageMhz / $VMHost.CpuTotalMhz)),$cpuPerc,$("{0:P2}" -f $($VMhost.MemoryUsageGB / $VMHost.MemoryTotalGB)),$memPerc,@(($VirtualMachines) | Where {$_.VMHost -like $VMHost.Name}).Count,$htmlwhite))
+            $rowData += @(,($VMHost.Name,$htmlwhite,$VMHost.ConnectionState,$htmlwhite,$VMHost.Version,$htmlwhite,$xStandAlone,$htmlwhite,$("{0:P2}" -f $($VMHost.CpuUsageMhz / $VMHost.CpuTotalMhz)),$cpuPerc,$("{0:P2}" -f $($VMhost.MemoryUsageGB / $VMHost.MemoryTotalGB)),$memPerc,@(($VirtualMachines) | Where-Object{$_.VMHost -like $VMHost.Name}).Count,$htmlwhite))
         }
 
         FormatHTMLTable "Host Summary" -rowArray $rowData -columnArray $columnHeaders
@@ -4175,7 +4176,7 @@ Function ProcessvCenter
     {
         WriteWordLine 2 0 "Global Settings"
         [System.Collections.Hashtable[]] $ScriptInformation = @()
-        $ScriptInformation += @{ Data = "Name"; Value = (($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value;}
+        $ScriptInformation += @{ Data = "Name"; Value = (($VCAdvSettings) | Where-Object{$_.Name -like "VirtualCenter.FQDN"}).Value;}
         $ScriptInformation += @{ Data = "Version"; Value = $VCObj.Version; }
         $ScriptInformation += @{ Data = "Build"; Value = $VCObj.Build; }
         If($Import -and $RegSQL)
@@ -4192,9 +4193,9 @@ Function ProcessvCenter
             $ScriptInformation += @{ Data = "SQL Server"; Value = ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server"); }
             $ScriptInformation += @{ Data = "Last SQL User"; Value = ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser"); }
         }
-        $ScriptInformation += @{ Data = "EMail Sender"; Value = (($VCAdvSettings) | Where {$_.Name -like "mail.sender"}).Value; }
-        $ScriptInformation += @{ Data = "SMTP Server"; Value = (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.server"}).Value; }
-        $ScriptInformation += @{ Data = "SMTP Server Port"; Value = (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.port"}).Value; }
+        $ScriptInformation += @{ Data = "EMail Sender"; Value = (($VCAdvSettings) | Where-Object{$_.Name -like "mail.sender"}).Value; }
+        $ScriptInformation += @{ Data = "SMTP Server"; Value = (($VCAdvSettings) | Where-Object{$_.Name -like "mail.smtp.server"}).Value; }
+        $ScriptInformation += @{ Data = "SMTP Server Port"; Value = (($VCAdvSettings) | Where-Object{$_.Name -like "mail.smtp.port"}).Value; }
 
         $Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -4218,7 +4219,7 @@ Function ProcessvCenter
     {
         $rowdata = @()
         $colWidths = @("150px","200px")
-        $rowdata += @(,("Server Name",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value,$htmlwhite))
+        $rowdata += @(,("Server Name",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where-Object{$_.Name -like "VirtualCenter.FQDN"}).Value,$htmlwhite))
         $rowdata += @(,("Version",($htmlsilver -bor $htmlbold),$VCObj.Version,$htmlwhite))
         $rowdata += @(,("Build",($htmlsilver -bor $htmlbold),$VCObj.Build,$htmlwhite))
         If($Import -and $RegSQL)
@@ -4235,9 +4236,9 @@ Function ProcessvCenter
             $rowdata += @(,("SQL Server",($htmlsilver -bor $htmlbold),($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server"),$htmlwhite))
             $rowdata += @(,("Last SQL User",($htmlsilver -bor $htmlbold),($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser"),$htmlwhite))
         }
-        $rowdata += @(,("Email Sender",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where {$_.Name -like "mail.sender"}).Value,$htmlwhite))
-        $rowdata += @(,("SMTP Server",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where {$_.Name -like "mail.smtp.server"}).Value,$htmlwhite))
-        $rowdata += @(,("SMTP Server Port",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where {$_.Name -like "mail.smtp.port"}).Value,$htmlwhite))
+        $rowdata += @(,("Email Sender",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where-Object{$_.Name -like "mail.sender"}).Value,$htmlwhite))
+        $rowdata += @(,("SMTP Server",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where-Object{$_.Name -like "mail.smtp.server"}).Value,$htmlwhite))
+        $rowdata += @(,("SMTP Server Port",($htmlsilver -bor $htmlbold),(($VCAdvSettings) | Where-Object{$_.Name -like "mail.smtp.port"}).Value,$htmlwhite))
 
         FormatHTMLTable "General Settings" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
@@ -4246,7 +4247,7 @@ Function ProcessvCenter
     {
         Line 0 "Global Settings" 
         Line 1 ""
-        Line 1 "Server Name:`t`t" (($VCAdvSettings) | Where {$_.Name -like "VirtualCenter.FQDN"}).Value
+        Line 1 "Server Name:`t`t" (($VCAdvSettings) | Where-Object{$_.Name -like "VirtualCenter.FQDN"}).Value
         Line 1 "Version:`t`t" $VCObj.Version
         Line 1 "Build:`t`t`t" $VCObj.Build
         If($Import -and $RegSQL)
@@ -4263,9 +4264,9 @@ Function ProcessvCenter
             Line 1 "SQL Server:`t`t" ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("Server")
             Line 1 "Last SQL User:`t`t" ($RemReg[0].OpenSubKey($DBDetails,$true)).GetValue("LastUser")
         }
-        Line 1 "Email Sender:`t`t" (($VCAdvSettings) | Where {$_.Name -like "mail.sender"}).Value
-        Line 1 "SMTP Server:`t`t" (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.server"}).Value
-        Line 1 "SMTP Server Port:`t" (($VCAdvSettings) | Where {$_.Name -like "mail.smtp.port"}).Value
+        Line 1 "Email Sender:`t`t" (($VCAdvSettings) | Where-Object{$_.Name -like "mail.sender"}).Value
+        Line 1 "SMTP Server:`t`t" (($VCAdvSettings) | Where-Object{$_.Name -like "mail.smtp.server"}).Value
+        Line 1 "SMTP Server Port:`t" (($VCAdvSettings) | Where-Object{$_.Name -like "mail.smtp.port"}).Value
         Line 0 ""
     }
 
@@ -4365,7 +4366,7 @@ Function ProcessvCenter
         #http://blogs.vmware.com/PowerCLI/2012/05/retrieving-license-keys-from-multiple-vCenters.html
         Foreach ($LicenseMan in $VCLicensing) 
         { 
-            Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
+            Foreach ($License in ($LicenseMan | Select-Object -ExpandProperty Licenses))
             {
                 ## Add the required key/values to the hashtable
 	            $WordTableRowHash = @{ 
@@ -4406,7 +4407,7 @@ Function ProcessvCenter
         Line 1 "License Name`t`t`tKey Last 5`tTotal Licenses`tLicenses Used"
         Foreach ($LicenseMan in $VCLicensing) 
         { 
-            Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
+            Foreach ($License in ($LicenseMan | Select-Object -ExpandProperty Licenses))
             {
                 Line 1 "$($License.Name)`t*****$($License.LicenseKey.Substring(23))`t$($License.Total)`t`t$($License.Used)"
             }
@@ -4419,7 +4420,7 @@ Function ProcessvCenter
         $columnHeaders = @("License Name",($htmlsilver -bor $htmlbold),"Key Last 5",($htmlsilver -bor $htmlbold),"Total Licenses",($htmlsilver -bor $htmlbold),"Licenses Used",($htmlsilver -bor $htmlbold))
         Foreach ($LicenseMan in $VCLicensing) 
         { 
-            Foreach ($License in ($LicenseMan | Select -ExpandProperty Licenses))
+            Foreach ($License in ($LicenseMan | Select-Object -ExpandProperty Licenses))
             {
                 $rowdata += @(,($License.Name,$htmlwhite,"*****$($License.LicenseKey.Substring(23))",$htmlwhite,$License.Total,$htmlwhite,$License.Used,$htmlwhite))
             }
@@ -4487,9 +4488,9 @@ Function ProcessvCenter
     If($MSWord -or $PDF)
     {
         WriteWordLine 2 0 "Active non-Standard vCenter Roles"
-        foreach($role in ($VIPerms | select Role -Unique))
+        foreach($role in ($VIPerms | Select-Object Role -Unique))
         {
-            foreach($expandRole in $VIRoles | Where {$_.Name -eq $role.Role -and $_.IsSystem -eq $false})
+            foreach($expandRole in $VIRoles | Where-Object{$_.Name -eq $role.Role -and $_.IsSystem -eq $false})
             {
                 WriteWordLine 0 0 $expandRole.Name -boldface $true
                 foreach($privRole in $expandRole.PrivilegeList){WriteWordLine 0 0 $privRole -fontSize 8}
@@ -4504,9 +4505,9 @@ Function ProcessvCenter
     ElseIf($HTML)
     {
         WriteHTMLLine 1 0 "Active non-Standard vCenter Roles"
-        foreach($role in ($VIPerms | Select Role -Unique))
+        foreach($role in ($VIPerms | Select-Object Role -Unique))
         {
-            foreach($expandRole in $VIRoles | Where {$_.Name -eq $role.Role -and $_.IsSystem -eq $false})
+            foreach($expandRole in $VIRoles | Where-Object{$_.Name -eq $role.Role -and $_.IsSystem -eq $false})
             {
                 WriteHTMLLine 0 0 $expandRole.Name -options $htmlBold -fontSize 3
                 foreach($privRole in $expandRole.PrivilegeList){WriteHTMLLine 0 0 $privRole -fontSize 2}
@@ -4643,15 +4644,15 @@ Function ProcessVMHosts
 Function OutputVMHosts
 {
     Param([object] $VMHost)
-    $xHostService = ($HostServices) | Where {$_.VMHostId -eq $VMHost.Id}
+    $xHostService = ($HostServices) | Where-Object{$_.VMHostId -eq $VMHost.Id}
     If($Export) {(Get-VMHostNtpServer -VMHost $VMHost.Name 4>$Null) -join ", " | Export-Clixml .\Export\$($VMHost.Name)-NTP.xml 4>$Null} 
-    $xHostAdvanced = ($HostAdvSettings) | Where {$_.Entity -like $VMHost.Name}
+    $xHostAdvanced = ($HostAdvSettings) | Where-Object{$_.Entity -like $VMHost.Name}
     ## Set vmhoststorage variable - will fail if host has no devices (headless - boot from USB\SD using NFS only)
     If($VMHost.PowerState -eq "PoweredOn")
     {
         If($Export)
         {
-            Get-VMHostStorage -VMHost $VMHost 4>$Null| Where {$_.ScsiLun.LunType -notlike "*cdrom*"} | Export-Clixml .\Export\$($VMHost.Name)-Storage.xml 4>$Null
+            Get-VMHostStorage -VMHost $VMHost 4>$Null| Where-Object{$_.ScsiLun.LunType -notlike "*cdrom*"} | Export-Clixml .\Export\$($VMHost.Name)-Storage.xml 4>$Null
             If(!$?)
             {
                     Write-Warning ""
@@ -4665,7 +4666,7 @@ Function OutputVMHosts
         }
         Else
         {
-            $xVMHostStorage = Get-VMHostStorage -VMHost $VMHost 4>$Null| Where {$_.ScsiLun.LunType -notlike "*cdrom*"} 4>$null
+            $xVMHostStorage = Get-VMHostStorage -VMHost $VMHost 4>$Null| Where-Object{$_.ScsiLun.LunType -notlike "*cdrom*"} 4>$null
             If(!$?)
             {
                     Write-Warning ""
@@ -4692,7 +4693,7 @@ Function OutputVMHosts
     {
         $xHyperThreading = "Disabled"
     }
-    If ((($xHostService) | Where {$_.Key -eq "TSM-SSH"}).Running)
+    If ((($xHostService) | Where-Object{$_.Key -eq "TSM-SSH"}).Running)
     {
         $xSSHService = "Running"
     }
@@ -4700,7 +4701,7 @@ Function OutputVMHosts
     {
         $xSSHService = "Stopped"
     }
-    If ((($xHostService) | Where {$_.Key -eq "ntpd"}).Running)
+    If ((($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Running)
     {
         $xNTPService = "Running"
         If($Import)
@@ -4753,18 +4754,18 @@ Function OutputVMHosts
         $ScriptInformation += @{ Data = "Total Memory"; Value = "$([decimal]::round($VMHost.MemoryTotalGB)) GB"; }
         If($VMHost.PowerState -like "PoweredOn")
         {
-            $ScriptInformation += @{ Data = "SSH Service Policy"; Value = (($xHostService) | Where {$_.Key -eq "TSM-SSH"}).Policy; }
+            $ScriptInformation += @{ Data = "SSH Service Policy"; Value = (($xHostService) | Where-Object{$_.Key -eq "TSM-SSH"}).Policy; }
             $ScriptInformation += @{ Data = "SSH Service Status"; Value = $xSSHService; }
-            $ScriptInformation += @{ Data = "Scratch Log location"; Value = (($xHostAdvanced) | Where {$_.Name -eq "Syslog.global.logdir"}).Value; }
-            $ScriptInformation += @{ Data = "Scratch Log remote host"; Value =  (($xHostAdvanced) | Where {$_.Name -eq "Syslog.global.loghost"}).Value; }
-            $ScriptInformation += @{ Data = "NTP Service Policy"; Value = (($xHostService) | Where {$_.Key -eq "ntpd"}).Policy; }
+            $ScriptInformation += @{ Data = "Scratch Log location"; Value = (($xHostAdvanced) | Where-Object{$_.Name -eq "Syslog.global.logdir"}).Value; }
+            $ScriptInformation += @{ Data = "Scratch Log remote host"; Value =  (($xHostAdvanced) | Where-Object{$_.Name -eq "Syslog.global.loghost"}).Value; }
+            $ScriptInformation += @{ Data = "NTP Service Policy"; Value = (($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Policy; }
             $ScriptInformation += @{ Data = "NTP Service Status"; Value = $xNTPService; }
-            $ScriptInformation += @{ Data = "NFS Max Queue Depth"; Value = (($xHostAdvanced) | Where {$_.Name -eq "NFS.MaxQueueDepth"}).Value; }
-            $ScriptInformation += @{ Data = "NFS Max Volumes"; Value = (($xHostAdvanced) | Where {$_.Name -eq "NFS.MaxVolumes"}).Value; }
-            $ScriptInformation += @{ Data = "TCP IP Heap Size"; Value = (($xHostAdvanced) | Where {$_.Name -eq "Net.TcpipHeapSize"}).Value; }
-            $ScriptInformation += @{ Data = "TCP IP Heap Max"; Value = (($xHostAdvanced) | Where {$_.Name -eq "Net.TcpipHeapMax"}).Value; }
+            $ScriptInformation += @{ Data = "NFS Max Queue Depth"; Value = (($xHostAdvanced) | Where-Object{$_.Name -eq "NFS.MaxQueueDepth"}).Value; }
+            $ScriptInformation += @{ Data = "NFS Max Volumes"; Value = (($xHostAdvanced) | Where-Object{$_.Name -eq "NFS.MaxVolumes"}).Value; }
+            $ScriptInformation += @{ Data = "TCP IP Heap Size"; Value = (($xHostAdvanced) | Where-Object{$_.Name -eq "Net.TcpipHeapSize"}).Value; }
+            $ScriptInformation += @{ Data = "TCP IP Heap Max"; Value = (($xHostAdvanced) | Where-Object{$_.Name -eq "Net.TcpipHeapMax"}).Value; }
             If($xVMHostStorage){$ScriptInformation += @{ Data = "Software iSCSI Service"; Value = $xiSCSI; }}
-            If ((($xHostService) | Where {$_.Key -eq "ntpd"}).Running)
+            If ((($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Running)
             {
                 $ScriptInformation += @{ Data = "NTP Servers"; Value = $xNTPServers; }
             }
@@ -4796,7 +4797,7 @@ Function OutputVMHosts
             ## Seed the row index from the second row
             [int] $CurrentServiceIndex = 2;
 
-            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where {$_.LunType -notlike "*cdrom*"})
+            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where-Object{$_.LunType -notlike "*cdrom*"})
             {
                 ## Add the required key/values to the hashtable
                 $WordTableRowHash = @{
@@ -4839,7 +4840,7 @@ Function OutputVMHosts
 
         If($VMHost.PowerState -like "PoweredOn" -and $Chart)
         {
-            $VMHostCPU = Get-Stat -Entity $VMHost.Name -Stat cpu.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
+            $VMHostCPU = Get-Stat -Entity $VMHost.Name -Stat cpu.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
             AddStatsChart -StatData $VMHostCPU -Title "$($VMHost.Name) CPU" -Width 275 -Length 200 -Type "Line"
 
             $VMHostGrant = Get-Stat -Entity $VMHost.Name -Stat mem.granted.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
@@ -4850,8 +4851,8 @@ Function OutputVMHosts
 
             # Disk IO chart here...get-stats for NFS datastores may not be possible?
 
-            $VMHostNetRec = get-stat -Entity $VMHost.Name -Stat "net.received.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
-            $VMHostNetTrans = get-stat -Entity $VMHost.Name -Stat "net.transmitted.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
+            $VMHostNetRec = get-stat -Entity $VMHost.Name -Stat "net.received.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
+            $VMHostNetTrans = get-stat -Entity $VMHost.Name -Stat "net.transmitted.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
             AddStatsChart -StatData $VMHostNetRec -StatData2 $VMHostNetTrans -Title "$($VMHost.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
             
             WriteWordLine 0 0 ""           
@@ -4883,17 +4884,17 @@ Function OutputVMHosts
         Line 1 "Hyperthreading:`t`t" $xHyperThreading
         Line 1 "CPU Power Policy:`t`t" $VMHost.ExtensionData.config.PowerSystemInfo.CurrentPolicy.ShortName
         Line 1 "Total Memory:`t`t$([decimal]::round($VMHost.MemoryTotalGB)) GB"
-        Line 1 "SSH Policy:`t`t" (($xHostService) | Where {$_.Key -eq "TSM-SSH"}).Policy
+        Line 1 "SSH Policy:`t`t" (($xHostService) | Where-Object{$_.Key -eq "TSM-SSH"}).Policy
         Line 1 "SSH Service Status:`t" $xSSHService
-        Line 1 "Scratch Log location:`t" (($xHostAdvanced) | Where {$_.Name -eq "Syslog.global.logdir"}).Value
-        Line 1 "Scratch Log server:`t" (($xHostAdvanced) | Where {$_.Name -eq "Syslog.global.loghost"}).Value
-        Line 1 "NTP Service Policy:`t" (($xHostService) | Where {$_.Key -eq "ntpd"}).Policy
+        Line 1 "Scratch Log location:`t" (($xHostAdvanced) | Where-Object{$_.Name -eq "Syslog.global.logdir"}).Value
+        Line 1 "Scratch Log server:`t" (($xHostAdvanced) | Where-Object{$_.Name -eq "Syslog.global.loghost"}).Value
+        Line 1 "NTP Service Policy:`t" (($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Policy
         Line 1 "NTP Service Status:`t" $xNTPService
-        Line 1 "NFS Max Queue Depth:`t" (($xHostAdvanced) | Where {$_.Name -eq "NFS.MaxQueueDepth"}).Value
-        Line 1 "NFS Max Volumes:`t" (($xHostAdvanced) | Where {$_.Name -eq "NFS.MaxQueueDepth"}).Value
-        Line 1 "TCP IP Heap Size:`t" (($xHostAdvanced) | Where {$_.Name -eq "Net.TcpipHeapSize"}).Value
-        Line 1 "TCP IP Heap Max:`t" (($xHostAdvanced) | Where {$_.Name -eq "Net.TcpipHeapMax"}).Value
-        If ((($xHostService) | Where {$_.Key -eq "ntpd"}).Running)
+        Line 1 "NFS Max Queue Depth:`t" (($xHostAdvanced) | Where-Object{$_.Name -eq "NFS.MaxQueueDepth"}).Value
+        Line 1 "NFS Max Volumes:`t" (($xHostAdvanced) | Where-Object{$_.Name -eq "NFS.MaxQueueDepth"}).Value
+        Line 1 "TCP IP Heap Size:`t" (($xHostAdvanced) | Where-Object{$_.Name -eq "Net.TcpipHeapSize"}).Value
+        Line 1 "TCP IP Heap Max:`t" (($xHostAdvanced) | Where-Object{$_.Name -eq "Net.TcpipHeapMax"}).Value
+        If ((($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Running)
         {
             Line 1 "NTP Servers" $xNTPServers
         }
@@ -4903,7 +4904,7 @@ Function OutputVMHosts
             Line 0 "Block Storage"
             Line 0 ""
             Line 1 "Model`tVendor`tCapacity`tRunTime Name`tMultipath`tIdentifier"
-            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where {$_.LunType -notlike "*cdrom*"})
+            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where-Object{$_.LunType -notlike "*cdrom*"})
             {
                 Line 1 "$($xLUN.Model)`t$($xLUN.Vendor)`t$("{0:N2}" -f $xLUN.CapacityGB + " GB")`t$($xLUN.RuntimeName)`t$($xLUN.MultipathPolicy)`t$(truncate $xLUN.CanonicalName 28)"
             }
@@ -4941,17 +4942,17 @@ Function OutputVMHosts
         $rowData += @(,("Hyperthreading",($htmlsilver -bor $htmlbold),$xHyperThreading,$htmlwhite))
         $rowData += @(,("CPU Power Policy",($htmlsilver -bor $htmlbold),$VMHost.ExtensionData.config.PowerSystemInfo.CurrentPolicy.ShortName,$htmlwhite))
         $rowData += @(,("Total Memory",($htmlsilver -bor $htmlbold),"$([decimal]::round($VMHost.MemoryTotalGB)) GB",$htmlwhite))
-        $rowData += @(,("SSH Policy",($htmlsilver -bor $htmlbold),(($xHostService) | Where {$_.Key -eq "TSM-SSH"}).Policy,$htmlwhite))
+        $rowData += @(,("SSH Policy",($htmlsilver -bor $htmlbold),(($xHostService) | Where-Object{$_.Key -eq "TSM-SSH"}).Policy,$htmlwhite))
         $rowData += @(,("SSH Service Status",($htmlsilver -bor $htmlbold),$xSSHService,$htmlwhite))
-        $rowData += @(,("Scratch Log location",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where {$_.Name -eq "Syslog.global.logdir"}).Value,$htmlwhite))
-        $rowData += @(,("Scratch Log Server",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where {$_.Name -eq "Syslog.global.loghost"}).Value,$htmlwhite))
-        $rowData += @(,("NTP Service Policy",($htmlsilver -bor $htmlbold),(($xHostService) | Where {$_.Key -eq "ntpd"}).Policy,$htmlwhite))
+        $rowData += @(,("Scratch Log location",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where-Object{$_.Name -eq "Syslog.global.logdir"}).Value,$htmlwhite))
+        $rowData += @(,("Scratch Log Server",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where-Object{$_.Name -eq "Syslog.global.loghost"}).Value,$htmlwhite))
+        $rowData += @(,("NTP Service Policy",($htmlsilver -bor $htmlbold),(($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Policy,$htmlwhite))
         $rowData += @(,("NTP Service Status",($htmlsilver -bor $htmlbold),$xNTPService,$htmlwhite))
-        $rowData += @(,("NFS Max Queue Depth",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where {$_.Name -eq "NFS.MaxQueueDepth"}).Value,$htmlwhite))
-        $rowData += @(,("NFS Max Volumes",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where {$_.Name -eq "NFS.MaxVolumes"}).Value,$htmlwhite))
-        $rowData += @(,("TCP IP Heap Size",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where {$_.Name -eq "Net.TcpipHeapSize"}).Value,$htmlwhite))
-        $rowData += @(,("TCP IP Heap Max",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where {$_.Name -eq "Net.TcpipHeapMax"}).Value,$htmlwhite))
-        If ((($xHostService) | Where {$_.Key -eq "ntpd"}).Running)
+        $rowData += @(,("NFS Max Queue Depth",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where-Object{$_.Name -eq "NFS.MaxQueueDepth"}).Value,$htmlwhite))
+        $rowData += @(,("NFS Max Volumes",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where-Object{$_.Name -eq "NFS.MaxVolumes"}).Value,$htmlwhite))
+        $rowData += @(,("TCP IP Heap Size",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where-Object{$_.Name -eq "Net.TcpipHeapSize"}).Value,$htmlwhite))
+        $rowData += @(,("TCP IP Heap Max",($htmlsilver -bor $htmlbold),(($xHostAdvanced) | Where-Object{$_.Name -eq "Net.TcpipHeapMax"}).Value,$htmlwhite))
+        If ((($xHostService) | Where-Object{$_.Key -eq "ntpd"}).Running)
         {
             $rowData += @(,("NTP Servers",($htmlsilver -bor $htmlbold),$xNTPServers,$htmlwhite))
         }
@@ -4962,7 +4963,7 @@ Function OutputVMHosts
         {
             $rowData = @()
             $columnHeaders = @("Model",($htmlsilver -bor $htmlbold),"Vendor",($htmlsilver -bor $htmlbold),"Capacity",($htmlsilver -bor $htmlbold),"RunTime Name",($htmlsilver -bor $htmlbold),"Multipath",($htmlsilver -bor $htmlbold),"Identifier",($htmlsilver -bor $htmlbold))
-            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where {$_.LunType -notlike "*cdrom*"})
+            ForEach($xLUN in ($xVMHostStorage.ScsiLun) | Where-Object{$_.LunType -notlike "*cdrom*"})
             {
                 $rowdata += @(,($xLun.Model,$htmlwhite,$xLun.Vendor,$htmlwhite,"$("{0:N2}" -f $xLUN.CapacityGB + " GB")",$htmlwhite,$xLUN.RuntimeName,$htmlwhite,$xLUN.MultipathPolicy,$htmlwhite,$xLUN.CanonicalName,$htmlwhite))
             }
@@ -5042,7 +5043,7 @@ Function OutputClusters
     Param([object] $VMCluster)
 
     # Proactive HA code from @lamw https://github.com/vmware/PowerCLI-Example-Scripts/blob/master/Modules/ProactiveHA/ProactiveHA.psm1
-    $xClusterHosts = (($VMHosts) | Where {$_.ParentId -eq $VMCLuster.Id} | Select -ExpandProperty Name) -join "`n"
+    $xClusterHosts = (($VMHosts) | Where-Object{$_.ParentId -eq $VMCLuster.Id} | Select-Object -ExpandProperty Name) -join "`n"
     If($MSWord -or $PDF)
     {
         WriteWordLine 2 0 "Cluster: $($VMCluster.Name)"
@@ -5056,7 +5057,7 @@ Function OutputClusters
             $ScriptInformation += @{ Data = "HA Restart Priority"; Value = $VMCluster.HARestartPriority; }
             $ScriptInformation += @{ Data = "HA Isolation Response"; Value = $VMCluster.HAIsolationResponse; }
         }
-        $xProactiveHA = ($ClusterView | Where {$_.Name -eq $VMCluster.Name})
+        $xProactiveHA = ($ClusterView | Where-Object{$_.Name -eq $VMCluster.Name})
         $ScriptInformation += @{ Data = "Proactive HA Enabled?"; Value = $xProactiveHA.ConfigurationEx.InfraUpdateHaConfig.Enabled; }
         If ($xProactiveHA.ConfigurationEx.InfraUpdateHaConfig.Enabled)
         {
@@ -5095,10 +5096,10 @@ Function OutputClusters
 		$Table = $Null
 		WriteWordLine 0 0 ""
 
-        If ($VMCluster.DrsEnabled -and ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+        If ($VMCluster.DrsEnabled -and ($DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
         {
             WriteWordLine 2 0 "DRS Rules and Groups"
-            foreach($DRSRule in ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+            foreach($DRSRule in ($DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
             {
                 [System.Collections.Hashtable[]] $ScriptInformation = @()
                 $ScriptInformation += @{ Data = "Rule Name"; Value = $DRSRule.RuleName; }
@@ -5179,7 +5180,7 @@ Function OutputClusters
             $rowdata += @(,("HA Restart Priority",($htmlsilver -bor $htmlbold),$VMCluster.HARestartPriority,$htmlwhite))
             $rowdata += @(,("HA Isolation Response",($htmlsilver -bor $htmlbold),$VMCluster.HAIsolationResponse,$htmlwhite))
         }
-        $xProactiveHA = ($ClusterView | Where {$_.Name -eq $VMCluster.Name})
+        $xProactiveHA = ($ClusterView | Where-Object{$_.Name -eq $VMCluster.Name})
         $rowdata += @(,("Proactive HA Enabled",($htmlsilver -bor $htmlbold),$xProactiveHA.ConfigurationEx.InfraUpdateHaConfig.Enabled))
         If ($xProactiveHA.ConfigurationEx.InfraUpdateHaConfig.Enabled)
         {
@@ -5203,10 +5204,10 @@ Function OutputClusters
         FormatHTMLTable "Cluster: $($VMCluster.Name)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
 
-        If ($VMCluster.DrsEnabled -and ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+        If ($VMCluster.DrsEnabled -and ($DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
         {
             WriteHTMLLine 0 0 "DRS Rules and Groups" -options $htmlbold -fontSize 4
-            foreach($DRSRule in ($DRSRules | Where {$_.ClusterName -eq $VMCluster.Name}))
+            foreach($DRSRule in ($DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
             {
                 $rowdata = @()
                 $colWidths = @("150px","200px")
@@ -5248,7 +5249,7 @@ Function OutputClusters
             Line 1 "HA Restart Priority:`t" $VMCluster.HARestartPriority
             Line 1 "HA Isolation Response:`t" $VMCluster.HAIsolationResponse
         }
-        $xProactiveHA = ($ClusterView | Where {$_.Name -eq $VMCluster.Name})
+        $xProactiveHA = ($ClusterView | Where-Object{$_.Name -eq $VMCluster.Name})
         Line 1 "Proactive HA Enabled:`t`t" $xProactiveHA.ConfigurationEx.InfraUpdateHaConfig.Enabled
         If ($xProactiveHA.ConfigurationEx.InfraUpdateHaConfig.Enabled)
         {
@@ -5273,7 +5274,7 @@ Function OutputClusters
         #Hosts in the cluster
         Line 0 "Hosts in $($VMCluster.Name)"
         Line 0 ""
-        ForEach ($xHost in (($VMHosts) | Where {$_.ParentId -eq $VMCLuster.Id}).Name)
+        ForEach ($xHost in (($VMHosts) | Where-Object{$_.ParentId -eq $VMCLuster.Id}).Name)
         {
             Line 1 $xHost
         }
@@ -5388,7 +5389,7 @@ Function OutputResourcePools
         }
         $xMemLimit = "$([decimal]::Round($ResourcePool.MemLimitGB)) GB"
     }
-    $xResPoolHosts = @(($VirtualMachines) | Where {$_.ResourcePoolId -eq $ResourcePool.Id} | Select Name | Sort Name)
+    $xResPoolHosts = @(($VirtualMachines) | Where-Object{$_.ResourcePoolId -eq $ResourcePool.Id} | Select-Object Name | Sort-Object Name)
     If($MSWord -or $PDF)
     {
         WriteWordLine 2 0 "Resource Pool: $($ResourcePool.Name)"
@@ -5478,7 +5479,7 @@ Function OutputResourcePools
         If($xResPoolHosts)
         {
             WriteHTMLLine 2 1 "VMs in $($ResourcePool.Name)"
-            ForEach($xVM in (($VirtualMachines) | Where {$_.ResourcePoolId -eq $ResourcePool.Id} | Sort Name).Name)
+            ForEach($xVM in (($VirtualMachines) | Where-Object{$_.ResourcePoolId -eq $ResourcePool.Id} | Sort-Object Name).Name)
             {
                 WriteHTMLLine 0 2 $xVM
             }
@@ -5506,7 +5507,7 @@ Function OutputResourcePools
         If($xResPoolHosts)
         {
             Line 0 "VMs in $($ResourcePool.Name)"
-            ForEach($xVM in (($VirtualMachines) | Where {$_.ResourcePoolId -eq $ResourcePool.Id} | Sort Name).Name)
+            ForEach($xVM in (($VirtualMachines) | Where-Object{$_.ResourcePoolId -eq $ResourcePool.Id} | Sort-Object Name).Name)
             {
                 Line 1 $xVM
             }
@@ -5535,12 +5536,12 @@ Function ProcessVMKPorts
         #WriteHTMLLine "VMKernel Ports"
     }
     $Script:VMKPortGroups = @()
-    ForEach ($VMHost in ($VMHosts) | where {($_.ConnectionState -like "*Connected*") -or ($_.ConnectionState -like "*Maintenance*")})
+    ForEach ($VMHost in ($VMHosts) | Where-Object{($_.ConnectionState -like "*Connected*") -or ($_.ConnectionState -like "*Maintenance*")})
     {
         If($MSWord -or $PDF){WriteWordLine 2 0 "VMKernel Ports on: $($VMHost.Name)"}
         If($Text){Line 0 ""; Line 0 "VMKernel Ports on: $($VMHost.Name)"}
         If($HTML){WriteHTMLLine 2 0 "VMKernel Ports on: $($VMHost.Name)"}
-        $VMKPorts = $HostNetAdapters | Where {$_.DeviceName -Like "*vmk*" -and $_.VMHost -like $VMHost.Name} | Sort PortGroupName
+        $VMKPorts = $HostNetAdapters | Where-Object{$_.DeviceName -Like "*vmk*" -and $_.VMHost -like $VMHost.Name} | Sort-Object PortGroupName
 
         If($? -and ($VMKPorts))
         {
@@ -5589,7 +5590,7 @@ Function OutputVMKPorts
 {
     Param([object] $VMK)
 
-    $xSwitchDetail = $VirtualPortGroups | Where {$_.Name -like $VMK.PortGroupName} | Select -Unique
+    $xSwitchDetail = $VirtualPortGroups | Where-Object{$_.Name -like $VMK.PortGroupName} | Select-Object -Unique
     $Script:VMKPortGroups += $VMK.PortGroupName
 
     If ($VMK.VMotionEnabled)
@@ -5728,10 +5729,10 @@ Function ProcessHostNetworking
 
     $NetArray = @()
 
-    ForEach ($VMHost in ($VMHosts) | where {($_.ConnectionState -like "*Connected*") -or ($_.ConnectionState -like "*Maintenance*")})
+    ForEach ($VMHost in ($VMHosts) | Where-Object{($_.ConnectionState -like "*Connected*") -or ($_.ConnectionState -like "*Maintenance*")})
     {
         If($Text){Line 0 ""; Line 0 "Host Network Adapters on: $($VMHost.Name)"}
-        $HostNics = $HostNetAdapters | Where {$_.Name -notlike "*vmk*" -and $_.VMHost -like $VMHost.Name} | Sort Name
+        $HostNics = $HostNetAdapters | Where-Object{$_.Name -notlike "*vmk*" -and $_.VMHost -like $VMHost.Name} | Sort-Object Name
         ForEach($Nic in $HostNics)
         {
             $NetObject = New-Object psobject
@@ -6088,7 +6089,7 @@ Function OutputVMPortGroups
             }
         }
 
-        $xVMOnNetwork = @(($VMNetworkAdapters) | Where {$_.NetworkName -eq $VMPortGroup.Name} | Select Parent | Sort Parent | ForEach{$_.Parent})
+        $xVMOnNetwork = @(($VMNetworkAdapters) | Where-Object{$_.NetworkName -eq $VMPortGroup.Name} | Select-Object Parent | Sort-Object Parent | ForEach-Object {$_.Parent})
             
         If($MSWord -or $PDF)
         {
@@ -6162,7 +6163,7 @@ Function OutputVMPortGroups
             If ($xVMOnNetwork)
             {
                 Line 1 "VMs on $($VMPortGroup.Name)"
-                ForEach($xVMNet in ($VMNetworkAdapters | Where {$_.NetworkName -eq $VMPortGroup.Name} | Select Parent | Sort Name))
+                ForEach($xVMNet in ($VMNetworkAdapters | Where-Object{$_.NetworkName -eq $VMPortGroup.Name} | Select-Object Parent | Sort-Object Name))
                 {
                     Line 1 $xVMNet.Parent
                 }
@@ -6181,7 +6182,7 @@ Function OutputVMPortGroups
             If ($xVMOnNetwork)
             {
                 WriteHTMLLine 2 1 "VMs on $($VMPortGroup.Name)"
-                ForEach($xVMNet in ($VMNetworkAdapters | Where {$_.NetworkName -eq $VMPortGroup.Name} | Select Parent | Sort Name))
+                ForEach($xVMNet in ($VMNetworkAdapters | Where-Object{$_.NetworkName -eq $VMPortGroup.Name} | Select-Object Parent | Sort-Object Name))
                 {
                     WriteHTMLLine 0 1 $xVMNet.Parent
                 }
@@ -6233,7 +6234,7 @@ Function ProcessStandardVSwitch
     $vSwitchArray = @()
     ForEach ($VMHost in $VMHosts)
     {
-        $stdVSwitchs = $VirtualSwitches | Where {$_.VMHost -like $VMHost.Name} | Sort Name
+        $stdVSwitchs = $VirtualSwitches | Where-Object{$_.VMHost -like $VMHost.Name} | Sort-Object Name
         ForEach ($vSwitch in $stdVSwitchs)
         {
             $switchObj = New-Object psobject
@@ -6413,7 +6414,7 @@ Function OutputDVSwitching
         Write-Verbose "$(Get-Date): Gathering DV Port data"
         ForEach($vdPortGroup in $VdPortGroups)
         {
-            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name 4>$null| Where {$_.ConnectedEntity -ne $null}))
+            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name 4>$null| Where-Object{$_.ConnectedEntity -ne $null}))
             {
                 #If($vdPort.ConnectedEntity -like "*vmk*"){$xPortName = "VMKernel"}Else{$xPortName = $vdPort.Name}
                 If($VdPort.IsLinkUp){$xLinkUp = "Up"}Else{$xLinkUp = "Down"}
@@ -6471,7 +6472,7 @@ Function OutputDVSwitching
         Write-Verbose "$(Get-Date): Gathering DV Port data"
         ForEach($vdPortGroup in $VdPortGroups)
         {
-            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name 4>$null| Where {$_.ConnectedEntity -ne $null}))
+            ForEach($vdPort in (Get-VDPort -VDPortgroup $VdPortGroup.Name 4>$null| Where-Object{$_.ConnectedEntity -ne $null}))
             {
                 If($VdPort.IsLinkUp){$xLinkUp = "Up"}Else{$xLinkUp = "Down"}
                 $rowData += @(,($vdport.ProxyHost,$htmlwhite,$vdport.ConnectedEntity,$htmlwhite,$vdport.Portgroup,$htmlwhite,$xLinkUp,$htmlwhite,$vdport.MacAddress,$htmlwhite,$vdport.Switch,$htmlwhite))
@@ -6562,7 +6563,7 @@ Function OutputDatastores
 		WriteWordLine 0 0 ""
         
         #Hosts connected to this datastore
-        $xHostsConnected = (($VMHosts) | Where {$_.DatastoreIdList -contains $Datastore.Id} | Select -ExpandProperty Name | Sort Name ) -join "`n"
+        $xHostsConnected = (($VMHosts) | Where-Object{$_.DatastoreIdList -contains $Datastore.Id} | Select-Object -ExpandProperty Name | Sort-Object Name ) -join "`n"
 
         [System.Collections.Hashtable[]] $ScriptInformation = @()
         $ScriptInformation += @{ Data = "Hosts Connected to $($Datastore.Name)";}
@@ -6783,14 +6784,14 @@ Function OutputVirtualMachines
             $ScriptInformation += @{ Data = "     Port Group"; Value = $VMNic.NetworkName; }
             $ScriptInformation += @{ Data = "     MAC Address"; Value = $VMNic.MacAddress; }
             If($Import){$xVMGuestNics = $GuestImport.Nics}Else{$xVMGuestNics = $VM.Guest.Nics}
-            If($xVMDetail){$ScriptInformation += @{ Data = "     IP Address"; Value = (($xVMGuestNics | Where {$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where {$_ -notlike "*:*"}) -join ", "; }}
+            If($xVMDetail){$ScriptInformation += @{ Data = "     IP Address"; Value = (($xVMGuestNics | Where-Object{$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where-Object{$_ -notlike "*:*"}) -join ", "; }}
         }
         $ScriptInformation += @{ Data = "Storage Allocation"; Value = "$([decimal]::Round($VM.ProvisionedSpaceGB)) GB"; }
         $ScriptInformation += @{ Data = "Storage Usage"; Value = "{0:N2}" -f $VM.UsedSpaceGB + " GB"; }
         If($xVMDetail)
         {
             If($Import){$xVMDisks = $GuestImport.Disks}Else{$xVMDisks = $VM.Guest.Disks}
-            ForEach($VMVolume in ($xVMDisks | sort Path))
+            ForEach($VMVolume in ($xVMDisks | Sort-Object Path))
             {
                 $ScriptInformation += @{ Data = "Guest Volume Path"; Value = $VMVolume.Path; }
                 $ScriptInformation += @{ Data = "     Capacity"; Value = "{0:N2}" -f $VMVolume.CapacityGB + " GB"; }
@@ -6808,7 +6809,7 @@ Function OutputVirtualMachines
             $ScriptInformation += @{ Data = "     Type"; Value = $VMDisk.DiskType; }
             $ScriptInformation += @{ Data = "     Persistence"; Value = $VMDisk.Persistence; }
         }
-        If(($Snapshots) | Where {$_.VM -like $VM.Name}){$ScriptInformation += @{ Data = "VM has Snapshots"; Value = (($Snapshots) | Where {$_.VM -like $VM.Name}).Count; }}
+        If(($Snapshots) | Where-Object{$_.VM -like $VM.Name}){$ScriptInformation += @{ Data = "VM has Snapshots"; Value = (($Snapshots) | Where-Object{$_.VM -like $VM.Name}).Count; }}
 
         $Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -6836,12 +6837,12 @@ Function OutputVirtualMachines
             $VMMemAvg = get-stat -Entity $VM.Name -Stat mem.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
             AddStatsChart -StatData $VMMemAvg -Type "Line" -Title "$($VM.Name) Memory Percent" -Width 250 -Length 200
 
-            $VMdiskWrite = get-stat -Entity $VM.Name -Stat "virtualDisk.write.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
-            $VMdiskread = get-stat -Entity $VM.Name -Stat "virtualDisk.read.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
+            $VMdiskWrite = get-stat -Entity $VM.Name -Stat "virtualDisk.write.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
+            $VMdiskread = get-stat -Entity $VM.Name -Stat "virtualDisk.read.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
             AddStatsChart -StatData $VMdiskWrite -StatData2 $VMdiskread -Title "$($VM.Name) Disk IO" -Width 300 -Length 200 -Data1Label "Write IO" -Data2Label "Read IO" -Legend -Type "Line"
 
-            $VMNetRec = get-stat -Entity $VM.Name -Stat "net.received.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
-            $VMNetTrans = get-stat -Entity $VM.Name -Stat "net.transmitted.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where {$_.Instance -like ""}
+            $VMNetRec = get-stat -Entity $VM.Name -Stat "net.received.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
+            $VMNetTrans = get-stat -Entity $VM.Name -Stat "net.transmitted.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
             AddStatsChart -StatData $VMNetRec -StatData2 $VMNetTrans -Title "$($VM.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
         } 
     
@@ -6878,7 +6879,7 @@ Function OutputVirtualMachines
             Line 1 "Network Adapter $($xNicCount):`t" $VMNic.Type
             Line 1 "Port Group:`t`t" $VMNic.NetworkName
             Line 1 "MAC Address:`t`t" $VMNic.MacAddress
-            If($xVMDetail){Line 1 "IP Address:`t`t" (($VM.Guest.Nics | Where {$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where {$_ -notlike "*:*"}) -join ", "}
+            If($xVMDetail){Line 1 "IP Address:`t`t" (($VM.Guest.Nics | Where-Object{$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where-Object{$_ -notlike "*:*"}) -join ", "}
         }
         Line 1 "Storage Allocation:`t$([decimal]::Round($VM.ProvisionedSpaceGB)) GB"
         Line 1 "Storage Usage:`t`t" $("{0:N2}" -f $VM.UsedSpaceGB + " GB")
@@ -6902,7 +6903,7 @@ Function OutputVirtualMachines
             Line 1 "Type:`t`t`t" $VMDisk.DiskType
             Line 1 "Persistence:`t`t" $VMDisk.Persistence
         }
-        If(($Snapshots) | Where {$_.VM -like $VM.Name}){Line 1 "VM has Snapshots:`t" (($Snapshots) | Where {$_.VM -like $VM.Name}).Count}
+        If(($Snapshots) | Where-Object{$_.VM -like $VM.Name}){Line 1 "VM has Snapshots:`t" (($Snapshots) | Where-Object{$_.VM -like $VM.Name}).Count}
         Line 0 ""
     }
     ElseIf($HTML)
@@ -6948,7 +6949,7 @@ Function OutputVirtualMachines
             $rowdata += @(,("Port Group",($htmlsilver -bor $htmlitalics),$VMNic.NetworkName,$htmlwhite))
             $rowdata += @(,("MAC Address",($htmlsilver -bor $htmlitalics),$VMNic.MacAddress,$htmlwhite))
             If($Import){$xVMGuestNics = $GuestImport.Nics}Else{$xVMGuestNics = $VM.Guest.Nics}
-            If($xVMDetail){$rowdata += @(,("IP Address",($htmlsilver -bor $htmlitalics),$((($xVMGuestNics | Where {$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where {$_ -notlike "*:*"}) -join ", "),$htmlwhite))
+            If($xVMDetail){$rowdata += @(,("IP Address",($htmlsilver -bor $htmlitalics),$((($xVMGuestNics | Where-Object{$_.Device -like "Network Adapter $($xNicCount)"}).IPAddress |Where-Object{$_ -notlike "*:*"}) -join ", "),$htmlwhite))
         }
 
         }
@@ -6975,7 +6976,7 @@ Function OutputVirtualMachines
             $rowdata += @(,("Type",($htmlsilver -bor $htmlitalics),$VMDisk.DiskType,$htmlwhite))
             $rowdata += @(,("Persistence",($htmlsilver -bor $htmlitalics),$VMDisk.Persistence,$htmlwhite))
         }
-        If(($Snapshots) | Where {$_.VM -like $VM.Name}){$rowdata += @(,("VM has Snapshots",($htmlsilver -bor $htmlbold),(($Snapshots) | Where {$_.VM -like $VM.Name}).Count,$htmlwhite))}
+        If(($Snapshots) | Where-Object{$_.VM -like $VM.Name}){$rowdata += @(,("VM has Snapshots",($htmlsilver -bor $htmlbold),(($Snapshots) | Where-Object{$_.VM -like $VM.Name}).Count,$htmlwhite))}
 
         FormatHTMLTable "VM: $($VM.Name)" -rowArray $rowdata -noHeadCols 2 -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 0 " "
@@ -7032,7 +7033,7 @@ Function OutputSnapIssues
 
 Function ProcessOpticalIssues
 {
-    $VMCDRom = $VirtualMachines | Where {$_.CDDrives.ConnectionState.Connected}
+    $VMCDRom = $VirtualMachines | Where-Object{$_.CDDrives.ConnectionState.Connected}
     If($VMCDRom)
     {
         Write-Verbose "$(Get-Date): Processing Issues: Mounted CDROM drives found"

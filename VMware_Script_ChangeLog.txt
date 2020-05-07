@@ -10,6 +10,9 @@
 #http://www.CarlWebster.com
 #Sr. Solutions Architect Choice Solutions
 
+#Version 1.81 9-Apr-2018
+#	Code clean-up with recommendations from Visual Studio Code
+
 #Version 1.8 26-Feb-2018
 #	Added Log switch to create a transcript log
 #	Disconnect-VIServer if Word is open after connecting, etc
