@@ -13,6 +13,7 @@
 	Document includes a Cover Page, Table of Contents and Footer.
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
+		Chinese
 		Danish
 		Dutch
 		English
@@ -351,9 +352,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.71
+	VERSION: 1.2
 	AUTHOR: Jacob Rutski and Carl Webster, Sr. Solutions Architect Choice Solutions
-	LASTEDIT: November 9, 2016
+	LASTEDIT: February 13, 2017
 #>
 
 #endregion
@@ -970,7 +971,7 @@ Function SetWordHashTable
 			'en-'	{ 'Automatic Table 2'; Break }
 			'es-'	{ 'Tabla automática 2'; Break }
 			'fi-'	{ 'Automaattinen taulukko 2'; Break }
-			'fr-'	{ 'Sommaire Automatique 2'; Break }
+			'fr-'	{ 'Table automatique 2'; Break } #changed 13-feb-2017 david roquier and samuel legrand
 			'nb-'	{ 'Automatisk tabell 2'; Break }
 			'nl-'	{ 'Automatische inhoudsopgave 2'; Break }
 			'pt-'	{ 'Sumário Automático 2'; Break }
