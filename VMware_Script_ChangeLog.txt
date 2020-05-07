@@ -10,6 +10,16 @@
 #http://www.CarlWebster.com
 #Sr. Solutions Architect Choice Solutions
 
+#Version 1.74 15-Jan-2018
+#	Removed code that made sure all Parameters were set to default values if for some reason they did not exist or values were $Null
+#	Reordered the parameters in the help text and parameter list so they match and are grouped better
+#	Replaced _SetDocumentProperty function with Jim Moyle's Set-DocumentProperty function
+#	Updated Function ProcessScriptEnd for the new Cover Page properties and Parameters
+#	Updated Function SaveandCloseDocumentandShutdownWord to updated standard
+#	Updated Function ShowScriptOptions for the new Cover Page properties and Parameters
+#	Updated Function UpdateDocumentProperties for the new Cover Page properties and Parameters
+#	Updated help text
+
 #Version 1.73 8-Dec-2017
 #	Updated Function WriteHTMLLine with fixes from the script template
 

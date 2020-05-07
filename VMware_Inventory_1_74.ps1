@@ -6,9 +6,11 @@
 <#
 
 .SYNOPSIS
-	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and Microsoft Word 2010, 2013 or 2016.
+	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and 
+	Microsoft Word 2010, 2013 or 2016.
 .DESCRIPTION
-	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and Microsoft Word and PowerShell.
+	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and 
+	Microsoft Word and PowerShell.
 	Creates a Word document named after the vCenter server.
 	Document includes a Cover Page, Table of Contents and Footer.
 	Includes support for the following language versions of Microsoft Word:
@@ -29,15 +31,60 @@
     Name of the vCenter Server to connect to.
     This parameter is mandatory and does not have a default value.
     FQDN should be used; hostname can be used if it can be resolved correctly.
+.PARAMETER CompanyAddress
+	Company Address to use for the Cover Page, if the Cover Page has the Address 
+	field.
+	
+	The following Cover Pages have an Address field:
+		Banded (Word 2013/2016)
+		Contrast (Word 2010)
+		Exposure (Word 2010)
+		Filigree (Word 2013/2016)
+		Ion (Dark) (Word 2013/2016)
+		Retrospect (Word 2013/2016)
+		Semaphore (Word 2013/2016)
+		Tiles (Word 2010)
+		ViewMaster (Word 2013/2016)
+		
+	This parameter is only valid with the MSWORD and PDF output parameters.
+	This parameter has an alias of CA.
+.PARAMETER CompanyEmail
+	Company Email to use for the Cover Page, if the Cover Page has the Email 
+	field.  
+	
+	The following Cover Pages have an Email field:
+		Facet (Word 2013/2016)
+	
+	This parameter is only valid with the MSWORD and PDF output parameters.
+	This parameter has an alias of CE.
+.PARAMETER CompanyFax
+	Company Fax to use for the Cover Page, if the Cover Page has the Fax field.  
+	
+	The following Cover Pages have a Fax field:
+		Contrast (Word 2010)
+		Exposure (Word 2010)
+	
+	This parameter is only valid with the MSWORD and PDF output parameters.
+	This parameter has an alias of CF.
 .PARAMETER CompanyName
 	Company Name to use for the Cover Page.  
-	Default value is contained in HKCU:\Software\Microsoft\Office\Common\UserInfo\CompanyName or
-	HKCU:\Software\Microsoft\Office\Common\UserInfo\Company, whichever is populated on the 
-	computer running the script.
+	Default value is contained in 
+	HKCU:\Software\Microsoft\Office\Common\UserInfo\CompanyName or
+	HKCU:\Software\Microsoft\Office\Common\UserInfo\Company, whichever is 
+	populated on the computer running the script.
 	This parameter has an alias of CN.
-	If either registry key does not exist and this parameter is not specified, the report will
-	not contain a Company Name on the cover page.
+	If either registry key does not exist and this parameter is not specified, the 
+	report will not contain a Company Name on the cover page.
 	This parameter is only valid with the MSWORD and PDF output parameters.
+.PARAMETER CompanyPhone
+	Company Phone to use for the Cover Page if the Cover Page has the Phone field.  
+	
+	The following Cover Pages have a Phone field:
+		Contrast (Word 2010)
+		Exposure (Word 2010)
+	
+	This parameter is only valid with the MSWORD and PDF output parameters.
+	This parameter has an alias of CPh.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
 	Only Word 2010, 2013 and 2016 are supported.
@@ -47,9 +94,9 @@
 		Alphabet (Word 2010. Works)
 		Annual (Word 2010. Doesn't work well for this report)
 		Austere (Word 2010. Works)
-		Austin (Word 2010/2013/2016. Doesn't work in 2013 or 2016, mostly works in 2010 but 
-						Subtitle/Subject & Author fields need to be moved 
-						after title box is moved up)
+		Austin (Word 2010/2013/2016. Doesn't work in 2013 or 2016, mostly 
+		works in 2010 but Subtitle/Subject & Author fields need to be moved 
+		after title box is moved up)
 		Banded (Word 2013/2016. Works)
 		Conservative (Word 2010. Works)
 		Contrast (Word 2010. Works)
@@ -59,20 +106,22 @@
 		Filigree (Word 2013/2016. Works)
 		Grid (Word 2010/2013/2016. Works in 2010)
 		Integral (Word 2013/2016. Works)
-		Ion (Dark) (Word 2013/2016. Top date doesn't fit; box needs to be manually resized or font 
-						changed to 8 point)
-		Ion (Light) (Word 2013/2016. Top date doesn't fit; box needs to be manually resized or font 
-						changed to 8 point)
+		Ion (Dark) (Word 2013/2016. Top date doesn't fit; box needs to be 
+		manually resized or font changed to 8 point)
+		Ion (Light) (Word 2013/2016. Top date doesn't fit; box needs to be 
+		manually resized or font changed to 8 point)
 		Mod (Word 2010. Works)
-		Motion (Word 2010/2013/2016. Works if top date is manually changed to 36 point)
+		Motion (Word 2010/2013/2016. Works if top date is manually changed to 
+		36 point)
 		Newsprint (Word 2010. Works but date is not populated)
 		Perspective (Word 2010. Works)
 		Pinstripes (Word 2010. Works)
-		Puzzle (Word 2010. Top date doesn't fit; box needs to be manually resized or font 
-					changed to 14 point)
+		Puzzle (Word 2010. Top date doesn't fit; box needs to be manually 
+		resized or font changed to 14 point)
 		Retrospect (Word 2013/2016. Works)
 		Semaphore (Word 2013/2016. Works)
-		Sideline (Word 2010/2013/2016. Doesn't work in 2013 or 2016, works in 2010)
+		Sideline (Word 2010/2013/2016. Doesn't work in 2013 or 2016, works in 
+		2010)
 		Slice (Dark) (Word 2013/2016. Doesn't work)
 		Slice (Light) (Word 2013/2016. Doesn't work)
 		Stacks (Word 2010. Works)
@@ -81,22 +130,20 @@
 		ViewMaster (Word 2013/2016. Works)
 		Whisp (Word 2013/2016. Works)
 		
-	Default value is Sideline.
+	The default value is Sideline.
 	This parameter has an alias of CP.
 	This parameter is only valid with the MSWORD and PDF output parameters.
 .PARAMETER UserName
-	User name to use for the Cover Page and Footer.
+	Username to use for the Cover Page and Footer.
 	Default value is contained in $env:username
 	This parameter has an alias of UN.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER Export
-    Runs this script gathering all required data from PowerCLI as normal, then exporting data to XML files in the .\Export directory
-    Once the export is completed, it can be copied offline to be run later with the -Import paramater
-    This parameter overrides all other output formats
-.PARAMETER Import
-    Runs this script gathering all required data from a previously run Export
-    Export directory must be present in the same directory as the script itself
-    Does not require PowerCLI or a VIServerName to run in Import mode
+.PARAMETER HTML
+	Creates an HTML file with an .html extension.
+	This parameter is disabled by default.
+.PARAMETER MSWord
+	SaveAs DOCX file
+	This parameter is set True if no other output format is selected.
 .PARAMETER PDF
 	SaveAs PDF file instead of DOCX file.
 	This parameter is disabled by default.
@@ -106,17 +153,24 @@
 .PARAMETER Text
 	Creates a formatted text file with a .txt extension.
 	This parameter is disabled by default.
-.PARAMETER MSWord
-	SaveAs DOCX file
-	This parameter is set True if no other output format is selected.
-.PARAMETER HTML
-	Creates an HTML file with an .html extension.
-	This parameter is disabled by default.
+.PARAMETER Export
+    Runs this script gathering all required data from PowerCLI as normal, then 
+	exporting data to XML files in the .\Export directory
+    Once the export is completed, it can be copied offline to be run later with 
+	the -Import parameter
+    This parameter overrides all other output formats
+.PARAMETER Import
+    Runs this script gathering all required data from a previously run Export
+    Export directory must be present in the same directory as the script itself
+    Does not require PowerCLI or a VIServerName to run in Import mode
 .PARAMETER Full
-	Runs a full inventory for the Hosts, clusters, resoure pools, networking and virtual machines.
-	This parameter is disabled by default - only a summary is run when this parameter is not specified.
+	Runs a full inventory for the Hosts, clusters, resource pools, networking and 
+	virtual machines.
+	This parameter is disabled by default - only a summary is run when this 
+	parameter is not specified.
 .PARAMETER PCLICustom
-    Prompts user to locate the PowerCLI Scripts directory in a non-default installation
+    Prompts user to locate the PowerCLI Scripts directory in a non-default 
+	installation
     This parameter is disabled by default
 .PARAMETER Chart
     This parameter is still beta and is disabled by default
@@ -124,13 +178,14 @@
     DOTNET chart controls are required
 .PARAMETER Issues
     This parameter is still beta and is disabled by default
-    Gathers basic summary data as well as specific issues data with the idea to be run on a set schedule
+    Gathers basic summary data as well as specific issues data with the idea to be 
+	run on a set schedule
     This parameter does not currently support Import\Export
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2016 at 6PM is 2016-06-01_1800.
-	Output filename will be ReportName_2016-06-01_1800.docx (or .pdf).
+	June 1, 2018 at 6PM is 2018-06-01_1800.
+	Output filename will be ReportName_2018-06-01_1800.docx (or .pdf).
 	This parameter is disabled by default.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
@@ -166,7 +221,8 @@
 	PS C:\PSScript > .\VMware_Inventory.ps1
 	
 	Will use all default values and prompt for vCenter Server.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -177,7 +233,8 @@
 	PS C:\PSScript > .\VMware_Inventory.ps1 -VIServerName testvc.lab.com
 	
 	Will use all default values and use testvc.lab.com as the vCenter Server.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -188,7 +245,8 @@
 	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -VIServerName testvc.lab.com
 	
 	Will use all default values and save the document as a PDF file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -198,35 +256,24 @@
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -TEXT -VIServerName testvc.lab.com
 
-	This parameter will output a basic txt file - this output is significantly limited; HTML is recommended
+	This parameter will output a basic txt file - this output is significantly 
+	limited; HTML is recommended
 	
 	Will use all default values and save the document as a formatted text file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
-
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -HTML -VIServerName testvc.lab.com
 
 	This parameter will output an HTML summary output
 	
 	Will use all default values and save the document as an HTML file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
-
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -Full -VIServerName testvc.lab.com
 	
-	Creates a full inventory of the VMware environment. *Note: a full report will take a considerable amount of time to generate.
+	Creates a full inventory of the VMware environment. *Note: a full report will take 
+	a considerable amount of time to generate.
 	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -236,9 +283,11 @@
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -Full -VIServerName testvc.lab.com
 	
-	Creates a full inventory of the VMware environment. *Note: a full report will take a considerable amount of time to generate.
+	Creates a full inventory of the VMware environment. *Note: a full report will take 
+	a considerable amount of time to generate.
 	Will use all Default values and save the document as a PDF file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -246,7 +295,8 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 .EXAMPLE
-	PS C:\PSScript .\VMware_Inventory.ps1 -CompanyName "SeriousTek" -CoverPage "Mod" -UserName "Jacob Rutski" -VIServerName testvc.lab.com
+	PS C:\PSScript .\VMware_Inventory.ps1 -CompanyName "SeriousTek" 
+	-CoverPage "Mod" -UserName "Jacob Rutski" -VIServerName testvc.lab.com
 
 	Will use:
 		Jacob Rutski Consulting for the Company Name.
@@ -257,15 +307,9 @@
 
 	Will use all default values and use testvc.lab.com as the vCenter Server.
     Script will output all data to XML files in the .\Export directory created
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
-
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
 .EXAMPLE
-	PS C:\PSScript .\VMware_Inventory.ps1 -CN "SeriousTek" -CP "Mod" -UN "Jacob Rutski" -VIServerName testvc.lab.com
+	PS C:\PSScript .\VMware_Inventory.ps1 -CN "SeriousTek" -CP "Mod" 
+	-UN "Jacob Rutski" -VIServerName testvc.lab.com
 
 	Will use:
 		Jacob Rutski Consulting for the Company Name (alias CN).
@@ -275,7 +319,8 @@
 	PS C:\PSScript > .\VMware_Inventory.ps1 -AddDateTime -VIServerName testvc.lab.com
 	
 	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -285,13 +330,15 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2016 at 6PM is 2016-06-01_1800.
-	Output filename will be vCenterServer_2016-06-01_1800.docx
+	June 1, 2018 at 6PM is 2018-06-01_1800.
+	Output filename will be vCenterServer_2018-06-01_1800.docx
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -AddDateTime -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -AddDateTime 
+	-VIServerName testvc.lab.com
 	
 	Will use all Default values and save the document as a PDF file.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -301,13 +348,15 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2016 at 6PM is 2016-06-01_1800.
-	Output filename will be vCenterServerSiteName_2016-06-01_1800.pdf
+	June 1, 2018 at 6PM is 2018-06-01_1800.
+	Output filename will be vCenterServerSiteName_2018-06-01_1800.pdf
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -Folder \\FileServer\ShareName -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory.ps1 -Folder \\FileServer\ShareName 
+	-VIServerName testvc.lab.com
 	
 	Will use all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -317,10 +366,12 @@
 	
 	Output file will be saved in the path \\FileServer\ShareName
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer mail.domain.tld -From XDAdmin@domain.tld -To ITGroup@domain.tld -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer mail.domain.tld 
+	-From XDAdmin@domain.tld -To ITGroup@domain.tld -VIServerName testvc.lab.com
 	
 	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -328,14 +379,19 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 	
-	Script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, sending to ITGroup@domain.tld.
+	Script will use the email server mail.domain.tld, sending from XDAdmin@domain.tld, 
+	sending to ITGroup@domain.tld.
 	Script will use the default SMTP port 25 and will not use SSL.
-	If the current user's credentials are not valid to send email, the user will be prompted to enter valid credentials.
+	If the current user's credentials are not valid to send email, the user will be 
+	prompted to enter valid credentials.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer smtp.office365.com -SmtpPort 587 -UseSSL -From admin@serioustek.net -To ITGroup@CarlWebster.com -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer smtp.office365.com 
+	-SmtpPort 587 -UseSSL -From admin@serioustek.net -To ITGroup@CarlWebster.com 
+	-VIServerName testvc.lab.com
 	
 	Will use all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName="Jacob Rutski" or
+	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
+	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
 	$env:username = Administrator
 
@@ -343,8 +399,10 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 	
-	Script will use the email server smtp.office365.com on port 587 using SSL, sending from admin@serioustek.net, sending to ITGroup@carlwebster.com.
-	If the current user's credentials are not valid to send email, the user will be prompted to enter valid credentials.
+	Script will use the email server smtp.office365.com on port 587 using SSL, 
+	sending from admin@serioustek.net, sending to ITGroup@carlwebster.com.
+	If the current user's credentials are not valid to send email, the user will be 
+	prompted to enter valid credentials.
 .INPUTS
 	None.  You cannot pipe objects to this script.
 .OUTPUTS
@@ -352,9 +410,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.73
+	VERSION: 1.74
 	AUTHOR: Jacob Rutski and Carl Webster, Sr. Solutions Architect Choice Solutions
-	LASTEDIT: December 8, 2017
+	LASTEDIT: January 15, 2018
 #>
 
 #endregion
@@ -364,57 +422,45 @@
 [CmdletBinding(SupportsShouldProcess = $False, ConfirmImpact = "None", DefaultParameterSetName = "Word") ]
 
 Param(
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$MSWord=$False,
-
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$PDF=$False,
-
-	[parameter(ParameterSetName="Text",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$Text=$False,
-
-	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
-	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
-	[Switch]$HTML=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Switch]$AddDateTime=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[string]$Folder="",
-
     [parameter(Mandatory=$False)]
     [Alias("VC")]
     [ValidateNotNullOrEmpty()]
     [string]$VIServerName="",
 	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Full=$False,	
-
-    [parameter(Mandatory=$False)]
-    [Switch]$PCLICustom=$False,
-
-    [parameter(Mandatory=$False)]
-    [Switch]$Chart=$False,
-
-    [parameter(Mandatory=$False)]
-    [Switch]$Import=$False,
-
-    [parameter(Mandatory=$False)]
-    [Switch]$Export=$False,
-
-    [parameter(Mandatory=$False)]
-    [Switch]$Issues=$False,
-	
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Alias("CA")]
+	[ValidateNotNullOrEmpty()]
+	[string]$CompanyAddress="",
+    
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Alias("CE")]
+	[ValidateNotNullOrEmpty()]
+	[string]$CompanyEmail="",
+    
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Alias("CF")]
+	[ValidateNotNullOrEmpty()]
+	[string]$CompanyFax="",
+    
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
 	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
 	[Alias("CN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyName="",
+    
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Alias("CPh")]
+	[ValidateNotNullOrEmpty()]
+	[string]$CompanyPhone="",
     
 	[parameter(ParameterSetName="Word",Mandatory=$False)] 
 	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
@@ -429,6 +475,46 @@ Param(
 	[Alias("UN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$UserName=$env:username,
+
+	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$HTML=$False,
+
+	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$MSWord=$False,
+
+	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$PDF=$False,
+
+	[parameter(ParameterSetName="Text",Mandatory=$False)] 
+	[parameter(ParameterSetName="SMTP",Mandatory=$False)] 
+	[Switch]$Text=$False,
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Export=$False,
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Import=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Switch]$Full=$False,	
+
+    [parameter(Mandatory=$False)]
+    [Switch]$PCLICustom=$False,
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Chart=$False,
+
+    [parameter(Mandatory=$False)]
+    [Switch]$Issues=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$AddDateTime=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[string]$Folder="",
 
 	[parameter(ParameterSetName="SMTP",Mandatory=$True)] 
 	[string]$SmtpServer="",
@@ -555,6 +641,16 @@ Param(
 #Version 1.73 8-Dec-2017
 #	Updated Function WriteHTMLLine with fixes from the script template
 #
+#Version 1.74 15-Jan-2018
+#	Removed code that made sure all Parameters were set to default values if for some reason they did not exist or values were $Null
+#	Reordered the parameters in the help text and parameter list so they match and are grouped better
+#	Replaced _SetDocumentProperty function with Jim Moyle's Set-DocumentProperty function
+#	Updated Function ProcessScriptEnd for the new Cover Page properties and Parameters
+#	Updated Function SaveandCloseDocumentandShutdownWord to updated standard
+#	Updated Function ShowScriptOptions for the new Cover Page properties and Parameters
+#	Updated Function UpdateDocumentProperties for the new Cover Page properties and Parameters
+#	Updated help text
+#
 #endregion
 
 #region initial variable testing and setup
@@ -564,132 +660,6 @@ Set-StrictMode -Version 2
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
-
-If($Null -eq $PDF)
-{
-	$PDF = $False
-}
-If($Null -eq $Text)
-{
-	$Text = $False
-}
-If($Null -eq $MSWord)
-{
-	$MSWord = $False
-}
-If($Null -eq $HTML)
-{
-	$HTML = $False
-}
-If($Null -eq $AddDateTime)
-{
-	$AddDateTime = $False
-}
-If($Full -eq $Null)
-{
-	$Full = $False
-}
-If($Chart -eq $Null)
-{
-	$Chart = $False
-}
-If($Null -eq $Folder)
-{
-	$Folder = ""
-}
-If($Null -eq $SmtpServer)
-{
-	$SmtpServer = ""
-}
-If($Null -eq $SmtpPort)
-{
-	$SmtpPort = 25
-}
-If($Null -eq $UseSSL)
-{
-	$UseSSL = $False
-}
-If($Null -eq $From)
-{
-	$From = ""
-}
-If($Null -eq $To)
-{
-	$To = ""
-}
-If($Null -eq $Dev)
-{
-	$Dev = $False
-}
-If($Null -eq $ScriptInfo)
-{
-	$ScriptInfo = $False
-}
-
-If(!(Test-Path Variable:PDF))
-{
-	$PDF = $False
-}
-If(!(Test-Path Variable:Text))
-{
-	$Text = $False
-}
-If(!(Test-Path Variable:MSWord))
-{
-	$MSWord = $False
-}
-If(!(Test-Path Variable:HTML))
-{
-	$HTML = $False
-}
-If(!(Test-Path Variable:AddDateTime))
-{
-	$AddDateTime = $False
-}
-If(!(Test-Path Variable:Full))
-{
-	$Full = $False
-}
-If(!(Test-Path Variable:Import))
-{
-	$Import = $False
-}
-If(!(Test-Path Variable:Export))
-{
-	$Export = $False
-}
-If(!(Test-Path Variable:Folder))
-{
-	$Folder = ""
-}
-If(!(Test-Path Variable:SmtpServer))
-{
-	$SmtpServer = ""
-}
-If(!(Test-Path Variable:SmtpPort))
-{
-	$SmtpPort = 25
-}
-If(!(Test-Path Variable:UseSSL))
-{
-	$UseSSL = $False
-}
-If(!(Test-Path Variable:From))
-{
-	$From = ""
-}
-If(!(Test-Path Variable:To))
-{
-	$To = ""
-}
-If(!(Test-Path Variable:Dev))
-{
-	$Dev = $False
-}
-If(!(Test-Path Variable:ScriptInfo))
-{
-	$ScriptInfo = $False
-}
 
 If($Dev)
 {
@@ -1362,22 +1332,44 @@ Function ValidateCompanyName
 	}
 }
 
-Function _SetDocumentProperty 
-{
-	#jeff hicks
-	Param([object]$Properties,[string]$Name,[string]$Value)
-	#get the property object
-	$prop = $properties | ForEach { 
-		$propname = ""
-		$propname=$_.GetType().InvokeMember("Name","GetProperty",$Null,$_,$Null)
-		If($propname -eq $Name) 
-		{
-			Return $_
-		}
-	} #ForEach
-
-	#set the value
-	$Prop.GetType().InvokeMember("Value","SetProperty",$Null,$prop,$Value)
+Function Set-DocumentProperty {
+    <#
+	.SYNOPSIS
+	Function to set the Title Page document properties in MS Word
+	.DESCRIPTION
+	Long description
+	.PARAMETER Document
+	Current Document Object
+	.PARAMETER DocProperty
+	Parameter description
+	.PARAMETER Value
+	Parameter description
+	.EXAMPLE
+	Set-DocumentProperty -Document $Script:Doc -DocProperty Title -Value 'MyTitle'
+	.EXAMPLE
+	Set-DocumentProperty -Document $Script:Doc -DocProperty Company -Value 'MyCompany'
+	.EXAMPLE
+	Set-DocumentProperty -Document $Script:Doc -DocProperty Author -Value 'Jim Moyle'
+	.EXAMPLE
+	Set-DocumentProperty -Document $Script:Doc -DocProperty Subject -Value 'MySubjectTitle'
+	.NOTES
+	Function Created by Jim Moyle June 2017
+	Twitter : @JimMoyle
+	#>
+    param (
+        [object]$Document,
+        [String]$DocProperty,
+        [string]$Value
+    )
+    try {
+        $binding = "System.Reflection.BindingFlags" -as [type]
+        $builtInProperties = $Document.BuiltInDocumentProperties
+        $property = [System.__ComObject].invokemember("item", $binding::GetProperty, $null, $BuiltinProperties, $DocProperty)
+        [System.__ComObject].invokemember("value", $binding::SetProperty, $null, $property, $Value)
+    }
+    catch {
+        Write-Warning "Failed to set $DocProperty to $Value"
+    }
 }
 
 Function FindWordDocumentEnd
@@ -1740,24 +1732,24 @@ Function SetupWord
 Function UpdateDocumentProperties
 {
 	Param([string]$AbstractTitle, [string]$SubjectTitle)
+	#updated 8-Jun-2017 with additional cover page fields
 	#Update document properties
 	If($MSWORD -or $PDF)
 	{
 		If($Script:CoverPagesExist)
 		{
 			Write-Verbose "$(Get-Date): Set Cover Page Properties"
-			_SetDocumentProperty $Script:Doc.BuiltInDocumentProperties "Company" $Script:CoName
-			_SetDocumentProperty $Script:Doc.BuiltInDocumentProperties "Title" $Script:title
-			_SetDocumentProperty $Script:Doc.BuiltInDocumentProperties "Author" $username
-
-			_SetDocumentProperty $Script:Doc.BuiltInDocumentProperties "Subject" $SubjectTitle
+			#8-Jun-2017 put these 4 items in alpha order
+            Set-DocumentProperty -Document $Script:Doc -DocProperty Author -Value $UserName
+            Set-DocumentProperty -Document $Script:Doc -DocProperty Company -Value $Script:CoName
+            Set-DocumentProperty -Document $Script:Doc -DocProperty Subject -Value $SubjectTitle
+            Set-DocumentProperty -Document $Script:Doc -DocProperty Title -Value $Script:title
 
 			#Get the Coverpage XML part
 			$cp = $Script:Doc.CustomXMLParts | Where {$_.NamespaceURI -match "coverPageProps$"}
 
 			#get the abstract XML part
 			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "Abstract"}
-
 			#set the text
 			If([String]::IsNullOrEmpty($Script:CoName))
 			{
@@ -1767,7 +1759,30 @@ Function UpdateDocumentProperties
 			{
 				[string]$abstract = "$($AbstractTitle) for $($Script:CoName)"
 			}
+			$ab.Text = $abstract
 
+			#added 8-Jun-2017
+			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyAddress"}
+			#set the text
+			[string]$abstract = $CompanyAddress
+			$ab.Text = $abstract
+
+			#added 8-Jun-2017
+			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyEmail"}
+			#set the text
+			[string]$abstract = $CompanyEmail
+			$ab.Text = $abstract
+
+			#added 8-Jun-2017
+			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyFax"}
+			#set the text
+			[string]$abstract = $CompanyFax
+			$ab.Text = $abstract
+
+			#added 8-Jun-2017
+			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "CompanyPhone"}
+			#set the text
+			[string]$abstract = $CompanyPhone
 			$ab.Text = $abstract
 
 			$ab = $cp.documentelement.ChildNodes | Where {$_.basename -eq "PublishDate"}
@@ -3395,59 +3410,60 @@ Function ShowScriptOptions
 {
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): AddDateTime   : $($AddDateTime)"
-	Write-Verbose "$(Get-Date): Chart         : $($Chart)"
+	Write-Verbose "$(Get-Date): AddDateTime    : $($AddDateTime)"
+	Write-Verbose "$(Get-Date): Chart          : $($Chart)"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Company Name  : $($Script:CoName)"
+		Write-Verbose "$(Get-Date): Company Address: $CompanyAddress"
+		Write-Verbose "$(Get-Date): Company Email  : $CompanyEmail"
+		Write-Verbose "$(Get-Date): Company Fax    : $CompanyFax"
+		Write-Verbose "$(Get-Date): Company Name   : $Script:CoName"
+		Write-Verbose "$(Get-Date): Company Phone  : $CompanyPhone"
+		Write-Verbose "$(Get-Date): Cover Page     : $CoverPage"
 	}
-	If($MSWORD -or $PDF)
-	{
-		Write-Verbose "$(Get-Date): Cover Page    : $($CoverPage)"
-	}
-	Write-Verbose "$(Get-Date): Dev           : $($Dev)"
+	Write-Verbose "$(Get-Date): Dev            : $($Dev)"
 	If($Dev)
 	{
-		Write-Verbose "$(Get-Date): DevErrorFile  : $($Script:DevErrorFile)"
+		Write-Verbose "$(Get-Date): DevErrorFile   : $($Script:DevErrorFile)"
 	}
-	Write-Verbose "$(Get-Date): Export        : $($Export)"
-	Write-Verbose "$(Get-Date): Filename1     : $($Script:filename1)"
+	Write-Verbose "$(Get-Date): Export         : $($Export)"
+	Write-Verbose "$(Get-Date): Filename1      : $($Script:filename1)"
 	If($PDF)
 	{
-		Write-Verbose "$(Get-Date): Filename2     : $($Script:filename2)"
+		Write-Verbose "$(Get-Date): Filename2      : $($Script:filename2)"
 	}
-	Write-Verbose "$(Get-Date): Folder        : $($Folder)"
-	Write-Verbose "$(Get-Date): From          : $($From)"
-	Write-Verbose "$(Get-Date): Full          : $($Full)"
-	Write-Verbose "$(Get-Date): Import        : $($Import)"
-	Write-Verbose "$(Get-Date): Issues        : $($Issues)"
-	Write-Verbose "$(Get-Date): Save As HTML  : $($HTML)"
-	Write-Verbose "$(Get-Date): Save As PDF   : $($PDF)"
-	Write-Verbose "$(Get-Date): Save As TEXT  : $($TEXT)"
-	Write-Verbose "$(Get-Date): Save As WORD  : $($MSWORD)"
-	Write-Verbose "$(Get-Date): ScriptInfo    : $($ScriptInfo)"
-	Write-Verbose "$(Get-Date): Smtp Port     : $($SmtpPort)"
-	Write-Verbose "$(Get-Date): Smtp Server   : $($SmtpServer)"
-	Write-Verbose "$(Get-Date): Title         : $($Script:Title)"
-	Write-Verbose "$(Get-Date): To            : $($To)"
-	Write-Verbose "$(Get-Date): Use SSL       : $($UseSSL)"
+	Write-Verbose "$(Get-Date): Folder         : $($Folder)"
+	Write-Verbose "$(Get-Date): From           : $($From)"
+	Write-Verbose "$(Get-Date): Full           : $($Full)"
+	Write-Verbose "$(Get-Date): Import         : $($Import)"
+	Write-Verbose "$(Get-Date): Issues         : $($Issues)"
+	Write-Verbose "$(Get-Date): Save As HTML   : $($HTML)"
+	Write-Verbose "$(Get-Date): Save As PDF    : $($PDF)"
+	Write-Verbose "$(Get-Date): Save As TEXT   : $($TEXT)"
+	Write-Verbose "$(Get-Date): Save As WORD   : $($MSWORD)"
+	Write-Verbose "$(Get-Date): ScriptInfo     : $($ScriptInfo)"
+	Write-Verbose "$(Get-Date): Smtp Port      : $($SmtpPort)"
+	Write-Verbose "$(Get-Date): Smtp Server    : $($SmtpServer)"
+	Write-Verbose "$(Get-Date): Title          : $($Script:Title)"
+	Write-Verbose "$(Get-Date): To             : $($To)"
+	Write-Verbose "$(Get-Date): Use SSL        : $($UseSSL)"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): User Name     : $($UserName)"
+		Write-Verbose "$(Get-Date): User Name      : $($UserName)"
 	}
-	Write-Verbose "$(Get-Date): VIServerName  : $($VIServerName)"
+	Write-Verbose "$(Get-Date): VIServerName   : $($VIServerName)"
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): OS Detected   : $($Script:RunningOS)"
-	Write-Verbose "$(Get-Date): PoSH version  : $($Host.Version)"
-	Write-Verbose "$(Get-Date): PSCulture     : $($PSCulture)"
-	Write-Verbose "$(Get-Date): PSUICulture   : $($PSUICulture)"
+	Write-Verbose "$(Get-Date): OS Detected    : $($Script:RunningOS)"
+	Write-Verbose "$(Get-Date): PoSH version   : $($Host.Version)"
+	Write-Verbose "$(Get-Date): PSCulture      : $($PSCulture)"
+	Write-Verbose "$(Get-Date): PSUICulture    : $($PSUICulture)"
 	If($MSWORD -or $PDF)
 	{
-		Write-Verbose "$(Get-Date): Word language : $($Script:WordLanguageValue)"
-		Write-Verbose "$(Get-Date): Word version  : $($Script:WordProduct)"
+		Write-Verbose "$(Get-Date): Word language  : $($Script:WordLanguageValue)"
+		Write-Verbose "$(Get-Date): Word version   : $($Script:WordProduct)"
 	}
 	Write-Verbose "$(Get-Date): "
-	Write-Verbose "$(Get-Date): Script start  : $($Script:StartTime)"
+	Write-Verbose "$(Get-Date): Script start   : $($Script:StartTime)"
 	Write-Verbose "$(Get-Date): "
 	Write-Verbose "$(Get-Date): "
 }
@@ -3498,7 +3514,7 @@ Function SaveandCloseDocumentandShutdownWord
 				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
 			}
 		}
-		Write-Verbose "$(Get-Date): Running $Script:WordProduct and detected operating system $($Script:RunningOS)"
+		Write-Verbose "$(Get-Date): Running Word 2010 and detected operating system $($Script:RunningOS)"
 		$saveFormat = [Enum]::Parse([Microsoft.Office.Interop.Word.WdSaveFormat], "wdFormatDocumentDefault")
 		$Script:Doc.SaveAs([REF]$Script:FileName1, [ref]$SaveFormat)
 		If($PDF)
@@ -3526,7 +3542,7 @@ Function SaveandCloseDocumentandShutdownWord
 				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
 			}
 		}
-		Write-Verbose "$(Get-Date): Running $Script:WordProduct and detected operating system $($Script:RunningOS)"
+		Write-Verbose "$(Get-Date): Running Word 2013 and detected operating system $($Script:RunningOS)"
 		$Script:Doc.SaveAs2([REF]$Script:FileName1, [ref]$wdFormatDocumentDefault)
 		If($PDF)
 		{
@@ -3537,11 +3553,7 @@ Function SaveandCloseDocumentandShutdownWord
 
 	Write-Verbose "$(Get-Date): Closing Word"
 	$Script:Doc.Close()
-	Write-Verbose "$(Get-Date): Waiting 10 seconds to allow Word to save file"
-	Start-Sleep -Seconds 10
 	$Script:Word.Quit()
-	Write-Verbose "$(Get-Date): Waiting 10 seconds to allow Word to fully close"
-	Start-Sleep -Seconds 10
 	If($PDF)
 	{
 		[int]$cnt = 0
@@ -3555,18 +3567,7 @@ Function SaveandCloseDocumentandShutdownWord
 				$Script:Word.Quit()
 				If($cnt -gt 2)
 				{
-					#kill the winword process
-
-					#find out our session (usually "1" except on TS/RDC or Citrix)
-					$SessionID = (Get-Process -PID $PID).SessionId
-					
-					#Find out if winword is running in our session
-					$wordprocess = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}).Id
-					If($wordprocess -gt 0)
-					{
-						Write-Verbose "$(Get-Date): Attempting to stop WinWord process # $($wordprocess)"
-						Stop-Process $wordprocess -EA 0
-					}
+					Stop-WinWord
 				}
 			}
 			Write-Verbose "$(Get-Date): Attempting to delete $($Script:FileName1) since only $($Script:FileName2) is needed (try # $($cnt))"
@@ -3575,26 +3576,19 @@ Function SaveandCloseDocumentandShutdownWord
 	}
 	Write-Verbose "$(Get-Date): System Cleanup"
 	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
-	If(Test-Path variable:global:word)
+	If( Test-Path variable:global:Word )
 	{
-		Remove-Variable -Name word -Scope Global 4>$Null
+		Remove-Variable -Name Word -Scope Global 4>$Null
+	}
+	If( Get-Variable -Name Word -Scope Script -ErrorAction SilentlyContinue )
+	{
+		Remove-Variable -Name Word -Scope Script 4>$Null
 	}
 	$SaveFormat = $Null
 	[gc]::collect() 
 	[gc]::WaitForPendingFinalizers()
 	
-	#is the winword process still running? kill it
-
-	#find out our session (usually "1" except on TS/RDC or Citrix)
-	$SessionID = (Get-Process -PID $PID).SessionId
-
-	#Find out if winword is running in our session
-	$wordprocess = ((Get-Process 'WinWord' -ea 0)|?{$_.SessionId -eq $SessionID}).Id
-	If($wordprocess -gt 0)
-	{
-		Write-Verbose "$(Get-Date): WinWord process is still running. Attempting to stop WinWord process # $($wordprocess)"
-		Stop-Process $wordprocess -EA 0
-	}
+	Stop-WinWord
 }
 
 Function SaveandCloseTextDocument
@@ -7046,60 +7040,61 @@ Function ProcessScriptEnd
 	{
 		$SIFile = "$($pwd.Path)\VMwareInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime  : $($AddDateTime)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Chart         : $($Chart)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime   : $($AddDateTime)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Chart          : $($Chart)" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Company Name  : $($Script:CoName)" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Address: $CompanyAddress" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Email  : $CompanyEmail" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Fax    : $CompanyFax" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Name   : $Script:CoName" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Company Phone  : $CompanyPhone" 4>$Null		
+			Out-File -FilePath $SIFile -Append -InputObject "Cover Page     : $CoverPage" 4>$Null
 		}
-		If($MSWORD -or $PDF)
-		{
-			Out-File -FilePath $SIFile -Append -InputObject "Cover Page    : $($CoverPage)" 4>$Null
-		}
-		Out-File -FilePath $SIFile -Append -InputObject "Dev           : $($Dev)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Dev            : $($Dev)" 4>$Null
 		If($Dev)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile  : $($Script:DevErrorFile)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile   : $($Script:DevErrorFile)" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Export        : $($Export)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Filename1     : $($Script:FileName1)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Export         : $($Export)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Filename1      : $($Script:FileName1)" 4>$Null
 		If($PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Filename2     : $($Script:FileName2)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Filename2      : $($Script:FileName2)" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "Folder        : $($Folder)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "From          : $($From)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Full          : $($Full)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Import        : $($Import)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Issues        : $($Issues)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML  : $($HTML)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF   : $($PDF)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT  : $($TEXT)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD  : $($MSWORD)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Script Info   : $($ScriptInfo)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port     : $($SmtpPort)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server   : $($SmtpServer)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Title         : $($Script:Title)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "To            : $($To)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Use SSL       : $($UseSSL)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Folder         : $($Folder)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "From           : $($From)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Full           : $($Full)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Import         : $($Import)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Issues         : $($Issues)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML   : $($HTML)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF    : $($PDF)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT   : $($TEXT)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD   : $($MSWORD)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script Info    : $($ScriptInfo)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port      : $($SmtpPort)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server    : $($SmtpServer)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Title          : $($Script:Title)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "To             : $($To)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Use SSL        : $($UseSSL)" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "User Name     : $($UserName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "User Name      : $($UserName)" 4>$Null
 		}
-		Out-File -FilePath $SIFile -Append -InputObject "VIServerName  : $($VIServerName)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "VIServerName   : $($VIServerName)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "OS Detected   : $($Script:RunningOS)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PoSH version  : $($Host.Version)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PSCulture     : $($PSCulture)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture   : $($PSUICulture)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "OS Detected    : $($Script:RunningOS)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PoSH version   : $($Host.Version)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSCulture      : $($PSCulture)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "PSUICulture    : $($PSUICulture)" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Word language : $($Script:WordLanguageValue)" 4>$Null
-			Out-File -FilePath $SIFile -Append -InputObject "Word version  : $($Script:WordProduct)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word language  : $($Script:WordLanguageValue)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Word version   : $($Script:WordProduct)" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Script start  : $($Script:StartTime)" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time  : $($Str)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Script start   : $($Script:StartTime)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time   : $($Str)" 4>$Null
 	}
 
 	$ErrorActionPreference = $SaveEAPreference
