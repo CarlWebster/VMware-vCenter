@@ -508,7 +508,7 @@
 	NAME: VMware_Inventory.ps1
 	VERSION: 1.92
 	AUTHOR: Jacob Rutski and Carl Webster
-	LASTEDIT: September 11, 2021
+	LASTEDIT: September 21, 2021
 #>
 
 #endregion
@@ -652,7 +652,7 @@ Param(
 #@JRutski on Twitter
 #Created on November 3rd, 2014
 #
-#Version 1.92 11-Sep-2021
+#Version 1.92 21-Sep-2021
 #	Added a message at the end of the script stating id the disconnection from the vCenter server was successful or not
 #	Added array error checking for non-empty arrays before attempting to create the Word table for most Word tables
 #	Added color $wdColorWhite for Function SetWordCellFormat
@@ -689,6 +689,7 @@ Param(
 #	In Function OutputVMPortGroups fixed several variable name typos
 #	In Functions OutputVMPortGroups and OutputVMKPorts fixed the handling of the property VLanId when it didn't exist
 #	Reordered the parameters in an order recommended by Guy Leech
+#	Tested with PowerCLI 12.4
 #	Updated Function SetWordCellFormat to latest version
 #	Updated Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
 #	Updated Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
@@ -6124,10 +6125,10 @@ Function OutputClusters
         FormatHTMLTable "Cluster: $($VMCluster.Name)" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
 
-        If($VMCluster.DrsEnabled -and ($Script:RDSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
+        If($VMCluster.DrsEnabled -and ($Script:DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
         {
             WriteHTMLLine 0 0 "DRS Rules and Groups" -options $htmlbold -fontSize 4
-            ForEach($DRSRule in ($Script:RDSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
+            ForEach($DRSRule in ($Script:DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
             {
                 $rowdata = @()
                 $colWidths = @("150px","200px")
@@ -6219,10 +6220,10 @@ Function OutputClusters
         }
         Line 0 ""
 
-        If($VMCluster.DrsEnabled -and ($Script:RDSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
+        If($VMCluster.DrsEnabled -and ($Script:DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
         {
             Line 0 "DRS Rules and Groups"
-            ForEach($DRSRule in ($Script:RDSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
+            ForEach($DRSRule in ($Script:DRSRules | Where-Object{$_.ClusterName -eq $VMCluster.Name}))
             {
                 Line 1 "Rule Name`t`t`t: " $DRSRule.RuleName
                 Line 1 "Rule Type`t`t`t: " $DRSRule.RuleType
