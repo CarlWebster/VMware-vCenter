@@ -42,8 +42,8 @@
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
-	Output filename will be ReportName_2021-06-01_1800.docx (or .pdf).
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	Output filename will be ReportName_2022-06-01_1800.docx (or .pdf).
 	This parameter is disabled by default.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
@@ -302,7 +302,7 @@
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -VIServerName testvc.lab.com
 	
-	The script uses all default values and save the document as a PDF file.
+	The script uses all default values and saves the document as a PDF file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
 	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
@@ -388,8 +388,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
-	Output filename will be vCenterServer_2021-06-01_1800.docx
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	Output filename will be vCenterServer_2022-06-01_1800.docx
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -AddDateTime -VIServerName 
 	testvc.lab.com
@@ -406,8 +406,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
-	Output filename will be vCenterServerSiteName_2021-06-01_1800.pdf
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	Output filename will be vCenterServerSiteName_2022-06-01_1800.pdf
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -Folder \\FileServer\ShareName 
 	-VIServerName testvc.lab.com
@@ -423,6 +423,19 @@
 	Administrator for the User Name.
 	
 	Output file will be saved in the path \\FileServer\ShareName
+.EXAMPLE
+	PS C:\PSScript >.\VMware_Inventory.ps1 -Dev -ScriptInfo -Log
+	
+	Creates the default report.
+	
+	Creates a text file named VMwareDocScriptErrors_yyyyMMddTHHmmssffff.txt that 
+	contains up to the last 250 errors reported by the script.
+	
+	Creates a text file named VMwareDocScriptInfo_yyyy-MM-dd_HHmm.txt that 
+	contains all the script parameters and other basic information.
+	
+	Creates a text file for transcript logging named 
+	VMwareDocScriptTranscript_yyyyMMddTHHmmssffff.txt.
 .EXAMPLE
 	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer mail.domain.tld -From 
 	VMWAdmin@domain.tld -To ITGroup@domain.tld	
@@ -506,9 +519,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory.ps1
-	VERSION: 1.92
+	VERSION: 1.93
 	AUTHOR: Jacob Rutski and Carl Webster
-	LASTEDIT: September 21, 2021
+	LASTEDIT: February 23, 2022
 #>
 
 #endregion
@@ -651,6 +664,23 @@ Param(
 #http://blogs.serioustek.net
 #@JRutski on Twitter
 #Created on November 3rd, 2014
+#
+#Version 1.93 23-Feb-2022
+#	Changed the date format for the transcript and error log files from yyyy-MM-dd_HHmm format to the FileDateTime format
+#		The format is yyyyMMddTHHmmssffff (case-sensitive, using a 4-digit year, 2-digit month, 2-digit day, 
+#		the letter T as a time separator, 2-digit hour, 2-digit minute, 2-digit second, and 4-digit millisecond). 
+#		For example: 20221225T0840107271.
+#	Fixed the German Table of Contents (Thanks to Rene Bigler)
+#		From 
+#			'de-'	{ 'Automatische Tabelle 2'; Break }
+#		To
+#			'de-'	{ 'Automatisches Verzeichnis 2'; Break }
+#	In Function AbortScript, add test for the winword process and terminate it if it is running
+#		Added stopping the transcript log if the log was enabled and started
+#	In Functions AbortScript and SaveandCloseDocumentandShutdownWord, add code from Guy Leech to test for the "Id" property before using it
+#	Replaced most script Exit calls with AbortScript to stop the transcript log if the log was enabled and started
+#	Updated the help text
+#	Updated the ReadMe file
 #
 #Version 1.92 21-Sep-2021
 #	Added a message at the end of the script stating id the disconnection from the vCenter server was successful or not
@@ -852,6 +882,59 @@ Param(
 #
 #endregion
 
+
+Function AbortScript
+{
+	If($MSWord -or $PDF)
+	{
+		Write-Verbose "$(Get-Date -Format G): System Cleanup"
+		If(Test-Path variable:global:word)
+		{
+			$Script:Word.quit()
+			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
+			Remove-Variable -Name word -Scope Global 4>$Null
+		}
+	}
+	[gc]::collect() 
+	[gc]::WaitForPendingFinalizers()
+
+	If($MSWord -or $PDF)
+	{
+		#is the winword Process still running? kill it
+
+		#find out our session (usually "1" except on TS/RDC or Citrix)
+		$SessionID = (Get-Process -PID $PID).SessionId
+
+		#Find out if winword running in our session
+		$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) | Select-Object -Property Id 
+		If( $wordprocess -and $wordprocess.Id -gt 0)
+		{
+			Write-Verbose "$(Get-Date -Format G): WinWord Process is still running. Attempting to stop WinWord Process # $($wordprocess.Id)"
+			Stop-Process $wordprocess.Id -EA 0
+		}
+	}
+	
+	Write-Verbose "$(Get-Date -Format G): Script has been aborted"
+	#stop transcript logging
+	If($Log -eq $True) 
+	{
+		If($Script:StartLog -eq $True) 
+		{
+			try 
+			{
+				Stop-Transcript | Out-Null
+				Write-Verbose "$(Get-Date -Format G): $Script:LogPath is ready for use"
+			} 
+			catch 
+			{
+				Write-Verbose "$(Get-Date -Format G): Transcript/log stop failed"
+			}
+		}
+	}
+	$ErrorActionPreference = $SaveEAPreference
+	Exit
+}
+
 #region initial variable testing and setup
 Set-StrictMode -Version 2
 
@@ -859,9 +942,9 @@ Set-StrictMode -Version 2
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
-$script:MyVersion         = '1.92'
+$script:MyVersion         = '1.93'
 $Script:ScriptName        = "VMware_Inventory_1_9.ps1"
-$tmpdate                  = [datetime] "09/11/2021"
+$tmpdate                  = [datetime] "02/23/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $MSWord)
@@ -935,7 +1018,7 @@ Else
 	Script cannot continue.
 	`n`n
 	"
-	Exit
+	AbortScript
 }
 
 If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($To))
@@ -948,7 +1031,7 @@ If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -an
 	`t`t
 	Script cannot continue.
 	`n`n"
-	Exit
+	AbortScript
 }
 If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To))
 {
@@ -960,7 +1043,7 @@ If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -an
 	`t`t
 	Script cannot continue.
 	`n`n"
-	Exit
+	AbortScript
 }
 If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($To) -and ![String]::IsNullOrEmpty($From))
 {
@@ -972,7 +1055,7 @@ If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($To) -and 
 	`t`t
 	Script cannot continue.
 	`n`n"
-	Exit
+	AbortScript
 }
 If(![String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
 {
@@ -984,7 +1067,7 @@ If(![String]::IsNullOrEmpty($From) -and ![String]::IsNullOrEmpty($To) -and [Stri
 	`t`t
 	Script cannot continue.
 	`n`n"
-	Exit
+	AbortScript
 }
 If(![String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($SmtpServer))
 {
@@ -996,7 +1079,7 @@ If(![String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($SmtpServer))
 	`t`t
 	Script cannot continue.
 	`n`n"
-	Exit
+	AbortScript
 }
 If(![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
 {
@@ -1008,7 +1091,7 @@ If(![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
 	`t`t
 	Script cannot continue.
 	`n`n"
-	Exit
+	AbortScript
 }
 
 #test if the Chart option is used and Word or PDF is not selected
@@ -1133,7 +1216,7 @@ If($Folder -ne "")
 			Script cannot continue.
 			`n`n
 			"
-			Exit
+			AbortScript
 		}
 	}
 	Else
@@ -1148,7 +1231,7 @@ If($Folder -ne "")
 		Script cannot continue.
 		`n`n
 		"
-		Exit
+		AbortScript
 	}
 }
 
@@ -1171,7 +1254,7 @@ If($Script:pwdpath.EndsWith("\"))
 If($Log) 
 {
 	#start transcript logging
-	$Script:LogPath = "$Script:pwdpath\VMwareDocScriptTranscript_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	$Script:LogPath = "$Script:pwdpath\VMwareDocScriptTranscript_$(Get-Date -f FileDateTime).txt"
 	
 	try 
 	{
@@ -1189,7 +1272,7 @@ If($Log)
 If($Dev)
 {
 	$Error.Clear()
-	$Script:DevErrorFile = "$Script:pwdpath\VMwareInventoryScriptErrors_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	$Script:DevErrorFile = "$Script:pwdpath\VMwareInventoryScriptErrors_$(Get-Date -f FileDateTime).txt"
 }
 
 #endregion
@@ -1346,7 +1429,8 @@ Function SetWordHashTable
 		{
 			'ca-'	{ 'Taula automática 2'; Break }
 			'da-'	{ 'Automatisk tabel 2'; Break }
-			'de-'	{ 'Automatische Tabelle 2'; Break }
+			#'de-'	{ 'Automatische Tabelle 2'; Break }
+			'de-'	{ 'Automatisches Verzeichnis 2'; Break } #changed 23-feb-2022 rene bigler
 			'en-'	{ 'Automatic Table 2'; Break }
 			'es-'	{ 'Tabla automática 2'; Break }
 			'fi-'	{ 'Automaattinen taulukko 2'; Break }
@@ -1699,7 +1783,7 @@ Function CheckWordPrereq
 	{
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Host "`n`n`t`tThis script directly outputs to Microsoft Word, please install Microsoft Word`n`n"
-		Exit
+		AbortScript
 	}
 
 	#find out our session (usually "1" except on TS/RDC or Citrix)
@@ -1713,7 +1797,7 @@ Function CheckWordPrereq
 	{
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Host "`n`n`tPlease close all instances of Microsoft Word before running this report.`n`n"
-		Exit
+		AbortScript
 	}
 }
 
@@ -1807,7 +1891,7 @@ Function SetupWord
 		Script cannot continue.
 		`n`n
 		"
-		Exit
+		AbortScript
 	}
 
 	Write-Verbose "$(Get-Date -Format G): Determine Word language value"
@@ -1878,7 +1962,7 @@ Function SetupWord
 		Script cannot continue.
 		`n`n
 		"
-		Exit
+		AbortScript
 	}
 	Else
 	{
@@ -3572,7 +3656,7 @@ Function VISetup( [string] $VIServer )
 			`n`n
 			"
 			Write-Host "*** If PowerCLI was installed to a non-Default location, please use the -PCLICustom parameter ***"
-			Exit
+			AbortScript
 		}
 	}
 
@@ -3584,7 +3668,7 @@ Function VISetup( [string] $VIServer )
 	If($Script:xPowerCLIVer.Major -lt 5 -or ($Script:xPowerCLIVer.Major -eq 5 -and $Script:xPowerCLIVer.Minor -lt 1))
 	{
 		Write-Host "`nPowerCLI version $($Script:xPowerCLIVer.Major).$($Script:xPowerCLIVer.Minor) is installed. PowerCLI version 5.1 or later is required to run this script. `nPlease install the latest version and run this script again. This script will now exit."
-		Exit
+		AbortScript
 	}
 
 	#Set PCLI defaults and reset PWD
@@ -3598,7 +3682,7 @@ Function VISetup( [string] $VIServer )
 		If($global:DefaultVIServer)
 		{
 			Write-Host "`nIt appears PowerCLI is already connected to a VCenter Server. Please use the 'Disconnect-VIServer' cmdlet to disconnect any sessions before running inventory."
-			Exit
+			AbortScript
 		}
 	}
 
@@ -3610,7 +3694,7 @@ Function VISetup( [string] $VIServer )
 	If(!($?))
 	{
 		Write-Host "Connecting to vCenter failed with the following error: $($Error[0].Exception.Message.substring($Error[0].Exception.Message.IndexOf("Connect-VIServer") + 16).Trim()) This script will now exit."
-		Exit
+		AbortScript
 	}
 }
 
@@ -3730,7 +3814,7 @@ Function SetGlobals
         {
             ## VMware Export not found, exit script
             Write-Host "Import option set, but no Export data directory found. Please copy the Export folder into the same folder as this script and run it again. This script will now exit."
-            Exit
+            AbortScript
         }
     }
     ElseIf($Issues)
@@ -3818,7 +3902,7 @@ Function AddStatsChart
 			Please install the latest version and run this script again. This script will now exit. 
 			`n
 			http://www.microsoft.com/en-us/download/details.aspx?id=14422"
-			Exit            
+			AbortScript            
 		}  
 		$Chart.Width = $Width
 		$Chart.Height = $Length
@@ -4157,52 +4241,27 @@ Function SaveandCloseDocumentandShutdownWord
 	Write-Verbose "$(Get-Date -Format G): Closing Word"
 	$Script:Doc.Close()
 	$Script:Word.Quit()
-	If($PDF)
-	{
-		[int]$cnt = 0
-		While(Test-Path $Script:FileName1)
-		{
-			$cnt++
-			If($cnt -gt 1)
-			{
-				Write-Verbose "$(Get-Date -Format G): Waiting another 10 seconds to allow Word to fully close (try # $($cnt))"
-				Start-Sleep -Seconds 10
-				$Script:Word.Quit()
-				If($cnt -gt 2)
-				{
-					Stop-WinWord
-				}
-			}
-			Write-Verbose "$(Get-Date -Format G): Attempting to delete $($Script:FileName1) since only $($Script:FileName2) is needed (try # $($cnt))"
-			Remove-Item $Script:FileName1 -EA 0 4>$Null
-		}
-	}
 	Write-Verbose "$(Get-Date -Format G): System Cleanup"
 	[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
-	If( Test-Path variable:global:Word )
+	If(Test-Path variable:global:word)
 	{
-		Remove-Variable -Name Word -Scope Global 4>$Null
-	}
-	If( Get-Variable -Name Word -Scope Script -ErrorAction SilentlyContinue )
-	{
-		Remove-Variable -Name Word -Scope Script 4>$Null
+		Remove-Variable -Name word -Scope Global 4>$Null
 	}
 	$SaveFormat = $Null
 	[gc]::collect() 
 	[gc]::WaitForPendingFinalizers()
 	
-	#is the winword process still running? kill it
+	#is the winword Process still running? kill it
 
 	#find out our session (usually "1" except on TS/RDC or Citrix)
 	$SessionID = (Get-Process -PID $PID).SessionId
 
-	#Find out if winword is running in our session
-	$wordprocess = $Null
-	$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}).Id
-	If($null -ne $wordprocess -and $wordprocess -gt 0)
+	#Find out if winword running in our session
+	$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) | Select-Object -Property Id 
+	If( $wordprocess -and $wordprocess.Id -gt 0)
 	{
-		Write-Verbose "$(Get-Date -Format G): WinWord process is still running. Attempting to stop WinWord process # $($wordprocess)"
-		Stop-Process $wordprocess -EA 0
+		Write-Verbose "$(Get-Date -Format G): WinWord Process is still running. Attempting to stop WinWord Process # $($wordprocess.Id)"
+		Stop-Process $wordprocess.Id -EA 0
 	}
 }
 
@@ -4411,25 +4470,6 @@ Function ProcessDocumentOutput
 		}
 		SendEmail $emailAttachment
 	}
-}
-
-Function AbortScript
-{
-	If($MSWord -or $PDF)
-	{
-		$Script:Word.quit()
-		Write-Verbose "$(Get-Date -Format G): System Cleanup"
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
-		If(Test-Path variable:global:word)
-		{
-			Remove-Variable -Name word -Scope Global
-		}
-	}
-	[gc]::collect() 
-	[gc]::WaitForPendingFinalizers()
-	Write-Verbose "$(Get-Date -Format G): Script has been aborted"
-	$ErrorActionPreference = $SaveEAPreference
-	Exit
 }
 #endregion
 
