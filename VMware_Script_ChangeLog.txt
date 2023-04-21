@@ -9,6 +9,48 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 2.00 21-Apr-2023
+#	Allow multiple output formats. You can now select any combination of HTML, MSWord, PDF, or Text
+#	Changed some Write-Error to Write-Warning and changed some Write-Warning to Write-Host
+#	Changed the default output to HTML
+#	Fixed remaining $Null comparisons where $null was on the right instead of the left of the comparison
+#	Fixed some text formatting issues
+#	If you select PDF for Output and Microsoft Word is not installed, update the error message to state that PDF uses Word's SaveAs PDF function
+#	In Function BuildDRSGroupsRules, fixed variable $DRSGroupsRules not defined error
+#	In Function OutputClusters, added explanations from VMware for each counter
+#	In Function OutputResourcePools, fixed invalid property name Name
+#	In Function OutputVirtualMachines, added explanations from VMware for each counter and fixed one wrong counter name
+#	In Function OutputVMHost made changes to the VMware performance counters put in Charts by separating the counters instead of grouping
+#		If one counter was not available, then no chart was created for any of the counters grouped together
+#		Added explanations from VMware for each counter
+#	Made minor changes to Function AddStatsChart
+#	Reformatted most Write-Error messages to show better in the console
+#	Removed all comments referencing versions before 2.00
+#	Removed existing Script ParameterSets and left only one for "WordPDF"
+#	Thanks to T.E.R. for testing with vCenter 8
+#	Updated the following functions to the latest versions:
+#		AddHTMLTable
+#		AddWordTable
+#		CheckWordPrereq
+#		FormatHTMLTable
+#		GetCulture
+#		Line
+#		ProcessDocumentOutput
+#		SaveandCloseDocumentandShutdownWord
+#		SaveandCloseHTMLDocument
+#		SaveandCloseTextDocument
+#		SetupHTML
+#		SetupText
+#		SetupWord
+#		SetWordCellFormat
+#		SetWordHashTable
+#		ValidateCoverPage
+#		WriteHTMLLine
+#		WriteWordLine
+#	Updated the help text
+#	Updated the ReadMe file
+#
+
 #Version 1.93 23-Feb-2022
 #	Changed the date format for the transcript and error log files from yyyy-MM-dd_HHmm format to the FileDateTime format
 #		The format is yyyyMMddTHHmmssffff (case-sensitive, using a 4-digit year, 2-digit month, 2-digit day, 
