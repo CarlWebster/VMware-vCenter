@@ -12,6 +12,8 @@
 	Creates a complete inventory of a VMware vSphere datacenter using PowerCLI and 
 	Microsoft Word, PDF, plain text, or HTML.
 
+	The default output is HTML.
+
 	Creates a document named after the vCenter server.
 	
 	The Word/PDF Document includes a Cover Page, Table of Contents, and Footer.
@@ -42,8 +44,8 @@
 .PARAMETER AddDateTime
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022 at 6PM is 2022-06-01_1800.
-	Output filename will be ReportName_2022-06-01_1800.docx (or .pdf).
+	June 1, 2023 at 6PM is 2023-06-01_1800.
+	Output filename will be ReportName_2023-06-01_1800.docx (or .pdf).
 	This parameter is disabled by default.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
@@ -149,10 +151,38 @@
 	This parameter requires Microsoft Word to be installed.
 	This parameter uses the Word SaveAs PDF capability.
 .PARAMETER Chart
-    This parameter is still beta and is disabled by default
+    This parameter is disabled by default
     Gathers data from VMware stats to build performance graphs for hosts and VMs
-    DOTNET chart controls are required
 	
+	The following data are charted:
+	
+	Hosts:
+		cpu.usage.average
+		mem.granted.average
+		mem.active.average
+		mem.vmmemctl.average
+		disk.usage.average
+		disk.maxTotalLatency.latest
+		net.received.average
+		net.transmitted.average
+		net.usage.average
+	
+	Cluster:
+		cpu.usagemhz.average
+		mem.usage.average
+	
+	VMs:
+		cpu.usage.average
+		mem.usage.average
+		virtualDisk.write.average
+		virtualDisk.read.average
+		net.received.average
+		net.transmitted.average
+
+    DOTNET chart controls are required
+
+	http://www.microsoft.com/en-us/download/details.aspx?id=14422
+
 	This parameter is supported for MSWord and PDF only
 .PARAMETER CompanyAddress
 	Company Address to use for the Cover Page, if the Cover Page has the Address 
@@ -276,21 +306,19 @@
 	Specifies the username for the To email address.
 	If SmtpServer is used, this is a required parameter.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1
 	
 	The script uses all default values and prompts for the vCenter Server.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
-	"Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
-
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Outputs an HTML report.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -VIServerName testvc.lab.com
 	
-	The script uses all default values and use testvc.lab.com as the vCenter Server.
+	The script uses all default values and uses testvc.lab.com as the vCenter Server.
+	Outputs an HTML report.
+.EXAMPLE
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -MSWord -VIServerName testvc.lab.com
+	
+	The script uses all default values and saves the document as a Word file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
 	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
@@ -300,7 +328,7 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -PDF -VIServerName testvc.lab.com
 	
 	The script uses all default values and saves the document as a PDF file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
@@ -312,35 +340,29 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -TEXT -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -TEXT -VIServerName testvc.lab.com
 
 	This parameter outputs a basic txt file.
 	
-	The script uses all default values and save the document as a formatted text file.
+	The script uses all default values and saves the document as a formatted text 
+	file.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -HTML -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -HTML -VIServerName testvc.lab.com
 
-	This parameter will output an HTML report.
+	This parameter will output an HTML report, which is the default.
 	
-	The script uses all default values and save the document as an HTML file.
+	The script uses all default values and saves the document as an HTML file.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -Full -VIServerName testvc.lab.com
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -Full -VIServerName testvc.lab.com
 	
-	Creates a full inventory of the VMware environment. *Note: a full report will take 
+	Creates a full inventory of the VMware environment. *Note: a full report can take 
 	a considerable amount of time to generate.
-	The script uses all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
-	"Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
-
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-.EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -Full -VIServerName testvc.lab.com
 	
-	Creates a full inventory of the VMware environment. *Note: a full report will take 
+	Outputs an HTML report.
+.EXAMPLE
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -PDF -Full -VIServerName testvc.lab.com
+	
+	Creates a full inventory of the VMware environment. *Note: a full report can take 
 	a considerable amount of time to generate.
 	The script uses all Default values and save the document as a PDF file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
@@ -352,49 +374,41 @@
 	Sideline for the Cover Page format.
 	Administrator for the User Name.
 .EXAMPLE
-	PS C:\PSScript .\VMware_Inventory.ps1 -CompanyName "SeriousTek" -CoverPage 
-	"Mod" -UserName "Jacob Rutski" -VIServerName testvc.lab.com
+	PS C:\PSScript .\VMware_Inventory_V2.ps1 -MSWord -CompanyName "SeriousTek" 
+	-CoverPage "Mod" -UserName "Jacob Rutski" -VIServerName testvc.lab.com
 
 	The script uses:
 		Jacob Rutski Consulting for the Company Name.
 		Mod for the Cover Page format.
 		Jacob Rutski for the User Name.
 .EXAMPLE
-    PS C:\PSScript .\VMware_Inventory.ps1 -Export -VIServerName testvc.lab.com
+    PS C:\PSScript .\VMware_Inventory_V2.ps1 -Export -VIServerName 
+	testvc.lab.com
 
-	The script uses all default values and use testvc.lab.com as the vCenter Server.
+	The script uses all default values and uses testvc.lab.com as the vCenter Server.
     Script will output all data to XML files in the .\Export directory created
 .EXAMPLE
-	PS C:\PSScript .\VMware_Inventory.ps1 -CN "SeriousTek" -CP "Mod" -UN "Jacob 
-	Rutski" -VIServerName testvc.lab.com
+	PS C:\PSScript .\VMware_Inventory_V2.ps1 -MSWord -CN "SeriousTek" -CP "Mod" 
+	-UN "Jacob Rutski" -VIServerName testvc.lab.com
 
 	The script uses:
 		Jacob Rutski Consulting for the Company Name (alias CN).
 		Mod for the Cover Page format (alias CP).
 		Jacob Rutski for the User Name (alias UN).
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -AddDateTime -VIServerName 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -AddDateTime -VIServerName 
 	testvc.lab.com
 	
 	The script uses all Default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
-	"Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
-
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022 at 6PM is 2022-06-01_1800.
-	Output filename will be vCenterServer_2022-06-01_1800.docx
+	June 1, 2023 at 6PM is 2023-06-01_1800.
+	Output filename will be vCenterServer_2023-06-01_1800.docx
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -PDF -AddDateTime -VIServerName 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -PDF -AddDateTime -VIServerName 
 	testvc.lab.com
 	
-	The script uses all Default values and save the document as a PDF file.
+	The script uses all Default values and saves the document as a PDF file.
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
 	"Jacob Rutski" or
 	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
@@ -406,38 +420,30 @@
 
 	Adds a date time stamp to the end of the file name.
 	Time stamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022 at 6PM is 2022-06-01_1800.
-	Output filename will be vCenterServerSiteName_2022-06-01_1800.pdf
+	June 1, 2023 at 6PM is 2023-06-01_1800.
+	Output filename will be vCenterServerSiteName_2023-06-01_1800.pdf
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -Folder \\FileServer\ShareName 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -Folder \\FileServer\ShareName 
 	-VIServerName testvc.lab.com
 	
 	The script uses all default values.
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\CompanyName=
-	"Jacob Rutski" or
-	HKEY_CURRENT_USER\Software\Microsoft\Office\Common\UserInfo\Company="Jacob Rutski"
-	$env:username = Administrator
 
-	Jacob Rutski for the Company Name.
-	Sideline for the Cover Page format.
-	Administrator for the User Name.
-	
-	Output file will be saved in the path \\FileServer\ShareName
+	Output HTML file will be saved in the path \\FileServer\ShareName
 .EXAMPLE
-	PS C:\PSScript >.\VMware_Inventory.ps1 -Dev -ScriptInfo -Log
+	PS C:\PSScript >.\VMware_Inventory_V2.ps1 -Dev -ScriptInfo -Log
 	
-	Creates the default report.
+	Creates the default HTML report.
 	
-	Creates a text file named VMwareDocScriptErrors_yyyyMMddTHHmmssffff.txt that 
+	Creates a text file named VMwareDocScriptV2Errors_yyyyMMddTHHmmssffff.txt that 
 	contains up to the last 250 errors reported by the script.
 	
-	Creates a text file named VMwareDocScriptInfo_yyyy-MM-dd_HHmm.txt that 
-	contains all the script parameters and other basic information.
+	Creates a text file named VMwareDocScriptV2Info_yyyy-MM-dd_HHmm.txt that contains 
+	all the script parameters and other basic information.
 	
 	Creates a text file for transcript logging named 
-	VMwareDocScriptTranscript_yyyyMMddTHHmmssffff.txt.
+	VMwareDocScriptV2Transcript_yyyyMMddTHHmmssffff.txt.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer mail.domain.tld -From 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -SmtpServer mail.domain.tld -From 
 	VMWAdmin@domain.tld -To ITGroup@domain.tld	
 
 	The script uses the email server mail.domain.tld, sending from VMWAdmin@domain.tld 
@@ -448,7 +454,7 @@
 	If the current user's credentials are not valid to send an email, the script 
 	prompts the user to enter valid credentials.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer mailrelay.domain.tld -From 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -SmtpServer mailrelay.domain.tld -From 
 	Anonymous@domain.tld -To ITGroup@domain.tld	
 
 	***SENDING UNAUTHENTICATED EMAIL***
@@ -472,9 +478,9 @@
 	The script generates an anonymous, secure password for the anonymous@domain.tld 
 	account.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer 
-	labaddomain-com.mail.protection.outlook.com -UseSSL -From 
-	SomeEmailAddress@labaddomain.com -To ITGroupDL@labaddomain.com	
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -SmtpServer labaddomain-
+	com.mail.protection.outlook.com -UseSSL -From SomeEmailAddress@labaddomain.com -To 
+	ITGroupDL@labaddomain.com	
 
 	***OFFICE 365 Example***
 
@@ -490,7 +496,7 @@
 
 	The script uses the default SMTP port 25 and SSL.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer smtp.office365.com -SmtpPort 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -SmtpServer smtp.office365.com -SmtpPort 
 	587 -UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	The script uses the email server smtp.office365.com on port 587 using SSL, sending 
@@ -499,7 +505,7 @@
 	If the current user's credentials are not valid to send an email, the script 
 	prompts the user to enter valid credentials.
 .EXAMPLE
-	PS C:\PSScript > .\VMware_Inventory.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587 
+	PS C:\PSScript > .\VMware_Inventory_V2.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587 
 	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	*** NOTE ***
@@ -507,8 +513,8 @@
 	"Less secure app access" option on your account.
 	*** NOTE ***
 	
-	The script uses the email server smtp.gmail.com on port 587 using SSL, sending 
-	from webster@gmail.com and sending to ITGroup@carlwebster.com.
+	The script uses the email server smtp.gmail.com on port 587 using SSL, sending from 
+	webster@gmail.com and sending to ITGroup@carlwebster.com.
 
 	If the current user's credentials are not valid to send an email, the script 
 	prompts the user to enter valid credentials.
@@ -518,10 +524,10 @@
 	No objects are output from this script.  
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
-	NAME: VMware_Inventory.ps1
-	VERSION: 1.93
+	NAME: VMware_Inventory_V2.ps1
+	VERSION: 2.00
 	AUTHOR: Jacob Rutski and Carl Webster
-	LASTEDIT: February 23, 2022
+	LASTEDIT: April 21, 2023
 #>
 
 #endregion
@@ -536,10 +542,10 @@ Param(
     [ValidateNotNullOrEmpty()]
     [string]$VIServerName="",
 	
-	[parameter(ParameterSetName="HTML",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
 	[Switch]$HTML=$False,
 
-	[parameter(ParameterSetName="Text",Mandatory=$False)] 
+	[parameter(Mandatory=$False)] 
 	[Switch]$Text=$False,
 
 	[parameter(Mandatory=$False)] 
@@ -577,54 +583,46 @@ Param(
     [parameter(Mandatory=$False)]
     [Switch]$PCLICustom=$False,
 
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$PDF=$False,
 
-    [parameter(ParameterSetName="Word",Mandatory=$False)]
-    [parameter(ParameterSetName="PDF",Mandatory=$False)]
+    [parameter(ParameterSetName="WordPDF",Mandatory=$False)]
     [Switch]$Chart=$False,
 
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CA")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyAddress="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CE")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyEmail="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CF")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyFax="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyName="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CPh")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CompanyPhone="",
     
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CP")]
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
 
-	[parameter(ParameterSetName="Word",Mandatory=$False)] 
-	[parameter(ParameterSetName="PDF",Mandatory=$False)] 
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("UN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$UserName=$env:username,
@@ -665,220 +663,46 @@ Param(
 #@JRutski on Twitter
 #Created on November 3rd, 2014
 #
-#Version 1.93 23-Feb-2022
-#	Changed the date format for the transcript and error log files from yyyy-MM-dd_HHmm format to the FileDateTime format
-#		The format is yyyyMMddTHHmmssffff (case-sensitive, using a 4-digit year, 2-digit month, 2-digit day, 
-#		the letter T as a time separator, 2-digit hour, 2-digit minute, 2-digit second, and 4-digit millisecond). 
-#		For example: 20221225T0840107271.
-#	Fixed the German Table of Contents (Thanks to Rene Bigler)
-#		From 
-#			'de-'	{ 'Automatische Tabelle 2'; Break }
-#		To
-#			'de-'	{ 'Automatisches Verzeichnis 2'; Break }
-#	In Function AbortScript, add test for the winword process and terminate it if it is running
-#		Added stopping the transcript log if the log was enabled and started
-#	In Functions AbortScript and SaveandCloseDocumentandShutdownWord, add code from Guy Leech to test for the "Id" property before using it
-#	Replaced most script Exit calls with AbortScript to stop the transcript log if the log was enabled and started
+#Version 2.00 21-Apr-2023
+#	Allow multiple output formats. You can now select any combination of HTML, MSWord, PDF, or Text
+#	Changed some Write-Error to Write-Warning and changed some Write-Warning to Write-Host
+#	Changed the default output to HTML
+#	Fixed remaining $Null comparisons where $null was on the right instead of the left of the comparison
+#	Fixed some text formatting issues
+#	If you select PDF for Output and Microsoft Word is not installed, update the error message to state that PDF uses Word's SaveAs PDF function
+#	In Function BuildDRSGroupsRules, fixed variable $DRSGroupsRules not defined error
+#	In Function OutputClusters, added explanations from VMware for each counter
+#	In Function OutputResourcePools, fixed invalid property name Name
+#	In Function OutputVirtualMachines, added explanations from VMware for each counter and fixed one wrong counter name
+#	In Function OutputVMHost made changes to the VMware performance counters put in Charts by separating the counters instead of grouping
+#		If one counter was not available, then no chart was created for any of the counters grouped together
+#		Added explanations from VMware for each counter
+#	Made minor changes to Function AddStatsChart
+#	Reformatted most Write-Error messages to show better in the console
+#	Removed all comments referencing versions before 2.00
+#	Removed existing Script ParameterSets and left only one for "WordPDF"
+#	Thanks to T.E.R. for testing with vCenter 8
+#	Updated the following functions to the latest versions:
+#		AddHTMLTable
+#		AddWordTable
+#		CheckWordPrereq
+#		FormatHTMLTable
+#		GetCulture
+#		Line
+#		ProcessDocumentOutput
+#		SaveandCloseDocumentandShutdownWord
+#		SaveandCloseHTMLDocument
+#		SaveandCloseTextDocument
+#		SetupHTML
+#		SetupText
+#		SetupWord
+#		SetWordCellFormat
+#		SetWordHashTable
+#		ValidateCoverPage
+#		WriteHTMLLine
+#		WriteWordLine
 #	Updated the help text
 #	Updated the ReadMe file
-#
-#Version 1.92 21-Sep-2021
-#	Added a message at the end of the script stating id the disconnection from the vCenter server was successful or not
-#	Added array error checking for non-empty arrays before attempting to create the Word table for most Word tables
-#	Added color $wdColorWhite for Function SetWordCellFormat
-#	Added Function OutputReportFooter
-#	Added in missing function BuildMultiColumnTable
-#	Added Parameter ReportFooter
-#		Outputs a footer section at the end of the report.
-#		Report Footer
-#			Report information:
-#				Created with: <Script Name> - Release Date: <Script Release Date>
-#				Script version: <Script Version>
-#				Started on <Date Time in Local Format>
-#				Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
-#				Ran from domain <Domain Name> by user <Username>
-#				Ran from the folder <Folder Name>
-#	Changed all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale - recommended by Guy Leech
-#	Fixed incorrect host variable name in Function OutputVirtualMachines
-#	Fixed issues with Functions ProcessOpticalIssues and OutputOpticalIssues
-#		These functions now work and report accurate data
-#		Fixed to allow handling multiple CD/DVD drives per VM
-#	General code cleanup
-#	In Function OutputDatastores
-#		Fixed handling of NFS datastores
-#		Fixed handling of NFS datastores with multiple NFS Servers
-#		If the SIOC Threshold is null, don't output a blank line with only " ms"
-#	In Function OutputVirtualMachines
-#		Removed Description
-#		Always output Notes
-#		Update variable name for VM Hardware Version
-#		Fixed Network Adapters to use the new cmdlet Get-NetworkAdapter
-#		Fixed Hard Disk to use the new cmdlet Get-HardDisk
-#		Fixed VM has Snapshots to use the new cmdlet Get-Snapshot
-#		Fixed text output
-#	In Function OutputVMPortGroups fixed several variable name typos
-#	In Functions OutputVMPortGroups and OutputVMKPorts fixed the handling of the property VLanId when it didn't exist
-#	Reordered the parameters in an order recommended by Guy Leech
-#	Tested with PowerCLI 12.4
-#	Updated Function SetWordCellFormat to latest version
-#	Updated Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
-#	Updated Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
-#	Updated the help text
-#	Updated the ReadMe file
-#	When using Export, the Export folder honors the path specified if you use the Folder parameter
-#	When using Export, the script no longer processes building output at the end of the script for output formats since they were all set to False
-#
-#Version 1.91 7-May-2020
-#	Add checking for a Word version of 0, which indicates the Office installation needs repairing
-#	Change color variables $wdColorGray15 and $wdColorGray05 from [long] to [int]
-#	Change location of the -Dev, -Log, and -ScriptInfo output files from the script folder to the -Folder location (Thanks to Guy Leech for the "suggestion")
-#	Change Text output to use [System.Text.StringBuilder]
-#		Updated Functions Line and SaveAndCloseTextDocument
-#	Fix issues with Text output
-#	Fix issues with $DRSGroupsRules, $tempPWD, and $VCDB variables not set
-#	Reformatted the terminating Write-Error messages to make them more visible and readable in the console
-#	Remove Function TestComputerName
-#	Remove the SMTP parameterset and manually verify the parameters
-#	Reorder parameters
-#	Update Function SendEmail to handle anonymous unauthenticated email
-#	Update Function SetWordCellFormat to change parameter $BackgroundColor to [int]
-#	Update Help Text
-#
-#Version 1.9 8-Jan-2020 by Carl Webster
-#	Added Function TextHeatMap
-#	Added missing HTML and Text output and fix text output in all Process and Output functions
-#	Added missing Word/PDF data to all Process and Output functions
-#	Added more Write-Verbose statements
-#	Changed numerous $var -eq or -ne $Null to $Null -eq or -ne $var
-#	Fixed Swedish Table of Contents (Thanks to Johan Kallio)
-#		From 
-#			'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
-#		To
-#			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
-#	Fixed missing Title variable not showing in Function ShowScriptOptions
-#	Fixed Chart option so Charts are now added to the Word/PDF output
-#	For Function OutputVirtualMachines:
-#		Renamed Guest Tools Status to Guest State (shows whether the Guest is Running or NotRunning)
-#		Added Guest Tools Status (shows toolsRunning or toolsNotRunning)
-#		Added Guest IP Address if the Guest State is Running
-#		Added Guest Tools Version
-#	For the vCenter Summary heat map, thanks to Guy Leech, the heat maps now support EMEA numbers
-#	General code cleanup
-#	If the Chart option is used, verify that MSWord or PDF is also used,
-#		If HTML or Text is used, set Chart to False.
-#	In Function ProcessvCenter, before trying to check the registry on the vCenter server,
-#		test if the vCenter server is runnng Windows (Thanks to Will Fulmer for the help)
-#	In the output for VMKernel ports, fix the output for Parent vSwitch.
-#	Tested with vCenter 6.7 U3 and PowerCLI 11.5
-#	Updated Function CheckWordPrereq to match the other documentation scripts
-#	Updated Function VISetup to remove most PowerCLI cmdlet loading verbose output
-#	Updated help text
-#	When using the Chart parameter, verify the various StatTypes are available before trying 
-#		to use them to prevent the script throwing red error messages
-#
-#Version 1.81 9-Apr-2018
-#	Code clean-up with recommendations from Visual Studio Code
-#
-#Version 1.8 26-Feb-2018
-#	Added Log switch to create a transcript log
-#	Disconnect-VIServer if Word is open after connecting, etc
-#	Fix for PowerCLI module install from Gallery and Get-PowerCLIVersion deprecation
-#	Fixed path for PCLI 6.5 ..\Infrastructure\PowerCLI\..
-#	Updated Function ProcessScriptEnd for the new Log Parameter
-#	Updated Function ShowScriptOptions for the new Log Parameter
-#	Update help text
-#
-#Version 1.74 15-Jan-2018
-#	Removed code that made sure all Parameters were set to default values if for some reason they did not exist or values were $Null
-#	Reordered the parameters in the help text and parameter list so they match and are grouped better
-#	Replaced _SetDocumentProperty function with Jim Moyle's Set-DocumentProperty function
-#	Updated Function ProcessScriptEnd for the new Cover Page properties and Parameters
-#	Updated Function SaveandCloseDocumentandShutdownWord to updated standard
-#	Updated Function ShowScriptOptions for the new Cover Page properties and Parameters
-#	Updated Function UpdateDocumentProperties for the new Cover Page properties and Parameters
-#	Updated help text
-#
-#Version 1.73 8-Dec-2017
-#	Updated Function WriteHTMLLine with fixes from the script template
-#
-#Version 1.72 13-Feb-2017
-#	Fixed French wording for Table of Contents 2 (Thanks to David Rouquier)
-#
-#Version 1.71 9-Nov-2016
-#	Added Chinese language support
-#	Fixed HTMLHeatMap
-#	Fixed PWD for save path issue when importing PCLI back to C:\
-#	Prompt to disconnect if PCLI is already connected
-#
-#Version 1.7 22-Oct-2016
-#	Added support for PowerCLI installed in non-default locations
-#	Fixed formatting issues with HTML output
-#	Sort Guest Volume Paths by drive letter
-#
-#Version 1.63
-#	Add support for the -Dev and -ScriptInfo parameters
-#	Update the ShowScriptOptions function with all script parameters
-#	Add Break statements to most Switch statements
-#
-#Version 1.62 19-Aug-2016
-#	Fixed several misspelled words
-#
-#Version 1.61 Apr 21, 2016
-#-Fixed title and subtitle for the Word/PDF cover page
-#
-#Version 1.6
-#-Added several advanced settings for VMs and VMHosts
-#-Updated to ScriptTemplate 21-Feb-2016
-#
-#Version 1.5.2 5-Oct-2015
-#	Added support for Word 2016
-#
-#Version 1.5.1
-#-Cleaned up some extra PCLI calls - set to variables
-#-Removed almost all of the extra PCLI verbose messages - Thanks @carlwebster!!
-#-Set Issues parameter to disable full run
-#
-#Version 1.5
-#-Added vCenter permissions and non-standard roles
-#-Added DRS Rules and Groups
-#
-#Version 1.4
-#-Reworked HTML general and table functions
-#-Full HTML output now functional
-#-Added fix for closing Word with PDF file
-#
-#Version 1.3
-#-Beta chart support for performance graphs
-#-Support for PowerCLI 6.0
-#
-#Version 1.2
-#-Added Import and Export functionality to output all data to XML that can be taken offline to generate a document at a later time
-#
-#Version 1.1
-#-Fix for help text region tags, fixes from template script for save as PDF, fix for memory heatmap
-#-Added vCenter plugins
-#
-#Version 1.0
-#-Fixed Get-Advanced parameters
-#-Added Heatmap legend table, DSN for Windows vCenter, left-aligned tables, vCenter server version
-#
-#Version 0.4
-#-Added heatmaps for summary tables; host block storage connections; basic DVSwitching support
-#-Fixed multi column table width; fixed 32\64 OS path to PCLI
-#-Set summary to default, added -Full parameter for full inventory
-#-Swapped table formats for host and standard vSwitches
-#
-#Version 0.3
-#-Any Gets used more than once made global
-#-Fixed empty cluster
-#-Finished text formatted output (no summary, compressed tables)
-#-Added NTP service, licensing, summary page, check for PowerCLI version
-#
-#Version 0.2
-#-Added SSH service status, syslog log directory on hosts
-#-Added VMware email settings, global settings section
-#-Added VM Snapshot count
-#-Fix for multiple IPs on VM
 #
 #endregion
 
@@ -942,26 +766,26 @@ Set-StrictMode -Version 2
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
-$script:MyVersion         = '1.93'
-$Script:ScriptName        = "VMware_Inventory_1_9.ps1"
-$tmpdate                  = [datetime] "02/23/2022"
+$script:MyVersion         = '2.00'
+$Script:ScriptName        = "VMware_Inventory_V2.ps1"
+$tmpdate                  = [datetime] "04/20/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
-If($Null -eq $MSWord)
+If($Null -eq $HTML)
 {
-	If($Text -or $HTML -or $PDF)
+	If($Text -or $MSWord -or $PDF)
 	{
-		$MSWord = $False
+		$HTML = $False
 	}
 	Else
 	{
-		$MSWord = $True
+		$HTML = $True
 	}
 }
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
 {
-	$MSWord = $True
+	$HTML = $True
 }
 
 Write-Verbose "$(Get-Date -Format G): Testing output parameters"
@@ -970,55 +794,17 @@ If($MSWord)
 {
 	Write-Verbose "$(Get-Date -Format G): MSWord is set"
 }
-ElseIf($PDF)
+If($PDF)
 {
 	Write-Verbose "$(Get-Date -Format G): PDF is set"
 }
-ElseIf($Text)
+If($Text)
 {
 	Write-Verbose "$(Get-Date -Format G): Text is set"
 }
-ElseIf($HTML)
+If($HTML)
 {
 	Write-Verbose "$(Get-Date -Format G): HTML is set"
-}
-Else
-{
-	$ErrorActionPreference = $SaveEAPreference
-	Write-Verbose "$(Get-Date -Format G): Unable to determine output parameter"
-	If($Null -eq $MSWord)
-	{
-		Write-Verbose "$(Get-Date -Format G): MSWord is Null"
-	}
-	ElseIf($Null -eq $PDF)
-	{
-		Write-Verbose "$(Get-Date -Format G): PDF is Null"
-	}
-	ElseIf($Null -eq $Text)
-	{
-		Write-Verbose "$(Get-Date -Format G): Text is Null"
-	}
-	ElseIf($Null -eq $HTML)
-	{
-		Write-Verbose "$(Get-Date -Format G): HTML is Null"
-	}
-	Else
-	{
-		Write-Verbose "$(Get-Date -Format G): MSWord is $($MSWord)"
-		Write-Verbose "$(Get-Date -Format G): PDF is $($PDF)"
-		Write-Verbose "$(Get-Date -Format G): Text is $($Text)"
-		Write-Verbose "$(Get-Date -Format G): HTML is $($HTML)"
-	}
-	Write-Error "
-	`n`n
-	`t`t
-	Unable to determine output parameter.
-	`n`n
-	`t`t
-	Script cannot continue.
-	`n`n
-	"
-	AbortScript
 }
 
 If(![String]::IsNullOrEmpty($SmtpServer) -and [String]::IsNullOrEmpty($From) -and [String]::IsNullOrEmpty($To))
@@ -1097,16 +883,13 @@ If(![String]::IsNullOrEmpty($To) -and [String]::IsNullOrEmpty($SmtpServer))
 #test if the Chart option is used and Word or PDF is not selected
 If($Chart)
 {
-	If($Text -or $HTML)
+	If(($MSWord -eq $False) -and ($PDF -eq $False))
 	{
 		Write-Warning ""
 		Write-Warning "
 		`n`n
 		`t`t
-		The Chart option was selected but Text or HTML output is used.
-		`n`n
-		`t`t
-		The Chart option is only valid with MSWord or PDF.
+		The Chart option is only valid when MSWord or PDF is also selected.
 		`n`n
 		`t`t
 		The Chart option is now disabled.
@@ -1124,18 +907,19 @@ If($Issues)
 	$Import = $False
 	$Export = $False
 }
+
 If($Full)
 {
-	Write-Warning ""
-	Write-Warning "Full-Run is set. This will create a full VMware inventory and will take a significant amount of time."
-	Write-Warning ""
+	Write-Host ""
+	Write-Host "Full-Run is set. This will create a full VMware inventory and can take a significant amount of time."
+	Write-Host ""
 }
 
 If($Export)
 {
-	Write-Warning ""
-	Write-Warning "Export is set - Script will output to XML for later use, overriding all output parameters."
-	Write-Warning ""
+	Write-Host ""
+	Write-Host "Export is set - Script will output to XML for later use, overriding all output parameters."
+	Write-Host ""
 
 	$HTML           = $False
 	$MSWord         = $False
@@ -1207,15 +991,13 @@ If($Folder -ne "")
 		Else
 		{
 			#it exists but it is a file not a folder
+#Do not indent the following write-error lines. Doing so will mess up the console formatting of the error message.
 			Write-Error "
 			`n`n
-			`t`t
-			Folder $Folder is a file, not a folder.
+	Folder $Folder is a file, not a folder.
 			`n`n
-			`t`t
-			Script cannot continue.
-			`n`n
-			"
+	Script cannot continue.
+			`n`n"
 			AbortScript
 		}
 	}
@@ -1224,11 +1006,9 @@ If($Folder -ne "")
 		#does not exist
 		Write-Error "
 		`n`n
-		`t`t
-		Folder $Folder does not exist.
+	Folder $Folder does not exist.
 		`n`n
-		`t`t
-		Script cannot continue.
+	Script cannot continue.
 		`n`n
 		"
 		AbortScript
@@ -1250,11 +1030,10 @@ If($Script:pwdpath.EndsWith("\"))
 	$Script:pwdpath = $Script:pwdpath.SubString(0, ($Script:pwdpath.Length - 1))
 }
 
-#V1.8 added
 If($Log) 
 {
 	#start transcript logging
-	$Script:LogPath = "$Script:pwdpath\VMwareDocScriptTranscript_$(Get-Date -f FileDateTime).txt"
+	$Script:LogPath = "$Script:pwdpath\VMwareDocScriptV2Transcript_$(Get-Date -f FileDateTime).txt"
 	
 	try 
 	{
@@ -1272,7 +1051,7 @@ If($Log)
 If($Dev)
 {
 	$Error.Clear()
-	$Script:DevErrorFile = "$Script:pwdpath\VMwareInventoryScriptErrors_$(Get-Date -f FileDateTime).txt"
+	$Script:DevErrorFile = "$Script:pwdpath\VMwareInventoryScriptV2Errors_$(Get-Date -f FileDateTime).txt"
 }
 
 #endregion
@@ -1293,12 +1072,12 @@ If($MSWord -or $PDF)
 	[int]$wdSeekMainDocument      = 0
 	[int]$wdSeekPrimaryFooter     = 4
 	[int]$wdStory                 = 6
-	[int]$wdColorBlack            = 0
+	#[int]$wdColorBlack            = 0
 	[int]$wdColorGray05           = 15987699 
 	[int]$wdColorGray15           = 14277081
-	[int]$wdColorRed              = 255
+	#[int]$wdColorRed              = 255
 	[int]$wdColorWhite            = 16777215
-	[int]$wdColorYellow           = 65535
+	#[int]$wdColorYellow           = 65535
 	[int]$wdWord2007              = 12
 	[int]$wdWord2010              = 14
 	[int]$wdWord2013              = 15
@@ -1338,7 +1117,7 @@ If($MSWord -or $PDF)
 	[int]$wdStyleHeading4         = -5
 	[int]$wdStyleNoSpacing        = -158
 	[int]$wdTableGrid             = -155
-	[int]$wdTableLightListAccent3 = -206
+	#[int]$wdTableLightListAccent3 = -206
 
 	[int]$wdLineStyleNone       = 0
 	[int]$wdLineStyleSingle     = 1
@@ -1350,43 +1129,66 @@ If($MSWord -or $PDF)
 
 If($HTML)
 {
-    Set-Variable htmlredmask         -Option AllScope -Value "#FF0000" 4>$Null
-    Set-Variable htmlcyanmask        -Option AllScope -Value "#00FFFF" 4>$Null
-    Set-Variable htmlbluemask        -Option AllScope -Value "#0000FF" 4>$Null
-    Set-Variable htmldarkbluemask    -Option AllScope -Value "#0000A0" 4>$Null
-    Set-Variable htmllightbluemask   -Option AllScope -Value "#ADD8E6" 4>$Null
-    Set-Variable htmlpurplemask      -Option AllScope -Value "#800080" 4>$Null
-    Set-Variable htmlyellowmask      -Option AllScope -Value "#FFFF00" 4>$Null
-    Set-Variable htmllimemask        -Option AllScope -Value "#00FF00" 4>$Null
-    Set-Variable htmlmagentamask     -Option AllScope -Value "#FF00FF" 4>$Null
-    Set-Variable htmlwhitemask       -Option AllScope -Value "#FFFFFF" 4>$Null
-    Set-Variable htmlsilvermask      -Option AllScope -Value "#C0C0C0" 4>$Null
-    Set-Variable htmlgraymask        -Option AllScope -Value "#808080" 4>$Null
-    Set-Variable htmlblackmask       -Option AllScope -Value "#000000" 4>$Null
-    Set-Variable htmlorangemask      -Option AllScope -Value "#FFA500" 4>$Null
-    Set-Variable htmlmaroonmask      -Option AllScope -Value "#800000" 4>$Null
-    Set-Variable htmlgreenmask       -Option AllScope -Value "#008000" 4>$Null
-    Set-Variable htmlolivemask       -Option AllScope -Value "#808000" 4>$Null
+    $global:htmlredmask       = "#FF0000" 4>$Null
+    $global:htmlcyanmask      = "#00FFFF" 4>$Null
+    $global:htmlbluemask      = "#0000FF" 4>$Null
+    $global:htmldarkbluemask  = "#0000A0" 4>$Null
+    $global:htmllightbluemask = "#ADD8E6" 4>$Null
+    $global:htmlpurplemask    = "#800080" 4>$Null
+    $global:htmlyellowmask    = "#FFFF00" 4>$Null
+    $global:htmllimemask      = "#00FF00" 4>$Null
+    $global:htmlmagentamask   = "#FF00FF" 4>$Null
+    $global:htmlwhitemask     = "#FFFFFF" 4>$Null
+    $global:htmlsilvermask    = "#C0C0C0" 4>$Null
+    $global:htmlgraymask      = "#808080" 4>$Null
+    $global:htmlblackmask     = "#000000" 4>$Null
+    $global:htmlorangemask    = "#FFA500" 4>$Null
+    $global:htmlmaroonmask    = "#800000" 4>$Null
+    $global:htmlgreenmask     = "#008000" 4>$Null
+    $global:htmlolivemask     = "#808000" 4>$Null
 
-    Set-Variable htmlbold        -Option AllScope -Value 1 4>$Null
-    Set-Variable htmlitalics     -Option AllScope -Value 2 4>$Null
-    Set-Variable htmlred         -Option AllScope -Value 4 4>$Null
-    Set-Variable htmlcyan        -Option AllScope -Value 8 4>$Null
-    Set-Variable htmlblue        -Option AllScope -Value 16 4>$Null
-    Set-Variable htmldarkblue    -Option AllScope -Value 32 4>$Null
-    Set-Variable htmllightblue   -Option AllScope -Value 64 4>$Null
-    Set-Variable htmlpurple      -Option AllScope -Value 128 4>$Null
-    Set-Variable htmlyellow      -Option AllScope -Value 256 4>$Null
-    Set-Variable htmllime        -Option AllScope -Value 512 4>$Null
-    Set-Variable htmlmagenta     -Option AllScope -Value 1024 4>$Null
-    Set-Variable htmlwhite       -Option AllScope -Value 2048 4>$Null
-    Set-Variable htmlsilver      -Option AllScope -Value 4096 4>$Null
-    Set-Variable htmlgray        -Option AllScope -Value 8192 4>$Null
-    Set-Variable htmlolive       -Option AllScope -Value 16384 4>$Null
-    Set-Variable htmlorange      -Option AllScope -Value 32768 4>$Null
-    Set-Variable htmlmaroon      -Option AllScope -Value 65536 4>$Null
-    Set-Variable htmlgreen       -Option AllScope -Value 131072 4>$Null
-    Set-Variable htmlblack       -Option AllScope -Value 262144 4>$Null
+    $global:htmlbold        = 1 4>$Null
+    $global:htmlitalics     = 2 4>$Null
+    $global:htmlred         = 4 4>$Null
+    $global:htmlcyan        = 8 4>$Null
+    $global:htmlblue        = 16 4>$Null
+    $global:htmldarkblue    = 32 4>$Null
+    $global:htmllightblue   = 64 4>$Null
+    $global:htmlpurple      = 128 4>$Null
+    $global:htmlyellow      = 256 4>$Null
+    $global:htmllime        = 512 4>$Null
+    $global:htmlmagenta     = 1024 4>$Null
+    $global:htmlwhite       = 2048 4>$Null
+    $global:htmlsilver      = 4096 4>$Null
+    $global:htmlgray        = 8192 4>$Null
+    $global:htmlolive       = 16384 4>$Null
+    $global:htmlorange      = 32768 4>$Null
+    $global:htmlmaroon      = 65536 4>$Null
+    $global:htmlgreen       = 131072 4>$Null
+	$global:htmlblack       = 262144 4>$Null
+
+	$global:htmlsb          = ( $htmlsilver -bor $htmlBold ) ## point optimization
+
+	$global:htmlColor = 
+	@{
+		$htmlred       = $htmlredmask
+		$htmlcyan      = $htmlcyanmask
+		$htmlblue      = $htmlbluemask
+		$htmldarkblue  = $htmldarkbluemask
+		$htmllightblue = $htmllightbluemask
+		$htmlpurple    = $htmlpurplemask
+		$htmlyellow    = $htmlyellowmask
+		$htmllime      = $htmllimemask
+		$htmlmagenta   = $htmlmagentamask
+		$htmlwhite     = $htmlwhitemask
+		$htmlsilver    = $htmlsilvermask
+		$htmlgray      = $htmlgraymask
+		$htmlolive     = $htmlolivemask
+		$htmlorange    = $htmlorangemask
+		$htmlmaroon    = $htmlmaroonmask
+		$htmlgreen     = $htmlgreenmask
+		$htmlblack     = $htmlblackmask
+	}
 }
 
 If($TEXT)
@@ -1400,7 +1202,7 @@ Function SetWordHashTable
 {
 	Param([string]$CultureCode)
 
-	#optimized by Michael B. SMith
+	#optimized by Michael B. Smith
 	
 	# DE and FR translations for Word 2010 by Vladimir Radojevic
 	# Vladimir.Radojevic@Commerzreal.com
@@ -1425,20 +1227,19 @@ Function SetWordHashTable
 	#zh - Chinese
 	
 	[string]$toc = $(
-		Switch($CultureCode)
+		Switch ($CultureCode)
 		{
 			'ca-'	{ 'Taula automática 2'; Break }
 			'da-'	{ 'Automatisk tabel 2'; Break }
 			#'de-'	{ 'Automatische Tabelle 2'; Break }
-			'de-'	{ 'Automatisches Verzeichnis 2'; Break } #changed 23-feb-2022 rene bigler
+			'de-'	{ 'Automatisches Verzeichnis 2'; Break }
 			'en-'	{ 'Automatic Table 2'; Break }
 			'es-'	{ 'Tabla automática 2'; Break }
 			'fi-'	{ 'Automaattinen taulukko 2'; Break }
-			'fr-'	{ 'Table automatique 2'; Break } #changed 13-feb-2017 david roquier and samuel legrand
+			'fr-'	{ 'Table automatique 2'; Break } #changed 10-feb-2017 david roquier and samuel legrand
 			'nb-'	{ 'Automatisk tabell 2'; Break }
 			'nl-'	{ 'Automatische inhoudsopgave 2'; Break }
 			'pt-'	{ 'Sumário Automático 2'; Break }
-			# fix in 1.90 thanks to Johan Kallio 'sv-'	{ 'Automatisk innehållsförteckning2'; Break }
 			'sv-'	{ 'Automatisk innehållsförteckn2'; Break }
 			'zh-'	{ '自动目录 2'; Break }
 		}
@@ -1458,7 +1259,6 @@ Function GetCulture
 {
 	Param([int]$WordValue)
 	
-	#codes obtained from http://support.microsoft.com/kb/221435
 	#http://msdn.microsoft.com/en-us/library/bb213877(v=office.12).aspx
 	$CatalanArray = 1027
 	$ChineseArray = 2052,3076,5124,4100
@@ -1486,20 +1286,20 @@ Function GetCulture
 	#sv - Swedish
 	#zh - Chinese
 
-	Switch($WordValue)
+	Switch ($WordValue)
 	{
-		{$CatalanArray -contains $_} {$CultureCode = "ca-"}
-		{$ChineseArray -contains $_} {$CultureCode = "zh-"}
-		{$DanishArray -contains $_} {$CultureCode = "da-"}
-		{$DutchArray -contains $_} {$CultureCode = "nl-"}
-		{$EnglishArray -contains $_} {$CultureCode = "en-"}
-		{$FinnishArray -contains $_} {$CultureCode = "fi-"}
-		{$FrenchArray -contains $_} {$CultureCode = "fr-"}
-		{$GermanArray -contains $_} {$CultureCode = "de-"}
-		{$NorwegianArray -contains $_} {$CultureCode = "nb-"}
-		{$PortugueseArray -contains $_} {$CultureCode = "pt-"}
-		{$SpanishArray -contains $_} {$CultureCode = "es-"}
-		{$SwedishArray -contains $_} {$CultureCode = "sv-"}
+		{$CatalanArray -contains $_}	{$CultureCode = "ca-"}
+		{$ChineseArray -contains $_}	{$CultureCode = "zh-"}
+		{$DanishArray -contains $_}		{$CultureCode = "da-"}
+		{$DutchArray -contains $_}		{$CultureCode = "nl-"}
+		{$EnglishArray -contains $_}	{$CultureCode = "en-"}
+		{$FinnishArray -contains $_}	{$CultureCode = "fi-"}
+		{$FrenchArray -contains $_}		{$CultureCode = "fr-"}
+		{$GermanArray -contains $_}		{$CultureCode = "de-"}
+		{$NorwegianArray -contains $_}	{$CultureCode = "nb-"}
+		{$PortugueseArray -contains $_}	{$CultureCode = "pt-"}
+		{$SpanishArray -contains $_}	{$CultureCode = "es-"}
+		{$SwedishArray -contains $_}	{$CultureCode = "sv-"}
 		Default {$CultureCode = "en-"}
 	}
 	
@@ -1512,7 +1312,7 @@ Function ValidateCoverPage
 	
 	$xArray = ""
 	
-	Switch($CultureCode)
+	Switch ($CultureCode)
 	{
 		'ca-'	{
 				If($xWordVersion -eq $wdWord2016)
@@ -1782,16 +1582,23 @@ Function CheckWordPrereq
 	If((Test-Path  REGISTRY::HKEY_CLASSES_ROOT\Word.Application) -eq $False)
 	{
 		$ErrorActionPreference = $SaveEAPreference
-		Write-Host "`n`n`t`tThis script directly outputs to Microsoft Word, please install Microsoft Word`n`n"
-		AbortScript
+		
+		If(($MSWord -eq $False) -and ($PDF -eq $True))
+		{
+			Write-Host "`n`n`t`tThis script uses Microsoft Word's SaveAs PDF function, please install Microsoft Word`n`n"
+			AbortScript
+		}
+		Else
+		{
+			Write-Host "`n`n`t`tThis script directly outputs to Microsoft Word, please install Microsoft Word`n`n"
+			AbortScript
+		}
 	}
 
 	#find out our session (usually "1" except on TS/RDC or Citrix)
 	$SessionID = (Get-Process -PID $PID).SessionId
 	
 	#Find out if winword is running in our session
-	#[bool]$wordrunning = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) -ne $Null
-	#fix by MBS in V2.20
 	[bool]$wordrunning = $null –ne ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID})
 	If($wordrunning)
 	{
@@ -1874,23 +1681,38 @@ Function SetupWord
 {
 	Write-Verbose "$(Get-Date -Format G): Setting up Word"
     
+	If(!$AddDateTime)
+	{
+		[string]$Script:WordFileName = "$($Script:pwdpath)\$($OutputFileName).docx"
+		If($PDF)
+		{
+			[string]$Script:PDFFileName = "$($Script:pwdpath)\$($OutputFileName).pdf"
+		}
+	}
+	ElseIf($AddDateTime)
+	{
+		[string]$Script:WordFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).docx"
+		If($PDF)
+		{
+			[string]$Script:PDFFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
+		}
+	}
+
 	# Setup word for output
 	Write-Verbose "$(Get-Date -Format G): Create Word comObject."
 	$Script:Word = New-Object -comobject "Word.Application" -EA 0 4>$Null
-	
+
+#Do not indent the following write-error lines. Doing so will mess up the console formatting of the error message.
 	If(!$? -or $Null -eq $Script:Word)
 	{
-		Write-Warning "The Word object could not be created.  You may need to repair your Word installation."
+		Write-Warning "The Word object could not be created. You may need to repair your Word installation."
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		The Word object could not be created.  You may need to repair your Word installation.
+	The Word object could not be created. You may need to repair your Word installation.
 		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
+	Script cannot Continue.
+		`n`n"
 		AbortScript
 	}
 
@@ -1909,11 +1731,9 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		Unable to determine the Word language value.
+	Unable to determine the Word language value. You may need to repair your Word installation.
 		`n`n
-		`t`t
-		Script cannot continue.
+	Script cannot Continue.
 		`n`n
 		"
 		AbortScript
@@ -1942,11 +1762,7 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		Microsoft Word 2007 is no longer supported.
-		`n`n
-		`t`t
-		Script will end.
+	Microsoft Word 2007 is no longer supported.`n`n`t`tScript will end.
 		`n`n
 		"
 		AbortScript
@@ -1955,11 +1771,9 @@ Function SetupWord
 	{
 		Write-Error "
 		`n`n
-		`t`t
-		The Word Version is 0. You should run a full online repair of your Office installation.
+	The Word Version is 0. You should run a full online repair of your Office installation.
 		`n`n
-		`t`t
-		Script cannot continue.
+	Script cannot Continue.
 		`n`n
 		"
 		AbortScript
@@ -1969,30 +1783,30 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		You are running an untested or unsupported version of Microsoft Word.
+	You are running an untested or unsupported version of Microsoft Word.
 		`n`n
-		`t`t
-		Script will end.
+	Script will end.
 		`n`n
-		`t`t
-		Please send info on your version of Word to webster@carlwebster.com
+	Please send info on your version of Word to webster@carlwebster.com
 		`n`n
 		"
 		AbortScript
 	}
 
 	#only validate CompanyName if the field is blank
-	If([String]::IsNullOrEmpty($Script:CoName))
+	If([String]::IsNullOrEmpty($CompanyName))
 	{
-		Write-Verbose "$(Get-Date -Format G): Company name is blank.  Retrieve company name from registry."
+		Write-Verbose "$(Get-Date -Format G): Company name is blank. Retrieve company name from registry."
 		$TmpName = ValidateCompanyName
 		
 		If([String]::IsNullOrEmpty($TmpName))
 		{
-			Write-Warning "`n`n`t`tCompany Name is blank so Cover Page will not show a Company Name."
-			Write-Warning "`n`t`tCheck HKCU:\Software\Microsoft\Office\Common\UserInfo for Company or CompanyName value."
-			Write-Warning "`n`t`tYou may want to use the -CompanyName parameter if you need a Company Name on the cover page.`n`n"
+			Write-Host "
+		Company Name is blank so Cover Page will not show a Company Name.
+		Check HKCU:\Software\Microsoft\Office\Common\UserInfo for Company or CompanyName value.
+		You may want to use the -CompanyName parameter if you need a Company Name on the cover page.
+			" -Foreground White
+			$Script:CoName = $TmpName
 		}
 		Else
 		{
@@ -2000,12 +1814,16 @@ Function SetupWord
 			Write-Verbose "$(Get-Date -Format G): Updated company name to $($Script:CoName)"
 		}
 	}
+	Else
+	{
+		$Script:CoName = $CompanyName
+	}
 
 	If($Script:WordCultureCode -ne "en-")
 	{
 		Write-Verbose "$(Get-Date -Format G): Check Default Cover Page for $($WordCultureCode)"
 		[bool]$CPChanged = $False
-		Switch($Script:WordCultureCode)
+		Switch ($Script:WordCultureCode)
 		{
 			'ca-'	{
 					If($CoverPage -eq "Sideline")
@@ -2122,17 +1940,13 @@ Function SetupWord
 		Write-Verbose "$(Get-Date -Format G): Culture code $($Script:WordCultureCode)"
 		Write-Error "
 		`n`n
-		`t`t
-		For $($Script:WordProduct), $($CoverPage) is not a valid Cover Page option.
+	For $($Script:WordProduct), $($CoverPage) is not a valid Cover Page option.
 		`n`n
-		`t`t
-		Script cannot continue.
+	Script cannot Continue.
 		`n`n
 		"
 		AbortScript
 	}
-
-	ShowScriptOptions
 
 	$Script:Word.Visible = $False
 
@@ -2151,8 +1965,8 @@ Function SetupWord
 	$part = $Null
 
 	$BuildingBlocksCollection | 
-	ForEach-Object{
-		If($_.BuildingBlockEntries.Item($CoverPage).Name -eq $CoverPage) 
+	ForEach-Object {
+		If ($_.BuildingBlockEntries.Item($CoverPage).Name -eq $CoverPage) 
 		{
 			$BuildingBlocks = $_
 		}
@@ -2181,8 +1995,8 @@ Function SetupWord
 	If(!$Script:CoverPagesExist)
 	{
 		Write-Verbose "$(Get-Date -Format G): Cover Pages are not installed or the Cover Page $($CoverPage) does not exist."
-		Write-Warning "Cover Pages are not installed or the Cover Page $($CoverPage) does not exist."
-		Write-Warning "This report will not have a Cover Page."
+		Write-Host "Cover Pages are not installed or the Cover Page $($CoverPage) does not exist." -Foreground White
+		Write-Host "This report will not have a Cover Page." -Foreground White
 	}
 
 	Write-Verbose "$(Get-Date -Format G): Create empty word doc"
@@ -2193,13 +2007,10 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		An empty Word document could not be created.
+	An empty Word document could not be created. You may need to repair your Word installation.
 		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
+	Script cannot Continue.
+		`n`n"
 		AbortScript
 	}
 
@@ -2210,18 +2021,15 @@ Function SetupWord
 		$ErrorActionPreference = $SaveEAPreference
 		Write-Error "
 		`n`n
-		`t`t
-		An unknown error happened selecting the entire Word document for default formatting options.
+	An unknown error happened selecting the entire Word document for default formatting options.
 		`n`n
-		`t`t
-		Script cannot continue.
-		`n`n
-		"
+	Script cannot Continue.
+		`n`n"
 		AbortScript
 	}
 
 	#set Default tab stops to 1/2 inch (this line is not from Jeff Hicks)
-	#36 = .50"
+	#36 =.50"
 	$Script:Word.ActiveDocument.DefaultTabStop = 36
 
 	#Disable Spell and Grammar Check to resolve issue and improve performance (from Pat Coughlin)
@@ -2246,8 +2054,8 @@ Function SetupWord
 		If($Null -eq $toc)
 		{
 			Write-Verbose "$(Get-Date -Format G): "
-			Write-Verbose "$(Get-Date -Format G): Table of Content - $($Script:MyHash.Word_TableOfContents) could not be retrieved."
-			Write-Warning "This report will not have a Table of Contents."
+			Write-Host "Table of Content - $($Script:MyHash.Word_TableOfContents) could not be retrieved." -Foreground White
+			Write-Host "This report will not have a Table of Contents." -Foreground White
 		}
 		Else
 		{
@@ -2256,8 +2064,8 @@ Function SetupWord
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): Table of Contents are not installed."
-		Write-Warning "Table of Contents are not installed so this report will not have a Table of Contents."
+		Write-Host "Table of Contents are not installed." -Foreground White
+		Write-Host "Table of Contents are not installed so this report will not have a Table of Contents." -Foreground White
 	}
 
 	#set the footer
@@ -2287,7 +2095,6 @@ Function SetupWord
 	$Script:Selection.HeaderFooter.PageNumbers.Add($wdAlignPageNumberRight) | Out-Null
 
 	FindWordDocumentEnd
-	Write-Verbose "$(Get-Date -Format G):"
 	#end of Jeff Hicks 
 }
 
@@ -2470,7 +2277,7 @@ Function WriteWordLine
 	
 	#Build output style
 	[string]$output = ""
-	Switch($style)
+	Switch ($style)
 	{
 		0 {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing; Break}
 		1 {$Script:Selection.Style = $Script:MyHash.Word_Heading1; Break}
@@ -2615,110 +2422,64 @@ Function WriteWordLine
 		htmlblack       
 #>
 
+$crlf = [System.Environment]::NewLine
+
 Function WriteHTMLLine
 #Function created by Ken Avram
 #Function created to make output to HTML easy in this script
 #headings fixed 12-Oct-2016 by Webster
 #errors with $HTMLStyle fixed 7-Dec-2017 by Webster
 {
-	Param([int]$style=0, 
-	[int]$tabs = 0, 
-	[string]$name = '', 
-	[string]$value = '', 
-	[string]$fontName="Calibri",
-	[int]$fontSize=1,
-	[int]$options=$htmlblack)
+	Param
+	(
+		[Int]    $style    = 0, 
+		[Int]    $tabs     = 0, 
+		[String] $name     = '', 
+		[String] $value    = '', 
+		[String] $fontName = $null,
+		[Int]    $fontSize = 1,
+		[Int]    $options  = $htmlblack
+	)
 
+	[System.Text.StringBuilder] $sb = New-Object System.Text.StringBuilder( 1024 )
 
-	#Build output style
-	[string]$output = ""
-
-	If([String]::IsNullOrEmpty($Name))	
+	If( [String]::IsNullOrEmpty( $name ) )	
 	{
-		$HTMLBody = "<p></p>"
+		$null = $sb.Append( '<p></p>' )
 	}
 	Else
 	{
-		$color = CheckHTMLColor $options
+		[Bool] $ital = $options -band $htmlitalics
+		[Bool] $bold = $options -band $htmlBold
 
-		#build # of tabs
+		If( $ital ) { $null = $sb.Append( '<i>' ) }
+		If( $bold ) { $null = $sb.Append( '<b>' ) } 
 
-		While($tabs -gt 0)
-		{ 
-			$output += "&nbsp;&nbsp;&nbsp;&nbsp;"; $tabs--; 
+		Switch( $style )
+		{
+			1 { $HTMLOpen = '<h1>'; $HTMLClose = '</h1>'; Break }
+			2 { $HTMLOpen = '<h2>'; $HTMLClose = '</h2>'; Break }
+			3 { $HTMLOpen = '<h3>'; $HTMLClose = '</h3>'; Break }
+			4 { $HTMLOpen = '<h4>'; $HTMLClose = '</h4>'; Break }
+			Default { $HTMLOpen = ''; $HTMLClose = ''; Break }
 		}
 
-		$HTMLFontName = $fontName		
+		$null = $sb.Append( $HTMLOpen )
 
-		$HTMLBody = ""
+		$null = $sb.Append( ( '&nbsp;&nbsp;&nbsp;&nbsp;' * $tabs ) + $name + $value )
 
-		If($options -band $htmlitalics) 
-		{
-			$HTMLBody += "<i>"
-		} 
 
-		If($options -band $htmlbold) 
-		{
-			$HTMLBody += "<b>"
-		} 
+		If( $HTMLClose -eq '' ) { $null = $sb.Append( '<br>' )     }
+		Else                    { $null = $sb.Append( $HTMLClose ) }
 
-		#output the rest of the parameters.
-		$output += $name + $value
+		If( $ital ) { $null = $sb.Append( '</i>' ) }
+		If( $bold ) { $null = $sb.Append( '</b>' ) } 
 
-		Switch($style)
-		{
-			1 {$HTMLStyle = "<h1>"; Break}
-			2 {$HTMLStyle = "<h2>"; Break}
-			3 {$HTMLStyle = "<h3>"; Break}
-			4 {$HTMLStyle = "<h4>"; Break}
-			Default {$HTMLStyle = ""; Break}
-		}
-
-		$HTMLBody += $HTMLStyle + $output
-
-		Switch($style)
-		{
-			1 {$HTMLStyle = "</h1>"; Break}
-			2 {$HTMLStyle = "</h2>"; Break}
-			3 {$HTMLStyle = "</h3>"; Break}
-			4 {$HTMLStyle = "</h4>"; Break}
-			Default {$HTMLStyle = ""; Break}
-		}
-
-		#added by webster 12-oct-2016
-		#if a heading, don't add the <br>
-		#moved to after the two switch statements on 7-Dec-2017 to fix $HTMLStyle has not been set error
-		If($HTMLStyle -eq "")
-		{
-			$HTMLBody += "<br><font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
-		}
-		Else
-		{
-			$HTMLBody += "<font face='" + $HTMLFontName + "' " + "color='" + $color + "' size='"  + $fontsize + "'>"
-		}
-		
-		$HTMLBody += $HTMLStyle +  "</font>"
-
-		If($options -band $htmlitalics) 
-		{
-			$HTMLBody += "</i>"
-		} 
-
-		If($options -band $htmlbold) 
-		{
-			$HTMLBody += "</b>"
-		} 
-
-		#added by webster 12-oct-2016
-		#if a heading, don't add the <br />
-		#moved to inside the Else statement on 7-Dec-2017 to fix $HTMLStyle has not been set error
-		If($HTMLStyle -eq "")
-		{
-			$HTMLBody += "<br />"
-		}
+		If( $HTMLClose -eq '' ) { $null = $sb.Append( '<br />' ) }
 	}
+	$null = $sb.AppendLine( '' )
 
-	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $sb.ToString() 4>$Null
 }
 #endregion
 
@@ -2727,81 +2488,95 @@ Function WriteHTMLLine
 # AddHTMLTable - Called from FormatHTMLTable function
 # Created by Ken Avram
 # modified by Jake Rutski
+# re-implemented by Michael B. Smith and made the documentation match reality.
 #***********************************************************************************************************
 Function AddHTMLTable
 {
-	Param([string]$fontName="Calibri",
-	[int]$fontSize=2,
-	[int]$colCount=0,
-	[int]$rowCount=0,
-	[object[]]$rowInfo=@(),
-	[object[]]$fixedInfo=@())
+	Param
+	(
+		[String]   $fontName  = 'Calibri',
+		[Int]      $fontSize  = 2,
+		[Int]      $colCount  = 0,
+		[Int]      $rowCount  = 0,
+		[Object[]] $rowInfo   = $null,
+		[Object[]] $fixedInfo = $null
+	)
 
-	For($rowidx = $RowIndex;$rowidx -le $rowCount;$rowidx++)
+	[System.Text.StringBuilder] $sb = New-Object System.Text.StringBuilder( 8192 )
+
+	If( $rowInfo -and $rowInfo.Length -lt $rowCount )
 	{
-		$rd = @($rowInfo[$rowidx - 2])
-		$htmlbody = $htmlbody + "<tr>"
-		For($columnIndex = 0; $columnIndex -lt $colCount; $columnindex+=2)
-		{
-			$tmp = CheckHTMLColor $rd[$columnIndex+1]
-
-			If($fixedInfo.Length -eq 0)
-			{
-				$htmlbody += "<td style=""background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
-			}
-			Else
-			{
-				$htmlbody += "<td style=""width:$($fixedInfo[$columnIndex/2]); background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
-			}
-
-			If($rd[$columnIndex+1] -band $htmlbold)
-			{
-				$htmlbody += "<b>"
-			}
-			If($rd[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "<i>"
-			}
-			If($Null -ne $rd[$columnIndex])
-			{
-				$cell = $rd[$columnIndex].tostring()
-				If($cell -eq " " -or $cell.length -eq 0)
-				{
-					$htmlbody += "&nbsp;&nbsp;&nbsp;"
-				}
-				Else
-				{
-					For($i=0;$i -lt $cell.length;$i++)
-					{
-						If($cell[$i] -eq " ")
-						{
-							$htmlbody += "&nbsp;"
-						}
-						If($cell[$i] -ne " ")
-						{
-							Break
-						}
-					}
-					$htmlbody += $cell
-				}
-			}
-			Else
-			{
-				$htmlbody += "&nbsp;&nbsp;&nbsp;"
-			}
-			If($rd[$columnIndex+1] -band $htmlbold)
-			{
-				$htmlbody += "</b>"
-			}
-			If($rd[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "</i>"
-			}
-			$htmlbody += "</font></td>"
-		}
-		$htmlbody += "</tr>"
+		$rowCount = $rowInfo.Length
 	}
-	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null 
+
+	for( $rowCountIndex = 0; $rowCountIndex -lt $rowCount; $rowCountIndex++ )
+	{
+		$null = $sb.AppendLine( '<tr>' )
+
+		## reset
+		$row = $rowInfo[ $rowCountIndex ]
+
+		$subRow = $row
+		If( $subRow -is [Array] -and $subRow[ 0 ] -is [Array] )
+		{
+			$subRow = $subRow[ 0 ]
+		}
+
+		$subRowLength = $subRow.Length
+		For( $columnIndex = 0; $columnIndex -lt $colCount; $columnIndex += 2 )
+		{
+			$item = If( $columnIndex -lt $subRowLength ) { $subRow[ $columnIndex ] } Else { 0 }
+
+			$text   = If( $item ) { $item.ToString() } Else { '' }
+			$format = If( ( $columnIndex + 1 ) -lt $subRowLength ) { $subRow[ $columnIndex + 1 ] } Else { 0 }
+			## item, text, and format ALWAYS have values, even if empty values
+			$color  = $global:htmlColor[ $format -band 0xffffc ]
+			[Bool] $bold = $format -band $htmlBold
+			[Bool] $ital = $format -band $htmlitalics
+
+			If( $null -eq $fixedInfo -or $fixedInfo.Length -eq 0 )
+			{
+				$null = $sb.Append( "<td style=""background-color:$( $color )""><font face='$( $fontName )' size='$( $fontSize )'>" )
+			}
+			Else
+			{
+				$null = $sb.Append( "<td style=""width:$( $fixedInfo[ $columnIndex / 2 ] ); background-color:$( $color )""><font face='$( $fontName )' size='$( $fontSize )'>" )
+			}
+
+			If( $bold ) { $null = $sb.Append( '<b>' ) }
+			If( $ital ) { $null = $sb.Append( '<i>' ) }
+
+			If( $text -eq ' ' -or $text.length -eq 0)
+			{
+				##$htmlbody += '&nbsp;&nbsp;&nbsp;'
+				$null = $sb.Append( '&nbsp;&nbsp;&nbsp;' )
+			}
+			Else
+			{
+				For ($inx = 0; $inx -lt $text.length; $inx++ )
+				{
+					If( $text[ $inx ] -eq ' ' )
+					{
+						$null = $sb.Append( '&nbsp;' )
+					}
+					Else
+					{
+						Break
+					}
+				}
+				$null = $sb.Append( $text )
+			}
+
+			If( $bold ) { $null = $sb.Append( '</b>' ) }
+			If( $ital ) { $null = $sb.Append( '</i>' ) }
+
+			$null = $sb.AppendLine( '</font></td>' )
+		}
+
+		$null = $sb.AppendLine( '</tr>' )
+	}
+
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $sb.ToString() 4>$Null 
 }
 
 #***********************************************************************************************************
@@ -2913,19 +2688,56 @@ Function AddHTMLTable
 
 Function FormatHTMLTable
 {
-	Param([string]$tableheader,
-	[string]$tablewidth="auto",
-	[string]$fontName="Calibri",
-	[int]$fontSize=2,
-	[switch]$noBorder=$false,
-	[int]$noHeadCols=1,
-	[object[]]$rowArray=@(),
-	[object[]]$fixedWidth=@(),
-	[object[]]$columnArray=@())
+	Param
+	(
+		[String]   $tableheader = '',
+		[String]   $tablewidth  = 'auto',
+		[String]   $fontName    = 'Calibri',
+		[Int]      $fontSize    = 2,
+		[Switch]   $noBorder    = $false,
+		[Int]      $noHeadCols  = 1,
+		[Object[]] $rowArray    = $null,
+		[Object[]] $fixedWidth  = $null,
+		[Object[]] $columnArray = $null
+	)
 
-	$HTMLBody = "<b><font face='" + $fontname + "' size='" + ($fontsize + 1) + "'>" + $tableheader + "</font></b>"
+	## FIXME - the help text for this function is wacky wrong - MBS
+	## FIXME - Use StringBuilder - MBS - this only builds the table header - benefit relatively small
+<#
+	If( $SuperVerbose )
+	{
+		wv "FormatHTMLTable: fontname '$fontname', size $fontSize, tableheader '$tableheader'"
+		wv "FormatHTMLTable: noborder $noborder, noheadcols $noheadcols"
+		If( $rowarray -and $rowarray.count -gt 0 )
+		{
+			wv "FormatHTMLTable: rowarray has $( $rowarray.count ) elements"
+		}
+		Else
+		{
+			wv "FormatHTMLTable: rowarray is empty"
+		}
+		If( $columnarray -and $columnarray.count -gt 0 )
+		{
+			wv "FormatHTMLTable: columnarray has $( $columnarray.count ) elements"
+		}
+		Else
+		{
+			wv "FormatHTMLTable: columnarray is empty"
+		}
+		If( $fixedwidth -and $fixedwidth.count -gt 0 )
+		{
+			wv "FormatHTMLTable: fixedwidth has $( $fixedwidth.count ) elements"
+		}
+		Else
+		{
+			wv "FormatHTMLTable: fixedwidth is empty"
+		}
+	}
+#>
 
-	If($columnArray.Length -eq 0)
+	$HTMLBody = "<b><font face='" + $fontname + "' size='" + ($fontsize + 1) + "'>" + $tableheader + "</font></b>" + $crlf
+
+	If( $null -eq $columnArray -or $columnArray.Length -eq 0)
 	{
 		$NumCols = $noHeadCols + 1
 	}  # means we have no column headers, just a table
@@ -2934,7 +2746,7 @@ Function FormatHTMLTable
 		$NumCols = $columnArray.Length
 	}  # need to add one for the color attrib
 
-	If($Null -ne $rowArray)
+	If( $null -ne $rowArray )
 	{
 		$NumRows = $rowArray.length + 1
 	}
@@ -2943,89 +2755,94 @@ Function FormatHTMLTable
 		$NumRows = 1
 	}
 
-	If($noBorder)
+	If( $noBorder )
 	{
-		$htmlbody += "<table border='0' width='" + $tablewidth + "'>"
+		$HTMLBody += "<table border='0' width='" + $tablewidth + "'>"
 	}
 	Else
 	{
-		$htmlbody += "<table border='1' width='" + $tablewidth + "'>"
+		$HTMLBody += "<table border='1' width='" + $tablewidth + "'>"
 	}
+	$HTMLBody += $crlf
 
-	If(!($columnArray.Length -eq 0))
+	If( $columnArray -and $columnArray.Length -gt 0 )
 	{
-		$htmlbody += "<tr>"
+		$HTMLBody += '<tr>' + $crlf
 
-		For($columnIndex = 0; $columnIndex -lt $NumCols; $columnindex+=2)
+		for( $columnIndex = 0; $columnIndex -lt $NumCols; $columnindex += 2 )
 		{
-			$tmp = CheckHTMLColor $columnArray[$columnIndex+1]
-			If($fixedWidth.Length -eq 0)
+			$val = $columnArray[ $columnIndex + 1 ]
+			$tmp = $global:htmlColor[ $val -band 0xffffc ]
+			[Bool] $bold = $val -band $htmlBold
+			[Bool] $ital = $val -band $htmlitalics
+
+			If( $null -eq $fixedWidth -or $fixedWidth.Length -eq 0 )
 			{
-				$htmlbody += "<td style=""background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
+				$HTMLBody += "<td style=""background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
 			}
 			Else
 			{
-				$htmlbody += "<td style=""width:$($fixedWidth[$columnIndex/2]); background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
+				$HTMLBody += "<td style=""width:$($fixedWidth[$columnIndex/2]); background-color:$($tmp)""><font face='$($fontName)' size='$($fontSize)'>"
 			}
 
-			If($columnArray[$columnIndex+1] -band $htmlbold)
+			If( $bold ) { $HTMLBody += '<b>' }
+			If( $ital ) { $HTMLBody += '<i>' }
+
+			$array = $columnArray[ $columnIndex ]
+			If( $array )
 			{
-				$htmlbody += "<b>"
-			}
-			If($columnArray[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "<i>"
-			}
-			If($Null -ne $columnArray[$columnIndex])
-			{
-				If($columnArray[$columnIndex] -eq " " -or $columnArray[$columnIndex].length -eq 0)
+				If( $array -eq ' ' -or $array.Length -eq 0 )
 				{
-					$htmlbody += "&nbsp;&nbsp;&nbsp;"
+					$HTMLBody += '&nbsp;&nbsp;&nbsp;'
 				}
 				Else
 				{
-					For($i=0;$i -lt $columnArray[$columnIndex].length;$i+=2)
+					for( $i = 0; $i -lt $array.Length; $i += 2 )
 					{
-						If($columnArray[$columnIndex][$i] -eq " ")
+						If( $array[ $i ] -eq ' ' )
 						{
-							$htmlbody += "&nbsp;"
+							$HTMLBody += '&nbsp;'
 						}
-						If($columnArray[$columnIndex][$i] -ne " ")
+						Else
 						{
-							Break
+							break
 						}
 					}
-					$htmlbody += $columnArray[$columnIndex]
+					$HTMLBody += $array
 				}
 			}
 			Else
 			{
-				$htmlbody += "&nbsp;&nbsp;&nbsp;"
+				$HTMLBody += '&nbsp;&nbsp;&nbsp;'
 			}
-			If($columnArray[$columnIndex+1] -band $htmlbold)
-			{
-				$htmlbody += "</b>"
-			}
-			If($columnArray[$columnIndex+1] -band $htmlitalics)
-			{
-				$htmlbody += "</i>"
-			}
-			$htmlbody += "</font></td>"
+			
+			If( $bold ) { $HTMLBody += '</b>' }
+			If( $ital ) { $HTMLBody += '</i>' }
 		}
-		$htmlbody += "</tr>"
+
+		$HTMLBody += '</font></td>'
+		$HTMLBody += $crlf
 	}
-	$rowindex = 2
-	If($Null -ne $rowArray)
+
+	$HTMLBody += '</tr>' + $crlf
+
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $HTMLBody 4>$Null 
+	$HTMLBody = ''
+
+	If( $rowArray )
 	{
-		AddHTMLTable $fontName $fontSize -colCount $numCols -rowCount $NumRows -rowInfo $rowArray -fixedInfo $fixedWidth
-		$rowArray = @()
-		$htmlbody = "</table>"
+		AddHTMLTable -fontName $fontName -fontSize $fontSize `
+		-colCount $numCols -rowCount $NumRows `
+		-rowInfo $rowArray -fixedInfo $fixedWidth
+		$rowArray = $null
+		$HTMLBody = '</table>'
 	}
 	Else
 	{
-		$HTMLBody += "</table>"
-	}	
-	out-file -FilePath $Script:FileName1 -Append -InputObject $HTMLBody 4>$Null 
+		$HTMLBody += '</table>'
+	}
+
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject $HTMLBody 4>$Null 
 }
 #endregion
 
@@ -3105,19 +2922,6 @@ Function CheckHTMLColor
 	{
 		Return $htmlolivemask
 	}
-}
-
-Function SetupHTML
-{
-	Write-Verbose "$(Get-Date -Format G): Setting up HTML"
-    If($AddDateTime)
-    {
-		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).html"
-    }
-
-    $htmlhead = "<html><head><meta http-equiv='Content-Language' content='da'><title>" + $Script:Title + "</title></head><body>"
-    #echo $htmlhead > $FileName1
-	out-file -FilePath $Script:FileName1 -Force -InputObject $HTMLHead 4>$Null
 }
 
 Function HTMLHeatMap
@@ -3215,7 +3019,7 @@ Function AddWordTable
 	{
 		Write-Debug ("Using parameter set '{0}'" -f $PSCmdlet.ParameterSetName);
 		## Check if -Columns wasn't specified but -Headers were (saves some additional parameter sets!)
-		If(($Null -eq $Columns) -and ($Null -ne $Headers)) 
+		If(($Null -eq $Columns) -and ($Null -eq $Headers)) 
 		{
 			Write-Warning "No columns specified and therefore, specified headers will be ignored.";
 			$Columns = $Null;
@@ -3227,7 +3031,7 @@ Function AddWordTable
 			{
 				Write-Error "The specified number of columns does not match the specified number of headers.";
 			}
-		} ## end elseif
+		} ## end ElseIf
 	} ## end Begin
 
 	Process
@@ -3235,13 +3039,13 @@ Function AddWordTable
 		## Build the Word table data string to be converted to a range and then a table later.
 		[System.Text.StringBuilder] $WordRangeString = New-Object System.Text.StringBuilder;
 
-		Switch($PSCmdlet.ParameterSetName) 
+		Switch ($PSCmdlet.ParameterSetName) 
 		{
 			'CustomObject' 
 			{
 				If($Null -eq $Columns) 
 				{
-					## Build the available columns from all available PSCustomObject note properties
+					## Build the available columns from all availble PSCustomObject note properties
 					[string[]] $Columns = @();
 					## Add each NoteProperty name to the array
 					ForEach($Property in ($CustomObject | Get-Member -MemberType NoteProperty)) 
@@ -3253,7 +3057,7 @@ Function AddWordTable
 				## Add the table headers from -Headers or -Columns (except when in -List(view)
 				If(-not $List) 
 				{
-					Write-Debug ("$(Get-Date): `t`tBuilding table headers");
+					Write-Debug ("$(Get-Date -Format G): `t`tBuilding table headers");
 					If($Null -ne $Headers) 
 					{
                         [ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $Headers));
@@ -3265,7 +3069,7 @@ Function AddWordTable
 				}
 
 				## Iterate through each PSCustomObject
-				Write-Debug ("$(Get-Date): `t`tBuilding table rows");
+				Write-Debug ("$(Get-Date -Format G): `t`tBuilding table rows");
 				ForEach($Object in $CustomObject) 
 				{
 					$OrderedValues = @();
@@ -3277,7 +3081,7 @@ Function AddWordTable
 					## Use the ordered list to add each column in specified order
 					[ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $OrderedValues));
 				} ## end ForEach
-				Write-Debug ("$(Get-Date): `t`t`tAdded '{0}' table rows" -f ($CustomObject.Count));
+				Write-Debug ("$(Get-Date -Format G): `t`t`tAdded '{0}' table rows" -f ($CustomObject.Count));
 			} ## end CustomObject
 
 			Default 
@@ -3292,7 +3096,7 @@ Function AddWordTable
 				## Add the table headers from -Headers or -Columns (except when in -List(view)
 				If(-not $List) 
 				{
-					Write-Debug ("$(Get-Date): `t`tBuilding table headers");
+					Write-Debug ("$(Get-Date -Format G): `t`tBuilding table headers");
 					If($Null -ne $Headers) 
 					{ 
 						[ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $Headers));
@@ -3304,7 +3108,7 @@ Function AddWordTable
 				}
                 
 				## Iterate through each Hashtable
-				Write-Debug ("$(Get-Date): `t`tBuilding table rows");
+				Write-Debug ("$(Get-Date -Format G): `t`tBuilding table rows");
 				ForEach($Hash in $Hashtable) 
 				{
 					$OrderedValues = @();
@@ -3317,12 +3121,12 @@ Function AddWordTable
 					[ref] $Null = $WordRangeString.AppendFormat("{0}`n", [string]::Join("`t", $OrderedValues));
 				} ## end ForEach
 
-				Write-Debug ("$(Get-Date): `t`t`tAdded '{0}' table rows" -f $Hashtable.Count);
+				Write-Debug ("$(Get-Date -Format G): `t`t`tAdded '{0}' table rows" -f $Hashtable.Count);
 			} ## end default
-		} ## end switch
+		} ## end Switch
 
 		## Create a MS Word range and set its text to our tab-delimited, concatenated string
-		Write-Debug ("$(Get-Date): `t`tBuilding table range");
+		Write-Debug ("$(Get-Date -Format G): `t`tBuilding table range");
 		$WordRange = $Script:Doc.Application.Selection.Range;
 		$WordRange.Text = $WordRangeString.ToString();
 
@@ -3348,7 +3152,7 @@ Function AddWordTable
 
 		## Invoke ConvertToTable method - with named arguments - to convert Word range to a table
 		## See http://msdn.microsoft.com/en-us/library/office/aa171893(v=office.11).aspx
-		Write-Debug ("$(Get-Date): `t`tConverting range to table");
+		Write-Debug ("$(Get-Date -Format G): `t`tConverting range to table");
 		## Store the table reference just in case we need to set alternate row coloring
 		$WordTable = $WordRange.GetType().InvokeMember(
 			"ConvertToTable",                               # Method name
@@ -3364,7 +3168,7 @@ Function AddWordTable
 		## Implement grid lines (will wipe out any existing formatting
 		If($Format -lt 0) 
 		{
-			Write-Debug ("$(Get-Date): `t`tSetting table format");
+			Write-Debug ("$(Get-Date -Format G): `t`tSetting table format");
 			$WordTable.Style = $Format;
 		}
 
@@ -3588,8 +3392,6 @@ Function SetWordTableAlternateRowColor
 #region general script functions
 Function VISetup( [string] $VIServer )
 {
-	#updated in 1.9 by Webster to remove the PowerCLI cmdlets verbose output
-
 	# Check for root
 	# http://blogs.technet.com/b/heyscriptingguy/archive/2011/05/11/check-for-admin-credentials-in-a-powershell-script.aspx
 	If(!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
@@ -3601,7 +3403,7 @@ Function VISetup( [string] $VIServer )
 	#Check to see if PowerCLI is installed via Module or MSI
 	$PSDefaultParameterValues = @{"*:Verbose"=$False}
 
-	If(((Get-Module -ListAvailable | Where-Object {$_.Name -eq "VMware.PowerCLI"}) -ne $null))
+	If($Null -ne (Get-Module -ListAvailable | Where-Object {$_.Name -eq "VMware.PowerCLI"}))
 	{
 		$PSDefaultParameterValues = @{"*:Verbose"=$True}
 		# PowerCLI is installed via PowerShell Gallery\or the module is installed
@@ -3904,6 +3706,12 @@ Function AddStatsChart
 			http://www.microsoft.com/en-us/download/details.aspx?id=14422"
 			AbortScript            
 		}  
+		Else
+		{
+			## Assembly loaded
+			Write-Host "$(Get-Date -Format G): Gathering data from VMware stats to build performance graph"
+		}
+		
 		$Chart.Width = $Width
 		$Chart.Height = $Length
 
@@ -4019,6 +3827,7 @@ Function AddStatsChart
 
 Function BuildDRSGroupsRules
 {
+	$DRSGroupsRules = @()
     ## From http://www.vnugglets.com/2011/07/backupexport-full-drs-rule-info-via.html
     Get-View -ViewType ClusterComputeResource -Property Name, ConfigurationEx 4>$Null| ForEach-Object{
         ## if the cluster has any DRS rules
@@ -4112,10 +3921,21 @@ Function ShowScriptOptions
 		Write-Verbose "$(Get-Date -Format G): DevErrorFile   : $Script:DevErrorFile"
 	}
 	Write-Verbose "$(Get-Date -Format G): Export         : $Export"
-	Write-Verbose "$(Get-Date -Format G): Filename1      : $Script:filename1"
+	If($HTML)
+	{
+		Write-Verbose "$(Get-Date -Format G): HTMLFilename   : $Script:HTMLFilename"
+	}
+	If($MSWord)
+	{
+		Write-Verbose "$(Get-Date -Format G): WordFilename   : $Script:WordFilename"
+	}
 	If($PDF)
 	{
-		Write-Verbose "$(Get-Date -Format G): Filename2      : $Script:filename2"
+		Write-Verbose "$(Get-Date -Format G): PDFFilename    : $Script:PDFFilename"
+	}
+	If($Text)
+	{
+		Write-Verbose "$(Get-Date -Format G): TextFilename   : $Script:TextFilename"
 	}
 	Write-Verbose "$(Get-Date -Format G): Folder         : $Folder"
 	Write-Verbose "$(Get-Date -Format G): From           : $From"
@@ -4171,6 +3991,19 @@ Function validStateProp( [object] $object, [string] $topLevel, [string] $secondL
 	Return $False
 }
 
+Function validObject( [object] $object, [string] $topLevel )
+{
+	#function created 8-jan-2014 by Michael B. Smith
+	If( $object )
+	{
+		If((Get-Member -Name $topLevel -InputObject $object))
+		{
+			Return $True
+		}
+	}
+	Return $False
+}
+
 Function SaveandCloseDocumentandShutdownWord
 {
 	#bug fix 1-Apr-2014
@@ -4183,7 +4016,6 @@ Function SaveandCloseDocumentandShutdownWord
 	{
 		#the $saveFormat below passes StrictMode 2
 		#I found this at the following two links
-		#http://blogs.technet.com/b/bshukla/archive/2011/09/27/3347395.aspx
 		#http://msdn.microsoft.com/en-us/library/microsoft.office.interop.word.wdsaveformat(v=office.14).aspx
 		If($PDF)
 		{
@@ -4193,22 +4025,14 @@ Function SaveandCloseDocumentandShutdownWord
 		{
 			Write-Verbose "$(Get-Date -Format G): Saving DOCX file"
 		}
-		If($AddDateTime)
-		{
-			$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).docx"
-			If($PDF)
-			{
-				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
-			}
-		}
-		Write-Verbose "$(Get-Date -Format G): Running Word 2010 and detected operating system $($Script:RunningOS)"
+		Write-Verbose "$(Get-Date -Format G): Running $($Script:WordProduct) and detected operating system $($Script:RunningOS)"
 		$saveFormat = [Enum]::Parse([Microsoft.Office.Interop.Word.WdSaveFormat], "wdFormatDocumentDefault")
-		$Script:Doc.SaveAs([REF]$Script:FileName1, [ref]$SaveFormat)
+		$Script:Doc.SaveAs([REF]$Script:WordFileName, [ref]$SaveFormat)
 		If($PDF)
 		{
 			Write-Verbose "$(Get-Date -Format G): Now saving as PDF"
 			$saveFormat = [Enum]::Parse([Microsoft.Office.Interop.Word.WdSaveFormat], "wdFormatPDF")
-			$Script:Doc.SaveAs([REF]$Script:FileName2, [ref]$saveFormat)
+			$Script:Doc.SaveAs([REF]$Script:PDFFileName, [ref]$saveFormat)
 		}
 	}
 	ElseIf($Script:WordVersion -eq $wdWord2013 -or $Script:WordVersion -eq $wdWord2016)
@@ -4221,20 +4045,12 @@ Function SaveandCloseDocumentandShutdownWord
 		{
 			Write-Verbose "$(Get-Date -Format G): Saving DOCX file"
 		}
-		If($AddDateTime)
-		{
-			$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).docx"
-			If($PDF)
-			{
-				$Script:FileName2 += "_$(Get-Date -f yyyy-MM-dd_HHmm).pdf"
-			}
-		}
-		Write-Verbose "$(Get-Date -Format G): Running Word 2013 and detected operating system $($Script:RunningOS)"
-		$Script:Doc.SaveAs2([REF]$Script:FileName1, [ref]$wdFormatDocumentDefault)
+		Write-Verbose "$(Get-Date -Format G): Running $($Script:WordProduct) and detected operating system $($Script:RunningOS)"
+		$Script:Doc.SaveAs2([REF]$Script:WordFileName, [ref]$wdFormatDocumentDefault)
 		If($PDF)
 		{
 			Write-Verbose "$(Get-Date -Format G): Now saving as PDF"
-			$Script:Doc.SaveAs([REF]$Script:FileName2, [ref]$wdFormatPDF)
+			$Script:Doc.SaveAs([REF]$Script:PDFFileName, [ref]$wdFormatPDF)
 		}
 	}
 
@@ -4265,17 +4081,44 @@ Function SaveandCloseDocumentandShutdownWord
 	}
 }
 
-Function SaveandCloseTextDocument
+Function SetupText
 {
-	If($AddDateTime)
+	Write-Verbose "$(Get-Date -Format G): Setting up Text"
+
+	[System.Text.StringBuilder] $global:Output = New-Object System.Text.StringBuilder( 16384 )
+
+	If(!$AddDateTime)
 	{
-		$Script:FileName1 += "_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		[string]$Script:TextFileName = "$($Script:pwdpath)\$($OutputFileName).txt"
+	}
+	ElseIf($AddDateTime)
+	{
+		[string]$Script:TextFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+	}
+}
+
+Function SetupHTML
+{
+	Write-Verbose "$(Get-Date -Format G): Setting up HTML"
+	If(!$AddDateTime)
+	{
+		[string]$Script:HTMLFileName = "$($Script:pwdpath)\$($OutputFileName).html"
+	}
+	ElseIf($AddDateTime)
+	{
+		[string]$Script:HTMLFileName = "$($Script:pwdpath)\$($OutputFileName)_$(Get-Date -f yyyy-MM-dd_HHmm).html"
 	}
 
+	$htmlhead = "<html><head><meta http-equiv='Content-Language' content='da'><title>" + $Script:Title + "</title></head><body>"
+	Out-File -FilePath $Script:HTMLFileName -Force -InputObject $HTMLHead 4>$Null
+}
+
+Function SaveandCloseTextDocument
+{
 	Write-Verbose "$(Get-Date -Format G): Saving Text file"
 	Line 0 ""
 	Line 0 "Report Complete"
-	Write-Output $global:Output.ToString() | Out-File $Script:FileName1 4>$Null
+	Write-Output $global:Output.ToString() | Out-File $Script:TextFileName 4>$Null
 }
 
 Function SaveandCloseHTMLDocument
@@ -4283,70 +4126,28 @@ Function SaveandCloseHTMLDocument
 	Write-Verbose "$(Get-Date -Format G): Saving HTML file"
 	WriteHTMLLine 0 0 ""
 	WriteHTMLLine 0 0 "Report Complete"
-	Out-File -FilePath $Script:FileName1 -Append -InputObject "<p></p></body></html>" 4>$Null
+	Out-File -FilePath $Script:HTMLFileName -Append -InputObject "<p></p></body></html>" 4>$Null
 }
 
-Function SetFileName1andFileName2
+Function SetFileNames
 {
 	Param([string]$OutputFileName)
 	
-	If($Folder -eq "")
-	{
-		$Script:pwdpath = $pwd.Path
-	}
-	Else
-	{
-		$Script:pwdpath = $Folder
-	}
-
-	If($Script:pwdpath.EndsWith("\"))
-	{
-		#remove the trailing \
-		$Script:pwdpath = $Script:pwdpath.SubString(0, ($Script:pwdpath.Length - 1))
-	}
-
-	#set $filename1 and $filename2 with no file extension
-	If($AddDateTime)
-	{
-		[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName)"
-		If($PDF)
-		{
-			[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName)"
-		}
-	}
-
 	If($MSWord -or $PDF)
 	{
 		CheckWordPreReq
-
-		If(!$AddDateTime)
-		{
-			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).docx"
-			If($PDF)
-			{
-				[string]$Script:FileName2 = "$($Script:pwdpath)\$($OutputFileName).pdf"
-			}
-		}
-
+		
 		SetupWord
 	}
-	ElseIf($Text)
+	If($Text)
 	{
-		If(!$AddDateTime)
-		{
-			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).txt"
-		}
-		ShowScriptOptions
+		SetupText
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
-		If(!$AddDateTime)
-		{
-			[string]$Script:FileName1 = "$($Script:pwdpath)\$($OutputFileName).html"
-		}
 		SetupHTML
-		ShowScriptOptions
 	}
+	ShowScriptOptions
 }
 
 Function OutputReportFooter
@@ -4419,56 +4220,87 @@ Function ProcessDocumentOutput
 	{
 		SaveandCloseDocumentandShutdownWord
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		SaveandCloseTextDocument
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		SaveandCloseHTMLDocument
 	}
 
 	$GotFile = $False
 
-	If($PDF)
+	If($MSWord)
 	{
-		If(Test-Path "$($Script:FileName2)")
+		If(Test-Path "$($Script:WordFileName)")
 		{
-			Write-Verbose "$(Get-Date -Format G): $($Script:FileName2) is ready for use"
+			Write-Verbose "$(Get-Date -Format G): $($Script:WordFileName) is ready for use"
 			$GotFile = $True
 		}
 		Else
 		{
-			Write-Warning "$(Get-Date): Unable to save the output file, $($Script:FileName2)"
-			Write-Error "Unable to save the output file, $($Script:FileName2)"
+			Write-Error "Unable to save the output file, $($Script:WordFileName)"
 		}
 	}
-	Else
+	If($PDF)
 	{
-		If(Test-Path "$($Script:FileName1)")
+		If(Test-Path "$($Script:PDFFileName)")
 		{
-			Write-Verbose "$(Get-Date -Format G): $($Script:FileName1) is ready for use"
+			Write-Verbose "$(Get-Date -Format G): $($Script:PDFFileName) is ready for use"
 			$GotFile = $True
 		}
 		Else
 		{
-			Write-Warning "$(Get-Date): Unable to save the output file, $($Script:FileName1)"
-			Write-Error "Unable to save the output file, $($Script:FileName1)"
+			Write-Error "Unable to save the output file, $($Script:PDFFileName)"
+		}
+	}
+	If($Text)
+	{
+		If(Test-Path "$($Script:TextFileName)")
+		{
+			Write-Verbose "$(Get-Date -Format G): $($Script:TextFileName) is ready for use"
+			$GotFile = $True
+		}
+		Else
+		{
+			Write-Error "Unable to save the output file, $($Script:TextFileName)"
+		}
+	}
+	If($HTML)
+	{
+		If(Test-Path "$($Script:HTMLFileName)")
+		{
+			Write-Verbose "$(Get-Date -Format G): $($Script:HTMLFileName) is ready for use"
+			$GotFile = $True
+		}
+		Else
+		{
+			Write-Error "Unable to save the output file, $($Script:HTMLFileName)"
 		}
 	}
 	
 	#email output file if requested
 	If($GotFile -and ![System.String]::IsNullOrEmpty( $SmtpServer ))
 	{
+		$emailattachments = @()
+		If($MSWord)
+		{
+			$emailAttachments += $Script:WordFileName
+		}
 		If($PDF)
 		{
-			$emailAttachment = $Script:FileName2
+			$emailAttachments += $Script:PDFFileName
 		}
-		Else
+		If($Text)
 		{
-			$emailAttachment = $Script:FileName1
+			$emailAttachments += $Script:TextFileName
 		}
-		SendEmail $emailAttachment
+		If($HTML)
+		{
+			$emailAttachments += $Script:HTMLFileName
+		}
+		SendEmail $emailAttachments
 	}
 }
 #endregion
@@ -4508,7 +4340,7 @@ Function ProcessSummary
 		$Table = $Null
 		WriteWordLine 0 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 "vCenter Summary"
 		$rowData = @()
@@ -4522,7 +4354,7 @@ Function ProcessSummary
 		FormatHTMLTable "" -columnArray $columnHeaders
 		WriteHTMLLine 0 1 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "vCenter Summary"
 		Line 1 "Legend: "
@@ -4580,7 +4412,7 @@ Function ProcessSummary
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowData = @()
         $columnHeaders = @(
@@ -4606,7 +4438,7 @@ Function ProcessSummary
         FormatHTMLTable "Cluster Summary" -rowArray $rowData -columnArray $columnHeaders
         WriteHTMLLine 0 1 ""
     }
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Cluster Summary"
         Line 1 "Cluster Name               Host Count  HA Enabled  DRS Enabled  DRS Automation Level  VM Count"
@@ -4661,14 +4493,14 @@ Function ProcessSummary
 	        }
 
             ## Build VMHost heatmap
-            Switch([decimal]($WordTableRowHash.CPUPercent -replace '%' -replace ',','.'))	# fix in 1.9 to handle EMA number formats. Thanks to Guy Leech
+            Switch([decimal]($WordTableRowHash.CPUPercent -replace '%' -replace ',','.'))
             {
                 {$_ -lt 70}					{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(7405514); Break}
                 {$_ -ge 70 -and $_ -lt 80}	{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(9434879); Break}
                 {$_ -ge 80 -and $_ -lt 90}	{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(42495); Break}
                 {$_ -ge 90 -and $_ -le 100}	{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(238); Break}
             }
-            Switch([decimal]($WordTableRowHash.MemoryPercent -replace '%' -replace ',','.'))	# fix in 1.9 to handle EMA number formats. Thanks to Guy Leech
+            Switch([decimal]($WordTableRowHash.MemoryPercent -replace '%' -replace ',','.'))
             {
                 {$_ -lt 70}					{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(6); $heatMap.Color += @(7405514); Break}
                 {$_ -ge 70 -and $_ -lt 80}	{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(6); $heatMap.Color += @(9434879); Break}
@@ -4706,7 +4538,7 @@ Function ProcessSummary
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowData = @()
         $columnHeaders = @(
@@ -4746,7 +4578,7 @@ Function ProcessSummary
         FormatHTMLTable "Host Summary" -rowArray $rowData -columnArray $columnHeaders
         WriteHTMLLine 0 1 ""
     }
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Host Summary"
 		Line 1 "Host Name                       Connection State  ESX Version  Parent Cluster       CPU Used %   Memory Used %  VM Count"
@@ -4802,7 +4634,7 @@ Function ProcessSummary
 			}
 
 			## Build Datastore summary heatmap
-			Switch([decimal]($WordTableRowHash.DSFreePerc -replace '%' -replace ',','.'))	# fix in 1.9 to handle EMA number formats. Thanks to Guy Leech
+			Switch([decimal]($WordTableRowHash.DSFreePerc -replace '%' -replace ',','.'))
 			{
 				{$_ -lt 70}					{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(7405514); Break}
 				{$_ -ge 70 -and $_ -lt 80}	{$heatMap.Row += @($CurrentServiceIndex); $heatMap.Column += @(5); $heatMap.Color += @(9434879); Break}
@@ -4839,7 +4671,7 @@ Function ProcessSummary
 			WriteWordLine 0 0 ""
 		}
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		$rowData = @()
 		$columnHeaders = @(
@@ -4864,7 +4696,7 @@ Function ProcessSummary
 
 		FormatHTMLTable "Datastore Summary" -rowArray $rowData -columnArray $columnHeaders
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Datastore Summary"
 		Line 1 "Datastore Name                  Type   Total Capacity  Free Space      Percent Used"
@@ -4896,11 +4728,11 @@ Function ProcessvCenter
         $Selection.InsertNewPage()
 		WriteWordLine 1 0 "vCenter Server"
 	}
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 1 0 "vCenter Server"
     }
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "vCenter Server"
 	} 
@@ -4984,7 +4816,7 @@ Function ProcessvCenter
 		$Table = $Null
 		WriteWordLine 0 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $colWidths = @("150px","200px")
@@ -5012,7 +4844,7 @@ Function ProcessvCenter
         FormatHTMLTable "General Settings" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 1 ""
     }
-    ElseIf($Text)
+    If($Text)
     {
 		Line 0 "Global Settings" 
 		Line 1 ""
@@ -5090,7 +4922,7 @@ Function ProcessvCenter
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($Text)
+    If($Text)
     {
         Line 0 "Historical Statistics" 
         Line 1 ""
@@ -5116,7 +4948,7 @@ Function ProcessvCenter
         }
         Line 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $columnHeaders = @(
@@ -5147,7 +4979,6 @@ Function ProcessvCenter
     }
 
     ## vCenter Licensing
-    #$vSphereLicInfo = @() commented out in 1.9
     Write-Verbose "$(Get-Date -Format G): `tOutput vCenter Licensing"
     If($MSWord -or $PDF)
     {
@@ -5194,7 +5025,7 @@ Function ProcessvCenter
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($Text)
+    If($Text)
     {
         Line 0 "Licensing" 
         Line 1 ""
@@ -5216,7 +5047,7 @@ Function ProcessvCenter
         }
         Line 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $columnHeaders = @(
@@ -5284,9 +5115,8 @@ Function ProcessvCenter
 			WriteWordLine 0 0 ""  
 		}
     }
-    ElseIf($Text)
+    If($Text)
     {
-		#text output added in 1.90
         Line 0 "vCenter Permissions"
 		Line 1 "Entity                Principal                                                             Role                          "
 		Line 1 "=========================================================================================================================="
@@ -5302,7 +5132,7 @@ Function ProcessvCenter
         }
 		Line 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowData = @()
         $columnHeaders = @(
@@ -5341,9 +5171,8 @@ Function ProcessvCenter
             }
         }
     }
-    ElseIf($Text)
+    If($Text)
     {
-		#text output added in 1.9
         Line 0 "Active non-Standard vCenter Roles"
         ForEach($role in ($VIPerms | Select-Object Role -Unique))
         {
@@ -5358,7 +5187,7 @@ Function ProcessvCenter
             }
         }
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 1 0 "Active non-Standard vCenter Roles"
         ForEach($role in ($VIPerms | Select-Object Role -Unique))
@@ -5376,7 +5205,6 @@ Function ProcessvCenter
     }
 
     ## vCenter Plugins
-    #$vSpherePlugins = @() commented out in 1.9
     Write-Verbose "$(Get-Date -Format G): `tOutput vCenter Plugins"
     If($MSWord -or $PDF)
     {
@@ -5417,9 +5245,8 @@ Function ProcessvCenter
 			WriteWordLine 0 0 ""   
 		}		
     }
-    ElseIf($Text)
+    If($Text)
     {
-		#fixed text alignment in 1.9
         Line 0 "Plugins"
         Line 1 "Plugin                                          Description                                                                                         "
 		Line 1 "===================================================================================================================================================="
@@ -5434,7 +5261,7 @@ Function ProcessvCenter
         }
 		Line 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $columnHeaders = @(
@@ -5463,11 +5290,11 @@ Function ProcessVMHosts
         $Selection.InsertNewPage()
 		WriteWordLine 1 0 "Hosts"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Hosts"
 	}
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 1 0 "Hosts"
     }    
@@ -5492,11 +5319,11 @@ Function ProcessVMHosts
 		{
 			WriteWordLine 0 1 "There are no ESX Hosts"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no ESX Hosts"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
             WriteHTMLLine 0 1 "There are no ESX Hosts"
 		}
@@ -5508,11 +5335,11 @@ Function ProcessVMHosts
 		{
 			WriteWordLine 0 1 "Unable to retrieve ESX Hosts"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve ESX Hosts"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
             WriteHTMLLine 0 1 "Unable to retrieve ESX Hosts"
 		}
@@ -5730,35 +5557,131 @@ Function OutputVMHosts
 			$PSDefaultParameterValues = @{"*:Verbose"=$False}
 			$StatTypes = @(Get-StatType -Entity $VMHost.Name)
 			
+			#Information taken from https://communities.vmware.com/t5/Storage-Performance/vCenter-Performance-Counters/ta-p/2790328
 			If($StatTypes.Contains("cpu.usage.average"))
 			{
+				#The CPU utilization.  This value is reported with 100% representing all processor cores on the system. As an example, a 2-way VM using 50% of a four-core system is completely using two cores.
 				$VMHostCPU = Get-Stat -Entity $VMHost.Name -Stat cpu.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
-				AddStatsChart -StatData $VMHostCPU -Title "$($VMHost.Name) CPU" -Width 275 -Length 200 -Type "Line"
+				#AddStatsChart -StatData $VMHostCPU -Title "$($VMHost.Name) CPU" -Width 275 -Length 200 -Type "Line"
+				AddStatsChart -StatData $VMHostCPU -Title "$($VMHost.Name) CPU Usage Average" -Width 700 -Length 500 -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The CPU utilization.  This value is reported with 100% representing all  processor cores on the system."
+				WriteWordLine 0 0 "As an example, a 2-way VM using 50% of a  four-core system is completely using two cores."
+				WriteWordLine 0 0 "Rated in Percent"
+				WriteWordLine 0 0 ""
 			}
 			
-			If($StatTypes.Contains("mem.granted.average") -and $StatTypes.Contains("mem.active.average") -and $StatTypes.Contains("mem.vmmemctl.average"))
+			If($StatTypes.Contains("mem.granted.average"))
 			{
+				#The amount of memory that was granted to the VM by the host. Memory is not granted to the host until it is touched one time and granted memory may be swapped out or ballooned away if the VMkernel needs the memory.
 				$VMHostGrant = Get-Stat -Entity $VMHost.Name -Stat mem.granted.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
+				#AddStatsChart -StatData $VMHostGrant -StatData2 $VMHostActive -StatData3 $VMHostBalloon -Title "$($VMHost.Name) Memory" -Width 325 -Length 200 -Data1Label "Granted" -Data2Label "Active" -Data3Label "Balloon" -Legend -Type "Line"
+				AddStatsChart -StatData $VMHostGrant -Title "$($VMHost.Name) Granted Memory Average" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The amount of memory that was granted to the VM by the host."
+				WriteWordLine 0 0 "Memory is  not granted to the host until it is touched one time and granted memory."
+				WriteWordLine 0 0 "May be swapped out or ballooned away if the VMkernel needs the memory."
+				WriteWordLIne 0 0 "Rated in kiloBytes"
+				WriteWordLine 0 0 ""
+			}
+
+			If($StatTypes.Contains("mem.active.average"))
+			{
+				#The amount of memory used by the VM in the past small window of time.   This is the "true" number of how much memory the VM currently has need of.  Additional, unused memory may be swapped out or ballooned with no impact to the guest's performance.
 				$VMHostActive = Get-Stat -Entity $VMHost.Name -Stat mem.active.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
+				#AddStatsChart -StatData $VMHostGrant -StatData2 $VMHostActive -StatData3 $VMHostBalloon -Title "$($VMHost.Name) Memory" -Width 325 -Length 200 -Data1Label "Granted" -Data2Label "Active" -Data3Label "Balloon" -Legend -Type "Line"
+				AddStatsChart -StatData $VMHostActive -Title "$($VMHost.Name) Active Memory Average" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The amount of memory used by the VM in the past small window of time."
+				WriteWordLine 0 0 "This is the 'true' number of how much memory the VM currently has need of"
+				WriteWordLine 0 0 "Additional, unused memory may be swapped out or ballooned with no  impact to the guest's performance"
+				WriteWordLine 0 0 "Rated in kiloBytes"
+				WriteWordLine 0 0 ""
+			}
+
+			If($StatTypes.Contains("mem.vmmemctl.average"))
+			{
+				#The amount of memory currently claimed by the balloon driver. This is
+				#not a performance problem, per se, but represents the host starting to
+				#take memory from less needful VMs for those with large amounts of
+				#active memory. But if the host is ballooning, check swap rates (swapin
+				#and swapout) which would be indicative of performance problems.
 				$VMHostBalloon = Get-Stat -Entity $VMHost.Name -Stat mem.vmmemctl.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
-				AddStatsChart -StatData $VMHostGrant -StatData2 $VMHostActive -StatData3 $VMHostBalloon -Title "$($VMHost.Name) Memory" -Width 325 -Length 200 -Data1Label "Granted" -Data2Label "Active" -Data3Label "Balloon" -Legend -Type "Line"
+				#AddStatsChart -StatData $VMHostGrant -StatData2 $VMHostActive -StatData3 $VMHostBalloon -Title "$($VMHost.Name) Memory" -Width 325 -Length 200 -Data1Label "Granted" -Data2Label "Active" -Data3Label "Balloon" -Legend -Type "Line"
+				AddStatsChart -StatData $VMHostBalloon -Title "$($VMHost.Name) Balloon Memory Driver" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The amount of memory currently claimed by the balloon driver. This is"
+				WriteWordLine 0 0 "not a performance problem, per se, but represents the host starting to"
+				WriteWordLine 0 0 "take memory from less needful VMs for those with large amounts of"
+				WriteWordLine 0 0 "active memory. But if the host is ballooning, check swap rates (swapin"
+				WriteWordLine 0 0 "and swapout) which would be indicative of performance problems."
+				WriteWordLine 0 0 "Rated in kiloBytes"
 			}
             WriteWordLine 0 0 ""
 
             # Disk IO chart here...Get-Stats for NFS datastores may not be possible?
-
-			If($StatTypes.Contains("net.received.average") -and $StatTypes.Contains("net.transmitted.average"))
+			If($StatTypes.Contains("disk.usage.average"))
 			{
+				#Average disk throughput over the sample period.
+				$VMDiskUsageAvg = Get-Stat -Entity $VMHost.Name -Stat disk.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
+				AddStatsChart -StatData $VMDiskUsageAvg -Title "$($VMHost.Name) Disk Usage Average" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "Average disk throughput over the sample period."
+				WriteWordLine 0 0 "Rated in kiloBytesPerSecond"           
+				WriteWordLine 0 0 ""
+			}
+
+			If($StatTypes.Contains("disk.maxTotalLatency.latest"))
+			{
+				#The highest reported total latency (device and kernel times) in the sample window.
+				$VMDiskUsageAvg = Get-Stat -Entity $VMHost.Name -Stat disk.maxTotalLatency.latest -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
+				AddStatsChart -StatData $VMDiskUsageAvg -Title "$($VMHost.Name) Disk Usage Average" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The highest reported total latency (device and kernel times) in the sample window."
+				WriteWordLine 0 0 "Rated in milliseconds"           
+			}
+			WriteWordLine 0 0 ""
+
+			If($StatTypes.Contains("net.received.average"))
+			{
+				#Average network throughput for received traffic.
 				$VMHostNetRec = Get-Stat -Entity $VMHost.Name -Stat "net.received.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
+				#AddStatsChart -StatData $VMHostNetRec -StatData2 $VMHostNetTrans -Title "$($VMHost.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
+				AddStatsChart -StatData $VMHostNetRec -Title "$($VMHost.Name) Net Received Average" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""           
+				WriteWordLine 0 0 "Average network throughput for received traffic."           
+				WriteWordLine 0 0 "Rated in kiloBytesPerSecond"           
+				WriteWordLine 0 0 ""           
+			}
+
+			If($StatTypes.Contains("net.transmitted.average"))
+			{
+				#Average network throughput for transmitted traffic.
 				$VMHostNetTrans = Get-Stat -Entity $VMHost.Name -Stat "net.transmitted.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
-				AddStatsChart -StatData $VMHostNetRec -StatData2 $VMHostNetTrans -Title "$($VMHost.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
+				#AddStatsChart -StatData $VMHostNetRec -StatData2 $VMHostNetTrans -Title "$($VMHost.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
+				AddStatsChart -StatData $VMHostNetTrans -Title "$($VMHost.Name) Net Transmitted Average" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""           
+				WriteWordLine 0 0 "Average network throughput for transmitted traffic."           
+				WriteWordLine 0 0 "Rated in kiloBytesPerSecond"           
+				WriteWordLine 0 0 ""           
 			}
             
-			$PSDefaultParameterValues = @{"*:Verbose"=$True}
+			If($StatTypes.Contains("net.usage.average"))
+			{
+				#Network Usage (Average)
+				$VMHostNetAverage = Get-Stat -Entity $VMHost.Name -Stat "net.usage.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
+				#AddStatsChart -StatData $VMHostNetRec -StatData2 $VMHostNetTrans -Title "$($VMHost.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
+				AddStatsChart -StatData $VMHostNetAverage -Title "$($VMHost.Name) Net Average Usage" -Width 700 -Length 500 -Legend -Type "Line"
+				WriteWordLine 0 0 ""           
+				WriteWordLine 0 0 "Network Usage (Average)"           
+				WriteWordLine 0 0 "Rated in kiloBytesPerSecond"           
+			}
 			WriteWordLine 0 0 ""           
+            
+			$PSDefaultParameterValues = @{"*:Verbose"=$True}
         }
     }
-    ElseIf($Text)
+    If($Text)
     {
         Line 0 "Host: $($VMHost.Name)"
         Line 0 ""
@@ -5828,7 +5751,7 @@ Function OutputVMHosts
             Line 0 ""
         }
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowData = @()
         $colWidths = @("150px","200px")
@@ -5913,11 +5836,11 @@ Function ProcessClusters
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "Clusters"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Clusters"
 	}
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 1 0 "Clusters"
     }
@@ -5936,11 +5859,11 @@ Function ProcessClusters
 		{
 			WriteWordLine 0 1 "There are no VMware Clusters"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no VMware Clusters"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
            WriteHTMLLine 0 1 "There are no VMware Clusters"
 		}
@@ -5952,11 +5875,11 @@ Function ProcessClusters
 		{
 			WriteWordLine 0 1 "Unable to retrieve VMware Clusters"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve VMware Clusters"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
             WriteHTMLLine 0 1 "Unable to retrieve VMware Clusters"
 		}
@@ -6114,21 +6037,33 @@ Function OutputClusters
 
 			If($StatTypes.Contains("cpu.usagemhz.average"))
 			{
+				#The CPU utilization. The maximum possible value here is the frequency of the processors times the number of cores. 
+				#As an example, a VM using 4000 MHz on a system with four 2 GHz processors is using 50% of the CPU (4000 / (4 * 2000) = 0.5)
 				$ClusterCpuAvg = Get-Stat -Entity $VMCluster.Name -Stat cpu.usagemhz.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
-				AddStatsChart -StatData $ClusterCpuAvg -Type "Line" -Title "$($VMCluster.Name) CPU Percent" -Width 305 -Length 200
+				AddStatsChart -StatData $ClusterCpuAvg -Type "Line" -Title "$($VMCluster.Name) CPU Percent" -Width 700 -Length 500
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The CPU utilization. The maximum possible value here is the frequency of the processors times the number of cores."
+				WriteWordLine 0 0 "As an example, a VM using 4000 MHz on a system with four 2 GHz processors is using 50% of the CPU (4000 / (4 * 2000) = 0.5)"
+				WriteWordLine 0 0 "Rated in megaHertz"
+				WriteWordLine 0 0 ""
 			}
 
 			If($StatTypes.Contains("mem.usage.average"))
 			{
+				#The percentage of memory used as a percent of all available machine memory. Available for host and VM.
 				$ClusterMemAvg = Get-Stat -Entity $VMCluster.Name -Stat mem.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
-				AddStatsChart -StatData $ClusterMemAvg -Type "Line" -Title "$($VMCluster.Name) Memory Percent" -Width 305 -Length 200
+				AddStatsChart -StatData $ClusterMemAvg -Type "Line" -Title "$($VMCluster.Name) Memory Percent" -Width 700 -Length 500
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The percentage of memory used as a percent of all available machine memory."
+				WriteWordLine 0 0 "Available for host and VM."
+				WriteWordLine 0 0 "Rated in percent"
 			}
 			$PSDefaultParameterValues = @{"*:Verbose"=$True}
 
             WriteWordLine 0 0 ""
         }
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $colWidths = @("150px","200px")
@@ -6227,7 +6162,7 @@ Function OutputClusters
             WriteHTMLLine 0 1 ""
         }
     }
-    ElseIf($Text)
+    If($Text)
     {
         Line 0 "Cluster: $($VMCluster.Name)"
         Line 1 "HA Enabled`t`t`t: " $VMCluster.HAEnabled
@@ -6332,11 +6267,11 @@ Function ProcessResourcePools
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "Resource Pools"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Resource Pools"
 	}
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 1 0 "Resource Pools"
     }
@@ -6355,11 +6290,11 @@ Function ProcessResourcePools
 		{
 			WriteWordLine 0 1 "There are no Resource Pools"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no Resource Pools"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
             WriteHTMLLine 0 1 "There are no Resource Pools"
 		}
@@ -6371,11 +6306,11 @@ Function ProcessResourcePools
 		{
 			WriteWordLine 0 1 "Unable to retrieve Resource Pools"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve Resource Pools"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
             WriteHTMLLine 0 1 "Unable to retrieve Resource Pools"
 		}
@@ -6387,7 +6322,7 @@ Function OutputResourcePools
     Param([object] $ResourcePool)
     Write-Verbose "$(Get-Date -Format G): `tOutput VMware Resource Pool $($ResourcePool.Name)"
 
-    If($Script:Clusters.Name -contains $ResourcePool.Parent)
+    If((validObject $Script:Clusters Name) -and $Script:Clusters.Name -contains $ResourcePool.Parent)
     {
         $xResourceParent = "$($ResourcePool.Parent) (Cluster Root)"
     }
@@ -6500,7 +6435,7 @@ Function OutputResourcePools
             }
         }
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $colWidths = @("150px","200px")
@@ -6528,7 +6463,7 @@ Function OutputResourcePools
         }
 		WriteHTMLLine 0 0 ""
     }
-    ElseIf($Text)
+    If($Text)
     {
         Line 0 "Resource Pool: $($ResourcePool.Name)"
         Line 0 ""
@@ -6568,11 +6503,11 @@ Function ProcessVMKPorts
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "VMKernel Ports"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "VMKernel Ports"
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		#WriteHTMLLine "VMKernel Ports"
 	}
@@ -6584,11 +6519,11 @@ Function ProcessVMKPorts
 		{
 			WriteWordLine 2 0 "VMKernel Ports on: $($VMHost.Name)"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 0 "VMKernel Ports on: $($VMHost.Name)"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 2 0 "VMKernel Ports on: $($VMHost.Name)"
 		}
@@ -6609,11 +6544,11 @@ Function ProcessVMKPorts
 			{
 				WriteWordLine 0 1 "There are no VMKernel ports"
 			}
-			ElseIf($Text)
+			If($Text)
 			{
 				Line 1 "There are no VMKernel ports"
 			}
-			ElseIf($HTML)
+			If($HTML)
 			{
 				WriteHTMLLine 0 1 "There are no VMKernel ports"
 			}
@@ -6628,11 +6563,11 @@ Function ProcessVMKPorts
 			{
 				WriteWordLine 0 1 "Unable to retrieve VMKernel ports"
 			}
-			ElseIf($Text)
+			If($Text)
 			{
 				Line 1 "Unable to retrieve VMKernel ports"
 			}
-			ElseIf($HTML)
+			If($HTML)
 			{
 				WriteHTMLLine 0 1 "Unable to retrieve VMKernel ports"
 			}
@@ -6744,7 +6679,7 @@ Function OutputVMKPorts
 		$Table = $Null
 		WriteWordLine 0 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $colWidths = @("150px","200px")
@@ -6776,7 +6711,7 @@ Function OutputVMKPorts
         FormatHTMLTable "" -noHeadCols 2 -rowArray $rowdata -fixedWidth $colWidths -tablewidth "350"
         WriteHTMLLine 0 0 ""
     }
-    ElseIf($Text)
+    If($Text)
     {
         Line 1 "Port Name`t`t: " $VMK.PortGroupName
         Line 1 "Port ID`t`t`t: " $VMK.DeviceName
@@ -6814,11 +6749,11 @@ Function ProcessHostNetworking
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "Host Network Adapters"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Host Network Adapters"
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		#WriteHTMLLine 1 0 "Host Network Adapters"
 	}
@@ -6851,11 +6786,11 @@ Function ProcessHostNetworking
 		{
 			WriteWordLine 0 1 "There are no Host Network Adapters"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no Host Network Adapters"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "There are no Host Network Adapters"
 		}
@@ -6870,11 +6805,11 @@ Function ProcessHostNetworking
 		{
 			WriteWordLine 0 1 "Unable to retrieve Host Network Adapters"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve Host Network Adapters"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "Unable to retrieve Host Network Adapters"
 		}
@@ -6949,7 +6884,7 @@ Function OutputHostNetworking
 			WriteWordLine 0 0 ""
 		}
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 1 "Host                            Device Name           Port Speed  MAC Address        Duplex     "
 		Line 1 "================================================================================================"
@@ -6988,7 +6923,7 @@ Function OutputHostNetworking
 		}
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		$rowdata = @()
 		ForEach($xHostNic in $HostNic)
@@ -7047,11 +6982,11 @@ Function ProcessVMPortGroups
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "Virtual Machine Port Groups"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Virtual Machine Port Groups"
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 "Virtual Machine Port Groups"
 	}
@@ -7070,11 +7005,11 @@ Function ProcessVMPortGroups
 		{
 			WriteWordLine 0 1 "There are no VM Port Groups"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no VM Port Groups"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "There are no VM Port Groups"
 		}
@@ -7089,11 +7024,11 @@ Function ProcessVMPortGroups
 		{
 			WriteWordLine 0 1 "Unable to retrieve VM Port Groups"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve VM Port Groups"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "Unable to retrieve VM Port Groups"
 		}
@@ -7263,7 +7198,7 @@ Function OutputVMPortGroups
 				}
 			}
         }
-        ElseIf($Text)
+        If($Text)
         {
             Line 1 "VM Port Group`t: $($VMPortGroup.Name)"
             Line 1 "Parent vSwitch`t: " $VMPortGroup.VirtualSwitch
@@ -7280,7 +7215,7 @@ Function OutputVMPortGroups
             }
             Line 0 ""
         }
-        ElseIf($HTML)
+        If($HTML)
         {
             $rowData = @()
             $colWidths = @("150px","200px")
@@ -7317,12 +7252,12 @@ Function ProcessStandardVSwitch
             WriteWordLine 1 0 "DV Switching"
             OutputDVSwitching $DvSwitches
         }
-        ElseIf($Text)
+        If($Text)
         {
             Line 0 "DV Switching"
             OutputDVSwitching $DvSwitches
         }
-        ElseIf($HTML)
+        If($HTML)
         {
             WriteHTMLLine 1 0 "DV Switching"
             OutputDVSwitching $DvSwitches
@@ -7335,11 +7270,11 @@ Function ProcessStandardVSwitch
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "Standard vSwitching"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Standard vSwitching"
 	}
-    ElseIf($HTML)
+    If($HTML)
     {
         #nothing
     }
@@ -7382,11 +7317,11 @@ Function ProcessStandardVSwitch
 		{
 			WriteWordLine 0 1 "There are no standard VSwitches configured on $($VMHost.Name)"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no standard VSwitches configured on $($VMHost.Name)"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "There are no standard VSwitches configured on $($VMHost.Name)"
 		}
@@ -7401,11 +7336,11 @@ Function ProcessStandardVSwitch
 		{
 			WriteWordLine 0 1 "Unable to retrieve standard VSwitches configured"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve standard VSwitches configured"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "Unable to retrieve standard VSwitches configured"
 		}
@@ -7461,7 +7396,7 @@ Function OutputStandardVSwitch
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($Text)
+    If($Text)
     {
 		Line 1 "Host                            vSwitch Name          Total Ports  Ports Available  vSwitch MTU  Physical Host Adapters"
 		Line 1 "======================================================================================================================="
@@ -7481,7 +7416,7 @@ Function OutputStandardVSwitch
         }
         Line 0 ""
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowdata = @()
         $columnHeaders = @(
@@ -7613,7 +7548,7 @@ Function OutputDVSwitching
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         $rowData = @()
         $columnHeaders = @(
@@ -7673,7 +7608,7 @@ Function OutputDVSwitching
         FormatHTMLTable "DV SwitchPorts" -rowArray $rowData -columnArray $columnHeaders
         WriteHTMLLine 0 0 ""
     }
-	ElseIf($Text)
+	If($Text)
 	{
         Line 0 "DV Switches"
 		Line 1 "Switch Name                     Vendor                Switch Version  Uplink Ports  Switch MTU"
@@ -7735,11 +7670,11 @@ Function ProcessDatastores
 		$Selection.InsertNewPage()
 		WriteWordLine 1 0 "VM Datastores"
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "VM Datastores"
 	}
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 1 0 "Datastores"
     }
@@ -7842,7 +7777,7 @@ Function OutputDatastores
 		$Table = $Null
 		WriteWordLine 0 0 "" 
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		$rowData = @()
 		$colWidths = @("150px","200px")
@@ -7881,7 +7816,7 @@ Function OutputDatastores
 		FormatHTMLTable $Datastore.Name -noHeadCols 2 -rowArray $rowData -fixedWidth $colWidths -tablewidth "350"
 		WriteHTMLLine 0 1 ""
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Datastore: $($Datastore.Name)"
 		Line 1 "Name`t`t`t: " $Datastore.Name
@@ -7931,11 +7866,11 @@ Function ProcessVirtualMachines
 		WriteWordLine 1 0 "Virtual Machines"
         $First = $True
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "Virtual Machines"
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		WriteHTMLLine 1 0 "Virtual Machines"
 	}
@@ -7963,11 +7898,11 @@ Function ProcessVirtualMachines
 		{
 			WriteWordLine 0 1 "There are no Virtual Machines"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "There are no Virtual Machines"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "There are no Virtual Machines"
 		}
@@ -7979,11 +7914,11 @@ Function ProcessVirtualMachines
 		{
 			WriteWordLine 0 1 "Unable to retrieve Virtual Machines"
 		}
-		ElseIf($Text)
+		If($Text)
 		{
 			Line 1 "Unable to retrieve Virtual Machines"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 			WriteHTMLLine 0 1 "Unable to retrieve Virtual Machines"
 		}
@@ -8219,33 +8154,59 @@ Function OutputVirtualMachines
 
 			If($StatTypes.Contains("cpu.usage.average"))
 			{
+				#The CPU utilization. This value is reported with 100% representing all processor cores on the system. As an example, a 2-way VM using 50% of a four-core system is completely using two cores.
 				$VMCpuAvg = Get-Stat -Entity $VM.Name -Stat cpu.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
-				AddStatsChart -StatData $VMCpuAvg -Type "Line" -Title "$($VM.Name) CPU Percent" -Width 250 -Length 200
+				AddStatsChart -StatData $VMCpuAvg -Type "Line" -Title "$($VM.Name) CPU Percent" -Width 700 -Length 500
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The CPU utilization. This value is reported with 100% representing all processor cores on the system."
+				WriteWordLine 0 0 "As an example, a 2-way VM using 50% of a four-core system is completely using two cores."
+				WriteWordLine 0 0 "Rated in percent"
+				WriteWordLine 0 0 ""
 			}
 
 			If($StatTypes.Contains("mem.usage.average"))
 			{
+				#The percentage of memory used as a percent of all available machine memory. Available for host and VM.
 				$VMMemAvg = Get-Stat -Entity $VM.Name -Stat mem.usage.average -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30
-				AddStatsChart -StatData $VMMemAvg -Type "Line" -Title "$($VM.Name) Memory Percent" -Width 250 -Length 200
+				AddStatsChart -StatData $VMMemAvg -Type "Line" -Title "$($VM.Name) Memory Percent" -Width 700 -Length 500
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "The percentage of memory used as a percent of all available machine memory."
+				WriteWordLine 0 0 "Available for host and VM."
+				WriteWordLine 0 0 "Rated in percent"
+				WriteWordLine 0 0 ""
 			}
 
-			If($StatTypes.Contains("virtualDisk.write.average") -and $StatTypes.Contains("virtualDisk.write.average"))
+			If($StatTypes.Contains("virtualDisk.write.average") -and $StatTypes.Contains("virtualDisk.read.average"))
 			{
+				#Rate of writing data from the virtual disk.
+				#Rate of reading data from the virtual disk.
 				$VMdiskWrite = Get-Stat -Entity $VM.Name -Stat "virtualDisk.write.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
-				$VMdiskread = Get-Stat -Entity $VM.Name -Stat "virtualDisk.write.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
-				AddStatsChart -StatData $VMdiskWrite -StatData2 $VMdiskread -Title "$($VM.Name) Disk IO" -Width 300 -Length 200 -Data1Label "Write IO" -Data2Label "Read IO" -Legend -Type "Line"
+				$VMdiskread = Get-Stat -Entity $VM.Name -Stat "virtualDisk.read.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
+				AddStatsChart -StatData $VMdiskWrite -StatData2 $VMdiskread -Title "$($VM.Name) Disk IO" -Width 700 -Length 500 -Data1Label "Write IO" -Data2Label "Read IO" -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "Rate of writing data from the virtual disk."
+				WriteWordLine 0 0 "Rate of reading data from the virtual disk."
+				WriteWordLine 0 0 "Both are rated in kiloBytesPerSecond"
+				WriteWordLine 0 0 ""
 			}
 
 			If($StatTypes.Contains("net.received.average") -and $StatTypes.Contains("net.transmitted.average"))
 			{
+				#Average network throughput for received traffic.
+				#Average network throughput for transmitted traffic.
 				$VMNetRec = Get-Stat -Entity $VM.Name -Stat "net.received.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
 				$VMNetTrans = Get-Stat -Entity $VM.Name -Stat "net.transmitted.average" -Start (Get-Date).AddDays(-7) -Finish (Get-Date) -IntervalMins 30 | Where-Object{$_.Instance -like ""}
-				AddStatsChart -StatData $VMNetRec -StatData2 $VMNetTrans -Title "$($VM.Name) Net IO" -Width 300 -Length 200 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
+				AddStatsChart -StatData $VMNetRec -StatData2 $VMNetTrans -Title "$($VM.Name) Net IO" -Width 700 -Length 500 -Data1Label "Recv" -Data2Label "Trans" -Legend -Type "Line"
+				WriteWordLine 0 0 ""
+				WriteWordLine 0 0 "Average network throughput for received traffic."
+				WriteWordLine 0 0 "Average network throughput for transmitted traffic."
+				WriteWordLine 0 0 "Both are rated in kiloBytesPerSecond"
+				WriteWordLine 0 0 ""
 			}
 			$PSDefaultParameterValues = @{"*:Verbose"=$True}
 		} 
 	}
-	ElseIf($Text)
+	If($Text)
 	{
 		Line 0 "VM: $($VM.Name)"
 		Line 1 "Name`t`t`t: " $VM.Name
@@ -8378,7 +8339,7 @@ Function OutputVirtualMachines
 		}
 		Line 0 ""
 	}
-	ElseIf($HTML)
+	If($HTML)
 	{
 		$rowdata = @()
 		$rowdata += @(,("Name",($htmlsilver -bor $htmlbold),$VM.Name,$htmlwhite))
@@ -8538,11 +8499,11 @@ Function ProcessSnapIssues
 		    $Selection.InsertNewPage()
 		    WriteWordLine 1 0 "Virtual Machines with Snapshots"
 	    }
-	    ElseIf($Text)
+	    If($Text)
 		{
 			Line 0 "Virtual Machines with Snapshots"
 		}
-        ElseIf($HTML)
+        If($HTML)
 	    {
 		    WriteHTMLLine 1 0 "Virtual Machines with Snapshots"
 	    }
@@ -8593,8 +8554,8 @@ Function OutputSnapIssues
 
 			WriteWordLine 0 0 ""
 		}
-   }
-    ElseIf($HTML)
+	}
+    If($HTML)
     {
         $rowdata = @()
         $columnHeaders = @(
@@ -8622,7 +8583,7 @@ Function OutputSnapIssues
 
         FormatHTMLTable "" -rowArray $rowdata -columnArray $columnHeaders
     }
-    ElseIf($Text)
+    If($Text)
     {
         ForEach($Snap in $VMSnaps)
         {
@@ -8669,11 +8630,11 @@ Function ProcessOpticalIssues
 		    $Selection.InsertNewPage()
 		    WriteWordLine 1 0 "Virtual Machines with CDROM drives mounted"
 	    }
-	    ElseIf($Text)
+	    If($Text)
 		{
 			Line 0 "Virtual Machines with CDROM drives mounted"
 		}
-		ElseIf($HTML)
+		If($HTML)
 		{
 		    WriteHTMLLine 1 0 "Virtual Machines with CDROM drives mounted"
 		}
@@ -8724,7 +8685,7 @@ Function OutputOpticalIssues
 			WriteWordLine 0 0 ""
 		}
     }
-    ElseIf($HTML)
+    If($HTML)
     {
         WriteHTMLLine 0 0 ""
         $rowdata = @()
@@ -8749,7 +8710,7 @@ Function OutputOpticalIssues
 
         FormatHTMLTable "" -rowArray $rowdata -columnArray $columnHeaders
     }
-    ElseIf($Text)
+    If($Text)
     {
 		ForEach($CDDrive in $CDDrives)
 		{
@@ -8803,7 +8764,7 @@ Function ProcessScriptEnd
 
 	If($ScriptInfo)
 	{
-		$SIFile = "$Script:pwdpath\VMwareInventoryScriptInfo_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
+		$SIFile = "$Script:pwdpath\VMwareInventoryScriptV2Info_$(Get-Date -f yyyy-MM-dd_HHmm).txt"
 		Out-File -FilePath $SIFile -InputObject "" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Add DateTime   : $AddDateTime" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Chart          : $Chart" 4>$Null
@@ -8822,10 +8783,21 @@ Function ProcessScriptEnd
 			Out-File -FilePath $SIFile -Append -InputObject "DevErrorFile   : $Script:DevErrorFile" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "Export         : $Export" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "Filename1      : $Script:FileName1" 4>$Null
+		If($HTML)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "HTMLFilename   : $Script:HTMLFileName" 4>$Null
+		}
+		If($MSWord)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "WordFilename   : $Script:WordFileName" 4>$Null
+		}
 		If($PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "Filename2      : $Script:FileName2" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "PDFFilename    : $Script:PDFFileName" 4>$Null
+		}
+		If($Text)
+		{
+			Out-File -FilePath $SIFile -Append -InputObject "TextFilename   : $Script:TextFileName" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "Folder         : $Folder" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "From           : $From" 4>$Null
@@ -8864,7 +8836,6 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Elapsed time   : $Str" 4>$Null
 	}
 
-	#V1.8 added
 	#stop transcript logging
 	If($Log -eq $True) 
 	{
@@ -9024,8 +8995,8 @@ SetGlobals
 
 If($Export -eq $False)
 {
-	[string]$Script:Title = "VMware Inventory Report - $VIServerName"	#moved in 1.9 so title shows in Function ShowScriptOptions
-	SetFileName1andFileName2 "$($VIServerName)-Inventory"
+	[string]$Script:Title = "VMware Inventory Report V2 - $VIServerName"
+	SetFileNames "$($VIServerName)-Inventory V2"
 
 	If($Issues)
 	{
@@ -9060,8 +9031,8 @@ If($Export -eq $False)
 	#end of document processing
 
 	###Change the two lines below for your script###
-	$AbstractTitle = "VMware Inventory Report"
-	$SubjectTitle = "VMware vCenter Inventory Report"
+	$AbstractTitle = "VMware Inventory Report V2"
+	$SubjectTitle = "VMware vCenter Inventory Report V2"
 
 	UpdateDocumentProperties $AbstractTitle $SubjectTitle
 
