@@ -90,9 +90,10 @@
 	UseSSL
 	UserName
 .PARAMETER Import
-    Runs this script gathering all required data from a previously run Export
-    Export directory must be present in the same directory as the script itself
-    Does not require PowerCLI or a VIServerName to run in Import mode
+    Runs this script gathering all required data from a previously run Export.
+    Export directory must be present in the same directory as the script itself.
+    Requires PowerCLI and a VIServerName to run in -Import -Full mode, otherwise
+	PowerCLI and a VIServerName are not required.
     This parameter overrides all other output formats
 .PARAMETER Dev
 	Clears errors at the beginning of the script.
@@ -525,9 +526,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory_V2.ps1
-	VERSION: 2.00
+	VERSION: 2.01
 	AUTHOR: Jacob Rutski and Carl Webster
-	LASTEDIT: April 21, 2023
+	LASTEDIT: June 24, 2023
 #>
 
 #endregion
@@ -663,6 +664,11 @@ Param(
 #@JRutski on Twitter
 #Created on November 3rd, 2014
 #
+#Version 2.01 24-Jun-2023
+#	Fix bug that kept Virtual Distributed Switches data from being in the report
+#	When using -Import and -Full, handle making sure the vCenter name is given
+#	When using -Import and -Full, handle making sure the vCenter is disconnected when the script completes
+#
 #Version 2.00 21-Apr-2023
 #	Allow multiple output formats. You can now select any combination of HTML, MSWord, PDF, or Text
 #	Changed some Write-Error to Write-Warning and changed some Write-Warning to Write-Host
@@ -766,9 +772,9 @@ Set-StrictMode -Version 2
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
-$script:MyVersion         = '2.00'
+$script:MyVersion         = '2.01'
 $Script:ScriptName        = "VMware_Inventory_V2.ps1"
-$tmpdate                  = [datetime] "04/20/2022"
+$tmpdate                  = [datetime] "06/24/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -971,7 +977,7 @@ If($Export)
 	" -ForegroundColor White
 }
 
-If(!($VIServerName) -and !($Import))
+If(!($VIServerName) -and (($Import -and $Full) -or !($Import))) #2.01 handle situation when using both import and full
 {
     $VIServerName = Read-Host 'Please enter the FQDN of your vCenter server'
 }
@@ -7241,7 +7247,8 @@ Function ProcessStandardVSwitch
 {
 	Write-Verbose "$(Get-Date -Format G): Processing DV Switching"
 	$PSDefaultParameterValues = @{"*:Verbose"=$False}
-    $DvSwitches = Get-VDSwitch *>$Null
+	#2.01 fix bug. Using *>$Null caused the Get-DvSwitch cmdlet's output to also go to $Null and $DvSwitches was empty
+    $DvSwitches = Get-VDSwitch 2>$Null 
 	$PSDefaultParameterValues = @{"*:Verbose"=$True}
     If($DvSwitches)
     {
@@ -8986,7 +8993,8 @@ $Script:Title is attached.
 
 ProcessScriptSetup
 
-If(!($Import))
+#If(!($Import))
+If(($Import -and $Full) -or !($Import)) #2.01 handle situation when using both import and full
 {
 	VISetup $VIServerName
 }
@@ -9049,7 +9057,8 @@ Else
 }
 
 #Disconnect from VCenter
-If(!($Import))
+#If(!($Import))
+If(($Import -and $Full) -or !($Import)) #2.01 handle situation when using both import and full
 {
 	Write-Verbose "$(Get-Date -Format G):"
 	Write-Verbose "$(Get-Date -Format G): Disconnecting from $VIServerName"
@@ -9075,8 +9084,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIItUQYJKoZIhvcNAQcCoIItQjCCLT4CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxlHfvLEkmjux+XMI+ZfEII9e
-# 30GggiaxMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9wqnoIoSkaIkIrg+7+Ee0wPM
+# ibiggiaxMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -9286,33 +9295,33 @@ ProcessScriptEnd
 # AlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQg
 # VHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTEC
 # EAW6Vi5Lenb3LWKVYisrl2YwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgor
-# BgEEAYI3AgEEMCMGCSqGSIb3DQEJBDEWBBSgJXAjFfyFKSwzCP/x4zuTUfUOJzAN
-# BgkqhkiG9w0BAQEFAASCAgAIc3If06VO340WoMswYXcjNoeIF2EUqqCUwfYbmBYX
-# mfvej2qyOjV2NzSZOZKWvEC0C6HgnUBDV8aqqqs4PHCKKPAVJx8m30EB/tBxFQ9I
-# xtBEeW1zPe0i6VI++WPeuzjix4n7M0PoUK3VnDP6lYqFZR4TuL6UeIaz865DytfQ
-# gwvqMoIkMzI4QDDE9iP0AYL1mamfvEheWvqPQKlvXvVjLBbgJQG9RU8niJow22mN
-# TkG3+DSX5MMrlbat6rWKvWpP5obu9NCTJINdbkP7nCSGWmYsY/dEGMx5sTdEhlAX
-# UA/pO1sLb2yKEXOcYchcAblKuz/RQd3CbrQgzLQOc9Z7TeWy1paeUXOSXZSU1M+r
-# GSnUGlj0EOBJ+ffHIGB24oulJnjbC49YEb1qOLF7p0ePGJN42fjYUPZ9g+8ofBlM
-# lGbwRZKCa7S5/ejUBlJ5qodUAPNfGwNUYp8OMScpKx9zQ6hmWok+DPtVeaUm3/rH
-# g+jia+CNetW0yC0P9DXF5XRWiTWMl7QqJ+c3UD2MHcWS5LLQs9piVVclylPQptt5
-# lhyjbdNPmu/kXz4xXNjnIccmboowpavXR1q/aoMpTWnbcMmf2n7MuMdouEACiOkl
-# k6BLkNVQ4iqnPB66ZUa3EE661FyBKbHdiMcdHY5dXPOwmzbyC4Mk6w9gOtGBLkJU
-# VqGCAyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVT
+# BgEEAYI3AgEEMCMGCSqGSIb3DQEJBDEWBBSuWnXxdzGARXS0NbLrQUVoyDu9mTAN
+# BgkqhkiG9w0BAQEFAASCAgBLoaD6qo/85CFQaFkbVKaZxr4aAFTNsqsmjx4e1ab4
+# /vn8k0EK2op7Pxr37g4vdv93hOx2ObN5h/lyePMc37WUo2cwkYfAxrdF7E39VyzW
+# xHBk5Xb55eukzFPzACE7b1WAvM9jOXPm0sANwTBn7KD9mxCpJfdYFhK3tRQbOOmE
+# THCE5KJf81qkDNarZNqIhWwR8JHxOyGmhF/QUmkLNtf1EGhMcgsfOwzvcdopcaSK
+# l6ClKfMpMUwpcvV9AShuDnxpLey2jo+AC2PxeYDm9weraNQ+bU0+oQPV8cS0JpUS
+# xt1eTIckPScsFkjFMaiMQov41YoidxIv4Dfk4UCsieAL3MZCYj3o+S+cR4kgeD0m
+# 2jM+9rwM7xOJeUc6RqbNfHkqrAgUXOessihTKhHhuLNNyXApEzDaNREizwBmXpPy
+# As3KFFwHB33+MrDZ2GegJCx0HaBuU80+E57x9OrMlJ9QRhZDlNXDJQ6gL4TDm+La
+# 0gY2UCClWmhdIqCYEN64eo5AEFv4OtR6em4Wd3T36dDyrInxpdz8ZeL9FcNmeD+e
+# mlrC5q/UPhM80E2xlWacghbZH4/OLN5kWt9nAH3ppz+7voJmAQRlHHqXx3aP8q+Q
+# AW0KTvAE4DDsCmaS+yF7VuNhai13K/Ti7lb939Nh5gbiRUQDumkz1ghSdU2QnAXn
+# S6GCAyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVT
 # MRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1
 # c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAxNaXJLlPo8
 # Kko9KQeAPVowDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcN
-# AQcBMBwGCSqGSIb3DQEJBTEPFw0yMzA0MjExNDA0MTZaMC8GCSqGSIb3DQEJBDEi
-# BCDVXOv2OviPJkj3k2SMYui1IPo/q9nMjTX8wbIiGpT00TANBgkqhkiG9w0BAQEF
-# AASCAgAg/FppgJoA/+n9R7HL/3SRQFF6zS4gZNnRLXfwIJnEBVr0+0e+ZsgIP9KC
-# PoI9EqUf8pFXPyZdEMIS6TjANzjxQyPfQbyUjYY2FtRZz2jCqorY/QVJQR52VJhL
-# tvtxWUDLIOXFAEZnQyo/C3jb05JVsfQhIrs58JX6bnrljyELTDfALy85HE7/GgmO
-# b6lylGZX1+nO0PSPJdkXmKylsuPmqe6P/wLO2B4lAaRAEZkitlvdgYqGbKT2l0Tn
-# Z0VoEaOZaVpH+kqMSlm3LDOH/Tm1lMmf4FbZwFh/vC+zanY8fMM/lapzaXteX23s
-# FcxrR+inREkmEehMwcEJGIFtiI2zLgyTFyBGui76noqV88M3+ZcIwwOvp/sJgtxD
-# 8AlBs/lpGwPv5fFNkcaY4cYypHjGPUGPIsyi+3LlqB+NCoYusswjOm+ORApm/7hf
-# cssj/Go+kxkuRTycSqIifDSdKdUAT9mXsK2UmOFVgzsstuqdlZLujgsl+RoLxoTS
-# EaI+vGI7tw4dY5yy8IialnEbGP6bxxqeSE+ZV401XAlZG9lMLreijn8rOwlYiT2V
-# z7R7jTb29krTHjVsyZVzGsCFgPHZSPIzzmEQAHAa0rRxDA8woUpmS0GGTdgnmnTy
-# 8b/ED1/uiJCKVwDegCth6XrmpVSs0xj30n62lZRzcer94Owhig==
+# AQcBMBwGCSqGSIb3DQEJBTEPFw0yMzA2MjQyMjM4MDJaMC8GCSqGSIb3DQEJBDEi
+# BCDf4glicqI0j8zmX1+eh1pdxStLOkbpzC+gaTyS131jQzANBgkqhkiG9w0BAQEF
+# AASCAgBmjRMY72lWu7GVRExgU4w5978624q3XO3j1dEIZoUHmeb5ylkAp9oR61mL
+# EvwSr2EfSys7H+EoSoevmSho96qmmaEf2T7IAp/Wxoi1bZ3sFvWlDsqtPg2NrvSW
+# iufBLfB/ntpgeL0SFyVTvjiio0yHG94CSDN/6/0cXrv5I8lGAxOpZAkEt7WGIGWW
+# SMABBkQD0o70rVFh7zCH4Y7HR2o/CLLGq8H+v9Y4BHVXYuuLGiK3tmIIRYFw5raV
+# nVb61DFv0P/tlYnztE8ze36xFk31ZRTWRQHFk+2U1atrSy4oXKzvuVKLJ6QctArN
+# xCUk4tQ1zIFH9+WJprs0n5MiZfX2X7Hx0DhYsOKwB8o/ZTNYJyB3PjUakROQ0ixl
+# QXnVCVXEFzuiykD22bcbkDopsOvW02FbYoBLiks68IajjBkYVE4G+dRc3tQa8lRl
+# Pc+9m87rx2ffUqohp9KuHqQqmoYpfFAHUoZMHvcRIgPlt5CDSQ5T+EKHBy68gnA/
+# Idp7D4sB6+7Qh6oytRh7zL/kcf7vT5vFqHOtXijp5KIh+dGIpOw8pwbO64TfkimK
+# wK9MSUFKEHtxqjshaAjXK90UugzNNkHXRDnyy0k2u+yJKkuxiyMQpaxiOv1QlOmr
+# CW8kdrdz46hUEw7m3ppWo/hWljhMGCwuTcU5ZpBG2AnzkxgyyQ==
 # SIG # End signature block

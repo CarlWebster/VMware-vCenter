@@ -90,9 +90,10 @@
 	UseSSL
 	UserName
 .PARAMETER Import
-    Runs this script gathering all required data from a previously run Export
-    Export directory must be present in the same directory as the script itself
-    Does not require PowerCLI or a VIServerName to run in Import mode
+    Runs this script gathering all required data from a previously run Export.
+    Export directory must be present in the same directory as the script itself.
+    Requires PowerCLI and a VIServerName to run in -Import -Full mode, otherwise
+	PowerCLI and a VIServerName are not required.
     This parameter overrides all other output formats
 .PARAMETER Dev
 	Clears errors at the beginning of the script.
@@ -525,9 +526,9 @@
 	This script creates a Word, PDF, Formatted Text or HTML document.
 .NOTES
 	NAME: VMware_Inventory_V2.ps1
-	VERSION: 2.00
+	VERSION: 2.01
 	AUTHOR: Jacob Rutski and Carl Webster
-	LASTEDIT: April 21, 2023
+	LASTEDIT: June 24, 2023
 #>
 
 #endregion
@@ -663,6 +664,11 @@ Param(
 #@JRutski on Twitter
 #Created on November 3rd, 2014
 #
+#Version 2.01 24-Jun-2023
+#	Fix bug that kept Virtual Distributed Switches data from being in the report
+#	When using -Import and -Full, handle making sure the vCenter name is given
+#	When using -Import and -Full, handle making sure the vCenter is disconnected when the script completes
+#
 #Version 2.00 21-Apr-2023
 #	Allow multiple output formats. You can now select any combination of HTML, MSWord, PDF, or Text
 #	Changed some Write-Error to Write-Warning and changed some Write-Warning to Write-Host
@@ -766,9 +772,9 @@ Set-StrictMode -Version 2
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
-$script:MyVersion         = '2.00'
+$script:MyVersion         = '2.01'
 $Script:ScriptName        = "VMware_Inventory_V2.ps1"
-$tmpdate                  = [datetime] "04/20/2022"
+$tmpdate                  = [datetime] "06/24/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -971,7 +977,7 @@ If($Export)
 	" -ForegroundColor White
 }
 
-If(!($VIServerName) -and !($Import))
+If(!($VIServerName) -and (($Import -and $Full) -or !($Import))) #2.01 handle situation when using both import and full
 {
     $VIServerName = Read-Host 'Please enter the FQDN of your vCenter server'
 }
@@ -7241,7 +7247,8 @@ Function ProcessStandardVSwitch
 {
 	Write-Verbose "$(Get-Date -Format G): Processing DV Switching"
 	$PSDefaultParameterValues = @{"*:Verbose"=$False}
-    $DvSwitches = Get-VDSwitch *>$Null
+	#2.01 fix bug. Using *>$Null caused the Get-DvSwitch cmdlet's output to also go to $Null and $DvSwitches was empty
+    $DvSwitches = Get-VDSwitch 2>$Null 
 	$PSDefaultParameterValues = @{"*:Verbose"=$True}
     If($DvSwitches)
     {
@@ -8986,7 +8993,8 @@ $Script:Title is attached.
 
 ProcessScriptSetup
 
-If(!($Import))
+#If(!($Import))
+If(($Import -and $Full) -or !($Import)) #2.01 handle situation when using both import and full
 {
 	VISetup $VIServerName
 }
@@ -9049,7 +9057,8 @@ Else
 }
 
 #Disconnect from VCenter
-If(!($Import))
+#If(!($Import))
+If(($Import -and $Full) -or !($Import)) #2.01 handle situation when using both import and full
 {
 	Write-Verbose "$(Get-Date -Format G):"
 	Write-Verbose "$(Get-Date -Format G): Disconnecting from $VIServerName"
