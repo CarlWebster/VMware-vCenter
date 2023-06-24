@@ -9,6 +9,11 @@
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 
+#Version 2.01 24-Jun-2023
+#	Fix bug that kept Virtual Distributed Switches data from being in the report
+#	When using -Import and -Full, handle making sure the vCenter name is given
+#	When using -Import and -Full, handle making sure the vCenter is disconnected when the script completes
+
 #Version 2.00 21-Apr-2023
 #	Allow multiple output formats. You can now select any combination of HTML, MSWord, PDF, or Text
 #	Changed some Write-Error to Write-Warning and changed some Write-Warning to Write-Host
